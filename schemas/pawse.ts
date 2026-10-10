@@ -79,6 +79,20 @@ export interface CareResult {
   search_url: string;
   completeness: string;
 }
+export interface ClinicSearchRequest {
+  location: Location;
+  radius_km?: number;
+  language?: string;
+  share_location: boolean;
+}
+export interface ClinicSearchResult {
+  status: "complete" | "unavailable";
+  clinics: Clinic[];
+  warnings: string[];
+  elapsed_ms: number;
+  search_url: string;
+  completeness: string;
+}
 export type CareEvent =
   | { type: "created"; request_id: string }
   | { type: "safety" | "assessment"; assessment: Assessment }

@@ -236,3 +236,39 @@ def test_capabilities_expose_model_ids_and_clinic_providers_without_keys(monkeyp
     assert d['clinic_providers']==['google_places', 'gemini_maps']
     assert {f['id']:f['status'] for f in d['new_features']}['nearby_clinics']=='configured'
     assert 'secret-key-value' not in r.text and 'places-secret' not in r.text
+
+
+def test_clinic_search_does_not_wait_on_an_active_care_request(monkeypatch):
+    # The voice agent's advice request can still be running when the owner taps "Call the vet".
+    async def fake_discover(req, client):
+        assert (req.location.lat, req.share_location, req.radius_km) == (47.37, True, 10)
+        return [Clinic(id='v', name='Vet', distance_km=1, source='gemini_maps', retrieved_at='2026-10-10')]
+    monkeypatch.setattr(service, 'discover', fake_discover)
+    with TestClient(app) as c:
+        c.get('/api/v1/health')
+        active.add(c.cookies['pawse_session'])
+        r = c.post('/api/v1/clinics/search', json={'location': {'lat': 47.37, 'lng': 8.54}, 'share_location': True})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert [x['id'] for x in d['clinics']] == ['v'] and d['clinics'][0]['reasons']
+    assert d['status'] == 'complete' and 'No appointment' in d['completeness']
+
+
+def test_clinic_search_needs_location_consent_and_reports_provider_failure():
+    with TestClient(app) as c:
+        assert c.post('/api/v1/clinics/search', json={'location': {'lat': 47.37, 'lng': 8.54}}).status_code == 400
+        r = c.post('/api/v1/clinics/search', json={'location': {'lat': 52.52, 'lng': 13.4}, 'share_location': True})
+    assert r.status_code == 200 and r.json()['clinics'] == [] and r.json()['status'] == 'unavailable'
+    assert r.json()['warnings'] == ['clinic_provider_not_configured']
+
+
+def test_clinic_search_caps_concurrent_lookups_per_owner():
+    from pawse.app import clinic_lookups
+    with TestClient(app) as c:
+        c.get('/api/v1/health')
+        clinic_lookups[c.cookies['pawse_session']] = 2
+        try:
+            r = c.post('/api/v1/clinics/search', json={'location': {'lat': 47.37, 'lng': 8.54}, 'share_location': True})
+        finally:
+            clinic_lookups.clear()
+    assert r.status_code == 429

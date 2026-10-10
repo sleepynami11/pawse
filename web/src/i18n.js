@@ -6,7 +6,6 @@ export const strings = {
     tagline: '宠物不舒服？\n跟 Pawse 说说。',
     startCall: '呼叫 Pawse',
     startHint: '直接说话就行，需要时再开摄像头或发照片',
-    mockBadge: '演示模式 · 脚本数据',
     disclaimer: 'Pawse 给的是分诊建议，不是诊断，不能替代兽医。情况危急请直接去医院。',
 
     connecting: '接通中…',
@@ -129,7 +128,6 @@ export const strings = {
     tagline: 'Pet not well?\nTalk to Pawse.',
     startCall: 'Call Pawse',
     startHint: 'Just talk. Turn on the camera or send a photo if it helps.',
-    mockBadge: 'Demo mode · scripted',
     disclaimer:
       'Pawse gives triage guidance, not a diagnosis, and does not replace a vet. In an emergency, go to a clinic.',
 
