@@ -180,7 +180,7 @@ async def test_deadline_cancels_slow_providers(monkeypatch):
         except asyncio.CancelledError:
             cancelled.append(True)
             raise
-    monkeypatch.setattr(service,'CARE_DEADLINE_SECONDS',.02)
+    monkeypatch.setattr(service,'CARE_DEADLINE_SECONDS',.5)  # clock starts before httpx client setup (~50 ms)
     monkeypatch.setattr(service,'assess',slow);monkeypatch.setattr(service,'discover',slow)
     events=[e async for e in service.care_events(CareRequest(**payload()))]
     assert len(cancelled)==2
