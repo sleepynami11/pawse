@@ -54,7 +54,7 @@ function ResultCard({ t, target, result }) {
   );
 }
 
-export default function PhoneCall({ t, lang, target, clinic, context, onDone }) {
+export default function PhoneCall({ t, lang, target, clinic, context, gradium, onDone }) {
   const base = t.callees[target];
   const callee = clinic
     ? { ...base, name: clinic.name, role: `${clinic.distanceKm.toFixed(1)} km` }
@@ -130,6 +130,12 @@ export default function PhoneCall({ t, lang, target, clinic, context, onDone }) 
     setSpeechMuted(!next);
   };
 
+  const toggleGradium = () => {
+    const next = !gradium.on;
+    gradium.set(next);
+    callRef.current && callRef.current.setGradiumConsent && callRef.current.setGradiumConsent(next);
+  };
+
   const statusText = status === 'dialing' ? t.dialing : status === 'connected' ? `${t.inCall} · ${fmt(secs)}` : t.callEnded;
 
   return (
@@ -149,6 +155,16 @@ export default function PhoneCall({ t, lang, target, clinic, context, onDone }) 
         <Avatar size={44} speaking={speaking === 'ai'} />
         <span>{t.aiNote}</span>
       </div>
+
+      {gradium && (
+        <label className="pc-gradium">
+          <input type="checkbox" checked={gradium.on} onChange={toggleGradium} />
+          <span>
+            <strong>{gradium.ownVoice ? t.gradiumOwnVoice : t.gradiumVoice}</strong>
+            <span className="muted small">{t.gradiumNote}</span>
+          </span>
+        </label>
+      )}
 
       <section className="pc-lines" ref={listRef} aria-live="polite">
         {lines.map((l, i) => (

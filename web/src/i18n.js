@@ -27,6 +27,9 @@ export const strings = {
     flip: '翻转',
     hangup: '挂断',
     sound: 'Pawse 的声音',
+    gradiumVoice: '用 Gradium 德语声音说话',
+    gradiumOwnVoice: '用你自己的声音说德语（Gradium）',
+    gradiumNote: 'Pawse 说的德语句子会发送给 Gradium 生成语音。关闭后使用浏览器自带的声音。',
     viewAdvice: '查看建议',
     keepTalking: '继续通话',
 
@@ -112,6 +115,9 @@ export const strings = {
     flip: 'Flip',
     hangup: 'Hang up',
     sound: "Pawse's voice",
+    gradiumVoice: 'Speak with the Gradium German voice',
+    gradiumOwnVoice: 'Speak German in your own voice (Gradium)',
+    gradiumNote: "Pawse's German lines are sent to Gradium to make the audio. Off: the browser's built-in voice.",
     viewAdvice: 'View advice',
     keepTalking: 'Keep talking',
 

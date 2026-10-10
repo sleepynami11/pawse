@@ -27,7 +27,7 @@ def audio(seconds=12):
 def clean(monkeypatch):
     for key in ['GEMINI_API_KEY', 'GRADIUM_API_KEY', 'GRADIUM_VOICE_ID_DE', 'GRADIUM_STANDARD_VOICE_ID_DE']:
         monkeypatch.delenv(key, raising=False)
-    voice.voices.clear(); voice.voice_active.clear()
+    voice.voices.clear(); voice.voice_active.clear(); voice.disclosed_calls.clear()
 
 
 def upstream(monkeypatch, handler):
@@ -250,3 +250,63 @@ def test_chunked_body_limit_is_enforced_without_content_length():
     with TestClient(app) as c:
         r = c.post('/api/v1/voice/scripts', content=iter([b' ' * 3_000_000, b' ' * 1_500_001]), headers={'Content-Type': 'application/json'})
         assert r.status_code == 413
+
+
+def test_call_lines_disclose_once_per_server_issued_call_id(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    spoken = []
+    def handler(req):
+        spoken.append(json.loads(req.content)['text'])
+        return httpx.Response(200, content=wav(1))
+    upstream(monkeypatch, handler)
+    line = {'voice': 'standard', 'share_with_gradium': True}
+    with TestClient(app) as c, TestClient(app) as other:
+        first = c.post('/api/v1/voice/speech', json=line | {'text': 'Meine Katze hinkt.'})
+        assert first.status_code == 200
+        call_id = first.headers['x-pawse-call-id']
+        assert spoken[-1] == voice.DISCLOSURE + ' Meine Katze hinkt.'
+        # Later lines of the same call are spoken as is, with the same id.
+        second = c.post('/api/v1/voice/speech', json=line | {'text': 'Ist das gedeckt?', 'call_id': call_id})
+        assert second.status_code == 200 and second.headers['x-pawse-call-id'] == call_id
+        assert spoken[-1] == 'Ist das gedeckt?'
+        # An unknown id, or one issued to another session, still gets the disclosure and a fresh id.
+        for client in (c, other):
+            r = client.post('/api/v1/voice/speech', json=line | {'text': 'Hallo', 'call_id': 'x' * 24})
+            assert r.status_code == 200 and spoken[-1].startswith(voice.DISCLOSURE)
+            assert r.headers['x-pawse-call-id'] != 'x' * 24
+        r = other.post('/api/v1/voice/speech', json=line | {'text': 'Hallo', 'call_id': call_id})
+        assert spoken[-1].startswith(voice.DISCLOSURE) and r.headers['x-pawse-call-id'] != call_id
+        # No id at all: disclosed, and a text that already starts with it is not doubled.
+        c.post('/api/v1/voice/speech', json=line | {'text': voice.DISCLOSURE + ' Hallo'})
+        assert spoken[-1] == voice.DISCLOSURE + ' Hallo'
+        # Consent is still required on every line.
+        assert c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'call_id': call_id}).status_code == 422
+        assert c.post('/api/v1/voice/speech', json=line | {'text': 'Hallo', 'call_id': call_id, 'share_with_gradium': False}).status_code == 422
+
+
+def test_failed_first_line_does_not_count_as_disclosed(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    upstream(monkeypatch, lambda req: httpx.Response(500, text='down'))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
+        assert r.status_code == 502 and 'x-pawse-call-id' not in r.headers
+    assert not any(voice.disclosed_calls.values())
+
+
+def test_call_ids_expire_and_are_bounded(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    spoken = []
+    def handler(req):
+        spoken.append(json.loads(req.content)['text'])
+        return httpx.Response(200, content=wav(1))
+    upstream(monkeypatch, handler)
+    line = {'voice': 'standard', 'share_with_gradium': True}
+    with TestClient(app) as c:
+        call_id = c.post('/api/v1/voice/speech', json=line | {'text': 'Hallo'}).headers['x-pawse-call-id']
+        for calls in voice.disclosed_calls.values():
+            calls[call_id] = 0  # expired
+        c.post('/api/v1/voice/speech', json=line | {'text': 'Weiter', 'call_id': call_id})
+        assert spoken[-1].startswith(voice.DISCLOSURE)
+        for _ in range(voice.MAX_CALLS_PER_OWNER + 5):
+            c.post('/api/v1/voice/speech', json=line | {'text': 'Hallo'})
+        assert all(len(calls) <= voice.MAX_CALLS_PER_OWNER for calls in voice.disclosed_calls.values())

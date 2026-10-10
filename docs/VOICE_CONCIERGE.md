@@ -55,13 +55,13 @@ All routes are under `/api/v1`. JSON bodies use strict schemas; see [generated O
 | `GET /voice/localizations/current` | Current session | Candidate readiness from Gradium |
 | `POST /voice/preview` | Gradium consent | Short German WAV preview |
 | `POST /voice/localizations/current/save` | Gradium consent, `listened_to_preview: true` | Permanent German voice ID |
-| `POST /voice/speech` | German text, `voice: my_voice/standard`, Gradium consent | WAV bytes |
+| `POST /voice/speech` | German text, `voice: my_voice/standard`, Gradium consent, optional `call_id` | WAV bytes + `X-Pawse-Call-Id` header |
 | `DELETE /voice/profile` | Current session | Deletes only voices/candidates created by this session |
 | `GET /demo/mimi` | None | Fictional six-scene rehearsal, scripts, cost estimates, claim checklist |
 
 Audio input is limited to 3 MB, 0.5–60 seconds, mono 16-bit PCM WAV at 8–48 kHz. Clone input must be 10–30 seconds. The browser converts recorded audio locally before upload. Gemini requests time out after 40 seconds and Gradium requests after 45 seconds. One voice operation can run per session, up to five globally.
 
-Each generated audio file begins with an AI-assistant disclosure. The app does not represent the cloned voice as the owner speaking live. Transcripts and translations are drafts to review, not verified clinical facts or insurance decisions.
+The first audio line of every call begins with an AI-assistant disclosure. A call is a sequence of `/voice/speech` lines: the first response carries a server-issued `X-Pawse-Call-Id`, and later lines that send it back (same browser session, within 30 minutes) are spoken as is, so the whole call keeps one Gradium voice without repeating the greeting. A missing, unknown, expired or other-session id always gets the disclosure again; an id is only remembered after its disclosed audio was produced. The app does not represent the cloned voice as the owner speaking live. Transcripts and translations are drafts to review, not verified clinical facts or insurance decisions.
 
 ## Calling boundaries
 

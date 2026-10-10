@@ -45,7 +45,10 @@
  *   on(cb) -> unsubscribe
  *   start()
  *   hangup()
- *   context = { summary: string, clinic?: Clinic, estimate?: number }
+ *   setGradiumConsent?(on:boolean)   optional: change Gradium consent for the remaining lines
+ *   context = { summary: string, clinic?: Clinic, estimate?: number,
+ *               gradiumConsent?: boolean, voice?: 'standard'|'my_voice' }
+ *   gradiumConsent === true lets the live agent speak every AI line with Gradium (one voice per call).
  *
  * Events:
  *   {type:'status', state:'dialing'|'connected'|'ended'}

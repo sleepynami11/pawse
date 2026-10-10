@@ -5,6 +5,8 @@ import binascii
 import io
 import json
 import os
+import secrets
+import time
 import wave
 from contextlib import asynccontextmanager
 from typing import Literal
@@ -24,6 +26,12 @@ LANGUAGES = {"en": "English", "zh": "Mandarin Chinese", "de": "German", "hi": "H
 # Only IDs are retained, never recordings. State is isolated to the local browser session.
 voices: dict[str, dict] = {}
 voice_active: set[str] = set()
+# Calls whose first spoken line carried DISCLOSURE: owner -> {call_id: expiry}. Only server-issued ids
+# count, so a client cannot skip the disclosure without a prior disclosed line in the same session.
+CALL_HEADER = "X-Pawse-Call-Id"
+CALL_TTL = 30 * 60
+MAX_CALLS_PER_OWNER = 20
+disclosed_calls: dict[str, dict[str, float]] = {}
 
 
 class Audio(Model):
@@ -107,6 +115,9 @@ class SpeechRequest(VoiceConsent):
     text: str = Field(min_length=1, max_length=3500)
     language: Literal["de"] = "de"
     voice: Literal["my_voice", "standard"] = "my_voice"
+    call_id: str | None = Field(default=None, min_length=16, max_length=64, pattern=r"^[A-Za-z0-9_-]+$",
+        description=f"Id from the {CALL_HEADER} response header of an earlier line in the same call. "
+                    "Known id: the line is spoken as is. Absent, unknown or expired: DISCLOSURE is prepended and a new id is issued.")
 
 
 @asynccontextmanager
@@ -350,12 +361,42 @@ async def delete_voice(request: Request):
         voices.pop(owner, None)
 
 
-@router.post("/voice/speech", response_class=Response, responses={200: {"content": {"audio/wav": {"schema": {"type": "string", "format": "binary"}}}}})
+def disclosed_call(owner, call_id):
+    """True if call_id was issued to this owner on a disclosed line and has not expired."""
+    now = time.monotonic()
+    calls = disclosed_calls.get(owner, {})
+    for key in [k for k, expiry in calls.items() if expiry <= now]:
+        calls.pop(key)
+    return bool(call_id) and call_id in calls
+
+
+def remember_call(owner, call_id):
+    calls = disclosed_calls.setdefault(owner, {})
+    calls[call_id] = time.monotonic() + CALL_TTL
+    while len(calls) > MAX_CALLS_PER_OWNER:
+        calls.pop(min(calls, key=calls.get))
+    if len(disclosed_calls) > 1000:
+        disclosed_calls.pop(next(iter(disclosed_calls)))
+
+
+SPEECH_RESPONSES = {200: {"content": {"audio/wav": {"schema": {"type": "string", "format": "binary"}}},
+    "headers": {CALL_HEADER: {"description": "Call id to send as call_id with the next line of this call.", "schema": {"type": "string"}}}}}
+
+
+@router.post("/voice/speech", response_class=Response, responses=SPEECH_RESPONSES)
 async def speak(payload: SpeechRequest, request: Request):
     owner = request.state.owner
     async with operation(owner), httpx.AsyncClient() as client:
         voice_id = os.getenv("GRADIUM_STANDARD_VOICE_ID_DE", "p6Uutkyi3j2iNAUu") if payload.voice == "standard" else profile(owner).get("german_id") or os.getenv("GRADIUM_VOICE_ID_DE")
         if not voice_id:
             raise HTTPException(409, "Record your voice and save its German version first, or select the standard voice.")
-        text = payload.text if payload.text.startswith(DISCLOSURE) else DISCLOSURE + " " + payload.text
-        return await tts(client, voice_id, text)
+        # The first spoken line of every call identifies Pawse as an AI; later lines of the same call do not repeat it.
+        if disclosed_call(owner, payload.call_id):
+            call_id, text = payload.call_id, payload.text
+        else:
+            call_id = secrets.token_urlsafe(18)
+            text = payload.text if payload.text.startswith(DISCLOSURE) else DISCLOSURE + " " + payload.text
+        response = await tts(client, voice_id, text)
+        remember_call(owner, call_id)  # only after the disclosed audio was actually produced
+        response.headers[CALL_HEADER] = call_id
+        return response

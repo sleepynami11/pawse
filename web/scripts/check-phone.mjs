@@ -14,11 +14,33 @@ const story = {
       { speaker: 'Insurer · simulated', german: 'Ja, 80 Prozent.', subtitle: 'Yes, 80%.' }] }],
 };
 const calls = [];
+const speech = []; // bodies sent to /voice/speech
+let gradiumUp = false; // false: /voice/speech answers 503 (no key)
 globalThis.fetch = async (url, opts) => {
   calls.push(String(url));
   if (String(url).endsWith('/api/v1/demo/mimi')) return { ok: true, status: 200, json: async () => story };
-  return { ok: false, status: 503, blob: async () => null };
+  if (String(url).endsWith('/api/v1/voice/speech')) {
+    const body = JSON.parse(opts.body);
+    speech.push(body);
+    if (!gradiumUp) return { ok: false, status: 503, headers: new Map(), blob: async () => null };
+    // Server behaviour: no or unknown call id -> issue one; known id -> echo it.
+    const id = body.call_id || `call-${speech.length}-abcdefghijklmnop`;
+    return { ok: true, status: 200, headers: new Map([['x-pawse-call-id', id]]), blob: async () => ({ size: 1 }) };
+  }
+  return { ok: false, status: 404 };
 };
+// Minimal Audio stub: every clip "plays" and ends at once; count how many played.
+let played = 0;
+globalThis.Audio = class {
+  play() {
+    played += 1;
+    setTimeout(() => this.onended && this.onended(), 0);
+    return Promise.resolve();
+  }
+  pause() {}
+};
+URL.createObjectURL = () => 'blob:stub';
+URL.revokeObjectURL = () => {};
 
 const { createLivePhoneCall } = await import('../src/agents/livePhoneAgent.js');
 
@@ -48,6 +70,39 @@ for (const [target, ctx] of [['vet', { clinic: { name: 'Praxis X' } }], ['insura
   call.hangup(); call.hangup();
   assert.equal(ev.length, n, 'hangup after end is a no-op');
   assert.ok(!ev.some((e) => e.type === 'error'), 'no error event');
+}
+
+// Gradium on, key present: every AI line goes through /voice/speech, in order, with one call id.
+for (const target of ['vet', 'insurance']) {
+  gradiumUp = true; speech.length = 0; played = 0;
+  const { ev } = await runCall(target, { gradiumConsent: true, voice: 'my_voice' });
+  const aiLines = ev.filter((e) => e.type === 'line' && e.who === 'ai').map((e) => e.original);
+  assert.ok(aiLines.length >= 2, 'test story has several AI lines');
+  assert.deepEqual(speech.map((b) => b.text), aiLines, `${target}: every AI line sent to Gradium, in order`);
+  assert.ok(speech.every((b) => b.share_with_gradium === true && b.voice === 'my_voice' && b.language === 'de'));
+  assert.equal(speech[0].call_id, undefined, 'first line asks the server for a call id');
+  const ids = new Set(speech.slice(1).map((b) => b.call_id));
+  assert.equal(ids.size, 1, `${target}: later lines reuse one call id`);
+  assert.equal([...ids][0], 'call-1-abcdefghijklmnop', 'the id the server issued');
+  assert.equal(played, aiLines.length, 'every AI line played as Gradium audio');
+  assert.ok(!ev.some((e) => e.type === 'error'));
+}
+
+// Gradium answers 503: the call still completes on browser speech and stops asking after the failure.
+{
+  gradiumUp = false; speech.length = 0; played = 0;
+  const { ev } = await runCall('vet', { gradiumConsent: true });
+  assert.equal(speech.length, 1, 'one failed request, then browser speech for the rest');
+  assert.equal(played, 0);
+  assert.ok(ev.some((e) => e.type === 'result') && !ev.some((e) => e.type === 'error'), '503 falls back cleanly');
+}
+
+// No consent: Gradium is never called.
+{
+  gradiumUp = true; speech.length = 0;
+  await runCall('vet', {});
+  assert.equal(speech.length, 0, 'no consent, no Gradium request');
+  gradiumUp = false;
 }
 
 // hangup mid-call ends exactly once

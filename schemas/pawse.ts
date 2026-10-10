@@ -138,6 +138,8 @@ export interface SpeechRequest {
   language?: "de";
   voice?: "my_voice" | "standard";
   share_with_gradium: true;
+  /** From the X-Pawse-Call-Id header of an earlier line in the same call; the server then skips the disclosure it already spoke. */
+  call_id?: string | null;
 }
 export type AgentId =
   | "intake"

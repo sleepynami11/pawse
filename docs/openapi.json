@@ -532,6 +532,14 @@
         "responses": {
           "200": {
             "description": "Successful Response",
+            "headers": {
+              "X-Pawse-Call-Id": {
+                "description": "Call id to send as call_id with the next line of this call.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "audio/wav": {
                 "schema": {
@@ -2023,6 +2031,21 @@
             ],
             "title": "Voice",
             "default": "my_voice"
+          },
+          "call_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 16,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Call Id",
+            "description": "Id from the X-Pawse-Call-Id response header of an earlier line in the same call. Known id: the line is spoken as is. Absent, unknown or expired: DISCLOSURE is prepended and a new id is issued."
           }
         },
         "additionalProperties": false,

@@ -1,10 +1,15 @@
 // Live phone agent for Pawse. There is NO telephony: the German script and the numbers come from
-// the backend (GET /api/v1/demo/mimi), AI lines may be spoken with Gradium German audio
+// the backend (GET /api/v1/demo/mimi), every AI line is spoken with the same Gradium German voice
 // (POST /api/v1/voice/speech, only with explicit consent), and every callee reply and the result
 // stay marked `simulated: true`. Nothing is ever dialled or booked. Implements ../contracts.js.
+//
+// One call = one server-issued call id: the first AI line carries the AI disclosure and the server
+// answers with an X-Pawse-Call-Id header; later lines send that id so the server does not repeat
+// the disclosure. If Gradium fails (no key, 503, network), the rest of the call uses browser speech
+// so the voice never flips back and forth.
 
 import { PHONE_AGENT_URL } from '../config.js';
-import { speak, stopSpeech } from './speech.js';
+import { speak, stopSpeech, isSpeechMuted } from './speech.js';
 
 // Must equal DISCLOSURE in pawse/voice.py so the server does not prepend a second greeting.
 const DISCLOSURE = 'Guten Tag, hier ist Pawse, die KI-Assistenz im Auftrag der Katzenhalterin oder des Katzenhalters.';
@@ -26,34 +31,80 @@ async function fetchStory(base) {
   return res.json();
 }
 
-/** Plays Gradium German audio for one AI line. Resolves true if audio played, false to fall back. */
-async function playGradium(base, text, voice, state) {
-  if (typeof Audio === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) return false;
-  try {
-    const res = await fetch(`${base}/api/v1/voice/speech`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, language: 'de', voice, share_with_gradium: true }),
-    });
-    if (!res.ok || state.ended) return false;
-    const url = URL.createObjectURL(await res.blob());
-    if (state.ended) return false;
-    return await new Promise((resolve) => {
-      const a = new Audio(url);
-      state.audio = a;
-      const done = (ok) => {
-        state.audio = null;
-        try { URL.revokeObjectURL(url); } catch { /* ignore */ }
-        resolve(ok);
-      };
-      a.onended = () => done(true);
-      a.onerror = () => done(false);
+/**
+ * Fetches Gradium audio for the AI lines of one call, strictly in order (the first response
+ * carries the call id the later ones need). Each line is fetched at most once, so the page can
+ * preload the next AI line while the current one plays.
+ */
+function createGradiumLines(base, voice, state) {
+  const cache = new Map();
+  let chain = Promise.resolve();
+  let callId = null;
+  let failed = false;
+
+  const request = async (text) => {
+    if (failed || state.ended) return null;
+    try {
+      const res = await fetch(`${base}/api/v1/voice/speech`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language: 'de', voice, share_with_gradium: true, ...(callId ? { call_id: callId } : {}) }),
+      });
+      if (!res.ok) throw new Error(`speech ${res.status}`);
+      const id = res.headers && typeof res.headers.get === 'function' ? res.headers.get('x-pawse-call-id') : null;
+      if (id) callId = id;
+      return await res.blob();
+    } catch {
+      failed = true; // stay on browser speech for the rest of this call
+      return null;
+    }
+  };
+
+  return {
+    get failed() {
+      return failed;
+    },
+    /** Promise<Blob|null> for line `key`; queued behind every earlier request. */
+    fetch(key, text) {
+      if (!cache.has(key)) {
+        const p = chain.then(() => request(text));
+        chain = p;
+        cache.set(key, p);
+      }
+      return cache.get(key);
+    },
+  };
+}
+
+/** Plays one audio blob. Resolves true if it played to the end, false to fall back. */
+function playBlob(blob, state) {
+  if (!blob || state.ended || typeof Audio === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) {
+    return Promise.resolve(false);
+  }
+  return new Promise((resolve) => {
+    let url;
+    try {
+      url = URL.createObjectURL(blob);
+    } catch {
+      resolve(false);
+      return;
+    }
+    const a = new Audio(url);
+    state.audio = a;
+    const done = (ok) => {
+      if (state.audio === a) state.audio = null;
+      try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+      resolve(ok);
+    };
+    a.onended = () => done(true);
+    a.onerror = () => done(false);
+    try {
       const p = a.play();
       if (p && p.catch) p.catch(() => done(false));
-    });
-  } catch {
-    return false;
-  }
+    } catch {
+      done(false);
+    }
+  });
 }
 
 function buildVetResult(story, lang, context) {
@@ -131,11 +182,23 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
       timers.add(id);
     });
 
-  // Gradium audio only with explicit consent from the page (context.gradiumConsent === true).
+  // Gradium audio only with explicit consent from the page (context.gradiumConsent === true);
+  // the page may withdraw or give it mid-call with setGradiumConsent().
   const voice = context.voice === 'my_voice' ? 'my_voice' : 'standard';
+  let gradiumConsent = context.gradiumConsent === true;
+  const gradium = createGradiumLines(base, voice, state);
+  const useGradium = () => gradiumConsent && !gradium.failed && !isSpeechMuted() && typeof fetch === 'function';
 
-  async function say(line, useGradium) {
-    if (useGradium && context.gradiumConsent === true && (await playGradium(base, line.original, voice, state))) return;
+  async function say(lines, i) {
+    const line = lines[i];
+    if (line.who === 'ai' && useGradium()) {
+      const blob = await gradium.fetch(i, line.original);
+      // Preload the next AI line while this one plays.
+      const next = lines.findIndex((l, j) => j > i && l.who === 'ai');
+      if (next >= 0 && useGradium()) gradium.fetch(next, lines[next].original);
+      if (state.ended) return;
+      if (await playBlob(blob, state)) return;
+    }
     if (state.ended) return;
     await speak(line.original, 'de', { speed, pitch: line.who === 'callee' ? 0.8 : 1.15 });
   }
@@ -156,7 +219,7 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
 
     const step = (story.steps || [])[STEP_INDEX[target] ?? 2] || { lines: [] };
     const lines = [
-      { who: 'ai', original: FIRST_LINE.original, text: FIRST_LINE.text[lang] ?? FIRST_LINE.text.en, gradium: true },
+      { who: 'ai', original: FIRST_LINE.original, text: FIRST_LINE.text[lang] ?? FIRST_LINE.text.en },
       ...(step.lines || []).map((l) => ({
         who: /^pawse/i.test(l.speaker) ? 'ai' : 'callee',
         original: l.german,
@@ -164,14 +227,14 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
         text: l.subtitle,
       })),
     ];
-    for (const line of lines) {
+    for (const [i, line] of lines.entries()) {
       await wait(450);
       if (state.ended) return;
       emit({ type: 'speaking', who: line.who });
       const ev = { type: 'line', who: line.who, original: line.original, text: line.text };
       if (line.who === 'callee') ev.simulated = true;
       emit(ev);
-      await say(line, line.gradium);
+      await say(lines, i);
       if (state.ended) return;
       emit({ type: 'speaking', who: 'none' });
     }
@@ -208,5 +271,9 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
       });
     },
     hangup: finish,
+    /** Give or withdraw consent for Gradium audio for the remaining lines of this call. */
+    setGradiumConsent(on) {
+      gradiumConsent = on === true;
+    },
   };
 }

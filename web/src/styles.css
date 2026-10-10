@@ -379,6 +379,14 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
   background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 6px 12px 6px 6px;
   font-size: 13px; color: var(--muted);
 }
+.pc-gradium {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px 12px;
+  font-size: 13px;
+}
+.pc-gradium input { margin-top: 3px; accent-color: var(--brand-strong); flex: none; }
+.pc-gradium span { display: flex; flex-direction: column; gap: 2px; }
+.pc-gradium .small { font-size: 12px; }
 .pc-lines { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 2px 0 6px; }
 .line {
   background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 10px 14px;

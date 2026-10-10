@@ -7,6 +7,17 @@ import Plan from './pages/Plan.jsx';
 import { strings, detectLang, saveLang } from './i18n.js';
 import { primeSpeech } from './agents/speech.js';
 import { buildSummary } from './utils/summary.js';
+import { IS_LIVE_PHONE } from './agents/index.js';
+import { PHONE_AGENT_URL } from './config.js';
+
+const GRADIUM_KEY = 'pawse.gradium';
+function loadGradiumChoice() {
+  try {
+    return localStorage.getItem(GRADIUM_KEY) !== '0'; // on by default, the owner can turn it off
+  } catch {
+    return true;
+  }
+}
 
 // home → voice call with Pawse → advice
 //   → "call the vet": clinic list → Pawse calls the chosen clinic
@@ -20,6 +31,33 @@ export default function App() {
   const [insurance, setInsurance] = useState(null);
   const [clinic, setClinic] = useState(null);
   const [target, setTarget] = useState(null);
+  const [gradiumOn, setGradiumOnState] = useState(loadGradiumChoice);
+  const [voiceStatus, setVoiceStatus] = useState(null);
+
+  const setGradiumOn = (on) => {
+    setGradiumOnState(on);
+    try {
+      localStorage.setItem(GRADIUM_KEY, on ? '1' : '0');
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  // Live phone calls only: is Gradium configured, and does this session have its own German voice?
+  useEffect(() => {
+    if (!IS_LIVE_PHONE) return undefined;
+    let alive = true;
+    fetch(`${PHONE_AGENT_URL || ''}/api/v1/voice/status`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => alive && s && setVoiceStatus(s))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  // Unknown status: still offer Gradium; the call falls back to the browser voice on 503.
+  const gradiumAvailable = IS_LIVE_PHONE && (!voiceStatus || voiceStatus.gradium_configured === true);
+  const ownVoice = !!(voiceStatus && voiceStatus.my_voice_ready);
 
   const t = strings[lang];
 
@@ -90,7 +128,10 @@ export default function App() {
         lang={lang}
         target={target}
         clinic={target === 'vet' ? clinic : null}
+        gradium={gradiumAvailable ? { on: gradiumOn, ownVoice, set: setGradiumOn } : null}
         context={{
+          gradiumConsent: gradiumAvailable && gradiumOn,
+          voice: ownVoice ? 'my_voice' : 'standard',
           summary: buildSummary({ lang, triage, vet, insurance }),
           clinic: target === 'vet' ? clinic : undefined,
           estimate: vet ? vet.estimate : undefined,
