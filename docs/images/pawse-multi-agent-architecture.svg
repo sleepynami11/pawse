@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+<title id="title">Pawse multi-agent architecture</title>
+<desc id="desc">Seven runtime roles. Intake branches into parallel Gemini care guidance and clinic retrieval. Retrieved clinics pass through deterministic ranking. The Python orchestrator merges guidance and ranked clinics into a care summary and trace. Policy evidence is a separate synthetic-only API. Reviewed communication uses Gemini and Gradium through separate calls. Telephone transport, appointments, calendar and taxi integrations are future work.</desc>
+<defs>
+<marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9B7C8C"/></marker>
+<marker id="pinkArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 Z" fill="#DA2577"/></marker>
+<marker id="grayArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4.5 L0,9 Z" fill="#A19AA4"/></marker>
+</defs>
+<rect width="1800" height="1280" fill="#FFFFFF"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="52" y="65" font-size="44" font-weight="700" fill="#29272E" text-anchor="start">Pawse</text>
+<text x="216" y="65" font-size="37" font-weight="700" fill="#29272E" text-anchor="start">Multi-Agent Architecture</text>
+<text x="54" y="105" font-size="22" font-weight="400" fill="#736B75" text-anchor="start">One app for care navigation, nearby vets and communication in the local language.</text>
+<rect x="1480" y="37" width="270" height="28" rx="14" fill="#FCEBF3" stroke="#FCEBF3" stroke-width="1.5"/>
+<text x="1615.0" y="56" font-size="13" font-weight="700" fill="#DA2577" text-anchor="middle" letter-spacing="0.6">ZURICH / SWITZERLAND</text>
+<path d="M1050 92 H1092" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<text x="1105" y="99" font-size="17" font-weight="400" fill="#736B75" text-anchor="start">In-run flow</text>
+<path d="M1240 92 H1282" fill="none" stroke="#DA2577" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#pinkArrow)"/>
+<text x="1295" y="99" font-size="17" font-weight="400" fill="#736B75" text-anchor="start">Separate API</text>
+<path d="M1450 92 H1492" fill="none" stroke="#A19AA4" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#grayArrow)"/>
+<text x="1505" y="99" font-size="17" font-weight="400" fill="#736B75" text-anchor="start">Future integration</text>
+<rect x="40" y="156" width="1100" height="842" rx="24" fill="#FCFAFB" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="68" y="193" font-size="17" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="1.8">CORE CARE WORKFLOW</text>
+<text x="1110" y="193" font-size="17" font-weight="400" fill="#736B75" text-anchor="end">40 s care budget / 45 s run limit</text>
+<rect x="80" y="226" width="370" height="132" rx="18" fill="#F5F3F5" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="104" y="267" font-size="27" font-weight="700" fill="#29272E" text-anchor="start">Owner input</text>
+<text x="104" y="300" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Text · photo · transcribed speech</text>
+<text x="104" y="333" font-size="18" font-weight="400" fill="#736B75" text-anchor="start">EN · ZH · DE · HI input options</text>
+<rect x="550" y="226" width="540" height="132" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="582" cy="262" r="15" fill="#DA2577"/>
+<text x="582" y="267" font-size="15" font-weight="700" fill="white" text-anchor="middle">1</text>
+<text x="608" y="270" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Intake &amp; safety</text>
+<text x="574" y="304" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">DETERMINISTIC · VALIDATION + CONSENT</text>
+<text x="574" y="337" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Validate facts; surface reported warning signs.</text>
+<path d="M450 292 H550" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M820 358 V390 H300 V432" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M820 390 H850 V432" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<circle cx="820" cy="390" r="4" fill="#9B7C8C"/>
+<rect x="435" y="377" width="265" height="28" rx="14" fill="#FCEBF3" stroke="#FCEBF3" stroke-width="1.5"/>
+<text x="567.5" y="396" font-size="13" font-weight="700" fill="#DA2577" text-anchor="middle" letter-spacing="0.6">RUN IN PARALLEL</text>
+<rect x="80" y="432" width="440" height="163" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="112" cy="468" r="15" fill="#DA2577"/>
+<text x="112" y="473" font-size="15" font-weight="700" fill="white" text-anchor="middle">2</text>
+<text x="138" y="476" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Care guidance</text>
+<text x="104" y="510" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">GEMINI · TEXT + OPTIONAL PHOTO</text>
+<text x="104" y="543" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Care-navigation summary</text>
+<text x="104" y="571" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Questions to prepare for the vet</text>
+<rect x="610" y="432" width="480" height="163" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="642" cy="468" r="15" fill="#DA2577"/>
+<text x="642" y="473" font-size="15" font-weight="700" fill="white" text-anchor="middle">3</text>
+<text x="668" y="476" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Nearby vets</text>
+<text x="634" y="510" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">TOOL · GOOGLE PLACES / MAPIFY</text>
+<text x="634" y="543" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Clinic contacts + reported hours</text>
+<text x="634" y="571" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Location consent; unknowns stay unknown</text>
+<rect x="610" y="648" width="480" height="142" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="642" cy="684" r="15" fill="#DA2577"/>
+<text x="642" y="689" font-size="15" font-weight="700" fill="white" text-anchor="middle">4</text>
+<text x="668" y="692" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Ranking</text>
+<text x="634" y="726" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">PYTHON · DETERMINISTIC RULES</text>
+<text x="634" y="759" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Opening status → distance → rating</text>
+<path d="M850 595 V648" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M300 595 V840" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<text x="322" y="718" font-size="18" font-weight="400" fill="#736B75" text-anchor="start">Guidance</text>
+<path d="M850 790 V840" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<text x="870" y="818" font-size="17" font-weight="400" fill="#736B75" text-anchor="start">Ranked clinics</text>
+<rect x="80" y="840" width="1010" height="126" rx="18" fill="#FCEBF3" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="112" cy="876" r="15" fill="#DA2577"/>
+<text x="112" y="881" font-size="15" font-weight="700" fill="white" text-anchor="middle">5</text>
+<text x="138" y="884" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Orchestrator / case coordinator</text>
+<text x="104" y="918" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">PYTHON / ASYNCIO · BOUNDED WORKFLOW</text>
+<text x="104" y="951" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Merge partial results, retain evidence gaps, expose trace and action gates.</text>
+<path d="M585 966 V1040" fill="none" stroke="#9B7C8C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<rect x="80" y="1040" width="1010" height="104" rx="18" fill="#F9F6F8" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="105" y="1080" font-size="27" font-weight="700" fill="#29272E" text-anchor="start">Care summary + ranked clinics</text>
+<text x="105" y="1118" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Provider status · final agent trace · next steps · unresolved action requirements</text>
+<text x="82" y="1178" font-size="18" font-weight="400" fill="#736B75" text-anchor="start">Care endpoint: POST + SSE    /    Agent run: final JSON response</text>
+<rect x="1190" y="156" width="560" height="238" rx="24" fill="#F5F3F5" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="1218" y="193" font-size="17" font-weight="700" fill="#736B75" text-anchor="start" letter-spacing="1.4">SEPARATE EVIDENCE API</text>
+<rect x="1218" y="216" width="504" height="153" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="1250" cy="252" r="15" fill="#DA2577"/>
+<text x="1250" y="257" font-size="15" font-weight="700" fill="white" text-anchor="middle">6</text>
+<text x="1276" y="260" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Policy evidence</text>
+<text x="1242" y="294" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.45">LOCAL LEXICAL SEARCH · CITED SNIPPETS</text>
+<text x="1242" y="327" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Synthetic demo policy only</text>
+<text x="1242" y="355" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Not invoked by the current agent run</text>
+<rect x="1190" y="420" width="560" height="628" rx="24" fill="#FFFBFD" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="1218" y="457" font-size="17" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="1.4">REVIEWED COMMUNICATION</text>
+<rect x="1218" y="485" width="504" height="68" rx="16" fill="#FCEBF3" stroke="#EFC5D8" stroke-width="1.5"/>
+<text x="1470" y="526" font-size="22" font-weight="700" fill="#29272E" text-anchor="middle">Owner reviews facts + grants consent</text>
+<path d="M1090 900 H1165 V519 H1218" fill="none" stroke="#DA2577" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#pinkArrow)"/>
+<path d="M1470 553 V589" fill="none" stroke="#DA2577" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#pinkArrow)"/>
+<rect x="1218" y="589" width="504" height="293" rx="18" fill="white" stroke="#E4DCE2" stroke-width="1.5"/>
+<circle cx="1250" cy="625" r="15" fill="#DA2577"/>
+<text x="1250" y="630" font-size="15" font-weight="700" fill="white" text-anchor="middle">7</text>
+<text x="1276" y="633" font-size="25" font-weight="700" fill="#29272E" text-anchor="start">Communication</text>
+<text x="1242" y="670" font-size="15" font-weight="700" fill="#DA2577" text-anchor="start" letter-spacing="0.3">GEMINI + GRADIUM · SEPARATE CALLS</text>
+<text x="1242" y="708" font-size="21" font-weight="700" fill="#29272E" text-anchor="start">Gemini</text>
+<text x="1242" y="737" font-size="20" font-weight="400" fill="#736B75" text-anchor="start">Transcription, German script + subtitles</text>
+<line x1="1242" y1="758" x2="1698" y2="758" stroke="#E4DCE2"/>
+<text x="1242" y="792" font-size="21" font-weight="700" fill="#29272E" text-anchor="start">Gradium</text>
+<text x="1242" y="821" font-size="20" font-weight="400" fill="#736B75" text-anchor="start">Own voice: record → clone → localize</text>
+<text x="1242" y="850" font-size="20" font-weight="400" fill="#736B75" text-anchor="start">Preview → save → German speech</text>
+<path d="M1470 882 V923" fill="none" stroke="#DA2577" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#pinkArrow)"/>
+<rect x="1218" y="923" width="504" height="98" rx="18" fill="#F5F3F5" stroke="#E4DCE2" stroke-width="1.5"/>
+<text x="1242" y="963" font-size="24" font-weight="700" fill="#29272E" text-anchor="start">Reviewed script + playable audio</text>
+<text x="1242" y="997" font-size="20" font-weight="400" fill="#736B75" text-anchor="start">AI-assistant disclosure; no call placed</text>
+<path d="M1470 1048 V1090" fill="none" stroke="#A19AA4" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7" marker-end="url(#grayArrow)"/>
+<rect x="1190" y="1090" width="560" height="96" rx="18" fill="#F6F5F6" stroke="#BDB5C0" stroke-width="1.5" stroke-dasharray="7 6"/>
+<text x="1218" y="1127" font-size="23" font-weight="700" fill="#736B75" text-anchor="start">Future execution tools</text>
+<text x="1218" y="1160" font-size="21" font-weight="400" fill="#736B75" text-anchor="start">Phone · appointments · calendar · taxi</text>
+<line x1="52" y1="1210" x2="1750" y2="1210" stroke="#E4DCE2"/>
+<text x="54" y="1243" font-size="18" font-weight="400" fill="#736B75" text-anchor="start">Implemented adapters require provider setup and live validation. Demo policy evidence does not establish real coverage.</text>
+<text x="1748" y="1243" font-size="14" font-weight="700" fill="#736B75" text-anchor="end" letter-spacing="1">PAWSE / 2026</text>
+</g></svg>

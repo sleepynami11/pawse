@@ -69,33 +69,9 @@ The system consists of:
 - Gradium adapters for voice cloning, German localization and speech generation.
 - Clinic-provider adapters and a local, citation-bearing policy retrieval module.
 
-```mermaid
-flowchart TD
-    User[User query: text, photo or transcribed speech] --> Intake
-    subgraph Input[Input Agents]
-        Intake[Intake and safety] --> Care[Care guidance: Gemini]
-    end
-    subgraph Retrieval[Retrieval Agents]
-        Clinics[Nearby veterinary practices]
-        Policy[Policy evidence: demo corpus]
-    end
-    subgraph Evaluation[Evaluation Agents]
-        Rank[Clinic ranking: deterministic rules]
-    end
-    Intake --> Clinics
-    Clinics --> Rank
-    Care --> Coordinator[Orchestrator: bounded Python workflow]
-    Rank --> Coordinator
-    Policy -. separate evidence interface .-> Coordinator
-    subgraph Output[Output Agents]
-        Summary[Care summary and next steps]
-        Voice[Reviewed German script and Gradium audio]
-    end
-    Coordinator --> Summary
-    Coordinator --> Review[Owner review]
-    Review --> Voice
-    Voice -. future integration .-> Phone[Telephone transport]
-```
+![Pawse multi-agent architecture: parallel care guidance and clinic retrieval, deterministic coordination, separate policy evidence and reviewed voice APIs.](docs/images/pawse-multi-agent-architecture.png)
+
+[Editable SVG](docs/images/pawse-multi-agent-architecture.svg) · [Diagram legend and source notes](docs/images/README.md)
 
 See [Architecture](docs/ARCHITECTURE.md) for execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
 

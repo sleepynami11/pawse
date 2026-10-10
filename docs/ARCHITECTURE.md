@@ -4,6 +4,13 @@ Pawse uses a bounded workflow with seven named responsibilities. The model prepa
 
 The existing implementation already supports parallel care guidance and clinic retrieval. The agent layer makes that execution inspectable through a graph and per-run trace. The current coordinator is Python code, not a second reasoning-model call.
 
+![Pawse multi-agent architecture: the bounded care workflow, separate evidence API and reviewed communication flow.](images/pawse-multi-agent-architecture.png)
+
+[Full-resolution PNG](images/pawse-multi-agent-architecture.png) · [Editable SVG](images/pawse-multi-agent-architecture.svg) · [Diagram notes](images/README.md)
+
+<details>
+<summary>Text-based flow reference (Mermaid)</summary>
+
 ```mermaid
 flowchart TD
     User[Owner: text, photo or recorded speech] --> Intake[Intake and safety agent\nValidated facts, language and consent]
@@ -23,6 +30,8 @@ flowchart TD
 ```
 
 Solid arrows show implemented flow or a separate implemented API step. Dashed arrows mark evidence boundaries, rehearsal-only data, or unconnected integrations. A draft script is never evidence that a telephone call happened.
+
+</details>
 
 ## Current roles
 
