@@ -52,8 +52,10 @@ async def local_session(request: Request, call_next):
     owner = request.cookies.get("pawse_session") or secrets.token_urlsafe(32)
     request.state.owner = owner
     if public.over_quota(owner, request.method, request.url.path):
-        return JSONResponse(status_code=429, content={"error": "demo_quota_reached", "message": "This public demo has reached its hourly limit. The Mimi rehearsal still works; try live features again later."})
-    response = await call_next(request)
+        message = "This public demo has reached its hourly limit. The Mimi rehearsal still works; try live features again later."
+        response = JSONResponse(status_code=429, content={"error": "demo_quota_reached", "message": message, "detail": message})
+    else:
+        response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
     if not request.cookies.get("pawse_session"):

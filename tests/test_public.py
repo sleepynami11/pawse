@@ -39,3 +39,19 @@ def test_extra_hosts_come_from_env(monkeypatch):
     assert public.allowed_hosts()[-2:] == ["pawse-abc.a.run.app", "demo.example"]
     monkeypatch.delenv("PAWSE_ALLOWED_HOSTS")
     assert public.allowed_hosts() == public.LOCAL_HOSTS
+
+
+def test_quota_rejection_preserves_frontend_error_and_session_contract(monkeypatch):
+    monkeypatch.setenv("PAWSE_PUBLIC_DEMO", "1")
+    monkeypatch.setenv("PAWSE_TOTAL_CALLS_PER_HOUR", "1")
+    with TestClient(app) as first:
+        first.post("/api/v1/knowledge/search", json={"query": "deductible"})
+    with TestClient(app) as newcomer:
+        response = newcomer.post("/api/v1/voice/scripts", json={})
+        assert response.status_code == 429
+        # All existing frontend request helpers read detail for actionable errors.
+        assert "Mimi rehearsal" in response.json().get("detail", "")
+        assert response.headers.get("cache-control") == "no-store"
+        assert response.headers.get("x-content-type-options") == "nosniff"
+        assert newcomer.cookies.get("pawse_session")
+        assert newcomer.get("/api/v1/demo/mimi").status_code == 200

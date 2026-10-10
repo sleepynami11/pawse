@@ -4,6 +4,8 @@ For the diagram's full handoff, see the [multimodal contract map](MULTIMODAL_CON
 
 Implementation: [pawse/voice.py](../pawse/voice.py). Prefix: `/api/v1/voice`. Gemini handles transcription and German scripts; Gradium handles own-voice cloning, localization and audio. The current output is playable WAV, with `telephony: not_connected`.
 
+A teammate's unmerged Gradium streaming experiment is reviewed in [Team integration](TEAM_INTEGRATION.md#streaming-voice-handoff-to-preserve). Its STT/TTS helper does not add public routes, replace the approved-voice lifecycle or establish real telephone calling.
+
 Product acceptance: [four-language delivery requirements](VOICE_CONCIERGE.md#language-and-delivery-requirements) and [Mimi's 120-second story](DEMO_STORY.md). Real-time session/token/tool contracts live separately in [Gemini Live](GEMINI_LIVE.md); they do not turn this speech endpoint into a telephone connection.
 
 ## 1. Routes and schemas

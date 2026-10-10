@@ -22,6 +22,8 @@ Controllers validate Pydantic payloads, derive the owner from `request.state.own
 
 The app middleware checks host/origin, bounds mutation bodies and establishes the local session cookie. This is a local single-user prototype. The session must not be treated as production authentication.
 
+With `PAWSE_PUBLIC_DEMO=1`, `pawse/public.py` also applies process-local hourly request quotas before controller dispatch. Additional hosts come from `PAWSE_ALLOWED_HOSTS`; HTTPS responses use a Secure session cookie. Public mode adds a demo deployment option, not account authentication. Quota rejection returns 429 with `demo_quota_reached` and a frontend-readable `detail`; health and rehearsal GETs remain available. See [runtime boundaries](API_CONTRACT.md#runtime-and-session-boundaries).
+
 Use [models.py](../pawse/models.py) for shared domain models. Agent, voice and knowledge models currently live alongside their routers. Extra fields are forbidden and strings are stripped. The final service response must satisfy its public response model before being exposed.
 
 ## 3. Care and orchestration services

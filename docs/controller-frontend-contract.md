@@ -81,11 +81,12 @@ The frontend must accept the existing error shapes:
 | --- | --- |
 | `{ "error": { "code": "validation_error", "fields": [...] } }` | 422 field validation; each field has `location` and `message` |
 | `{ "detail": "..." }` | Controller/provider HTTP exceptions such as 409, 429, 502 or 503 |
+| `{ "error": "demo_quota_reached", "detail": "...", "message": "..." }` | Public demo hourly quota, HTTP 429; show `detail`, keep the Mimi rehearsal available |
 | `{ "error": "cross_origin_request_rejected" }` | Middleware rejects a mutation's Origin, HTTP 403 |
 | `{ "error": "request_too_large" }` | Middleware body bound, HTTP 413 |
 | SSE `{ "type": "error", "code": "legacy_agent_unavailable", "message": "..." }` | Legacy failure after a stream has opened |
 
-Treat 404 on summary retrieval as absent, expired or inaccessible. A 409 voice response means a prerequisite is missing or the action is out of sequence. A 429 means wait for the active operation; keep current input available. Care-provider errors generally arrive inside a successful HTTP response with a `partial` result.
+Treat 404 on summary retrieval as absent, expired or inaccessible. A 409 voice response means a prerequisite is missing or the action is out of sequence. A 429 can mean active-work saturation, Live mint limits or the public demo hourly quota; show the supplied explanation and keep current input available instead of assuming every 429 ends when one operation completes. Care-provider errors generally arrive inside a successful HTTP response with a `partial` result.
 
 Completed summaries share a maximum of 100 in-memory entries and a 15-minute lifetime, with expiry pruned on subsequent requests. Restart clears them. Voice IDs have a separate lifecycle: clearing a summary does not delete provider voices. See [voice retention](controller-voice-contract.md#6-deletion-and-retention).
 
@@ -133,3 +134,9 @@ The [contract map](MULTIMODAL_CONTRACTS.md) is the entry point for these pending
 | Action review/status | [Action draft and receipt](controller-action-contract.md) | Bind recipient/script/voice/limits to approval; distinguish generated audio, connected call and confirmed outcome |
 
 Keep the section 8 palette and English product shell. EN/ZH/DE/HI controls apply to conversation and subtitles; local German delivery and voice-sample language stay independent. A provider/model name or target diagram badge is not an execution status.
+
+## 10. Pending browser-test agreement
+
+[PR #29](https://github.com/yyyuanfish/pawse/pull/29) defines a tests-first frontend contract, not a completed browser implementation. Its proposed `data-testid` hooks include `language`, `consent-gemini`, `record`, `audio-upload`, `audio-preview`, `transcribe`, `voice-status`, `message-input`, `talk`, `end-talk`, `cat`, `transcript`, `tool-chip`, `confirm-call`, `results`, `demo` and `simulated-label`. Read its full [pinned contract](https://github.com/yyyuanfish/pawse/blob/f08c1c40e3e4588ca32a70edfc930166e56bf11b/tests/e2e/README.md) when implementing the new UI; do not add hooks to unrelated existing elements merely to claim compliance.
+
+Acceptance requires actual mic cleanup, mono PCM16 WAV conversion, safe transcript rendering, interrupted Live playback and confirmed dialer handoff. The proposed layout checks use 1280, 1440, 1920 and 390 px. Real-speech WER/CER thresholds in that PR are evaluation targets, not measured recognition accuracy. Browser tests are opt-in and must be run explicitly after integration; a green default backend suite does not prove them green.

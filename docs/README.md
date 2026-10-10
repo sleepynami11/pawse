@@ -6,6 +6,7 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 
 | Document | Purpose |
 | --- | --- |
+| [Team integration snapshot](TEAM_INTEGRATION.md) | Merged teammate work, pending browser tests/streaming voice, and the remaining integration boundaries |
 | [Product scope](SPEC.md) | Zurich care journey, implemented features and remaining integrations |
 | [Mimi: the 120-second story](DEMO_STORY.md) | Complete scenario, four-language experience, demo cost maths, agent handoffs and acceptance checklist |
 | [Multilingual voice concierge](VOICE_CONCIERGE.md) | EN/ZH/DE/HI input and subtitles, German own-voice audio, enrollment and future phone calls |

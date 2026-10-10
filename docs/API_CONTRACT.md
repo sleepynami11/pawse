@@ -6,7 +6,11 @@ For integration work, use the [docs index](README.md), [Controller–Frontend](c
 
 ## Runtime and session boundaries
 
-The current app is a **local single-user prototype**. Bind to `127.0.0.1`; host checking accepts only localhost addresses and the test host. This is not a public multi-user deployment. A random HttpOnly, SameSite=Strict browser cookie isolates result retrieval between sessions. It is not a login system. External deployments need real authentication, per-cat ownership authorization, storage and quotas first.
+The default app is a **local single-user prototype**, bound to `127.0.0.1`. A public demo mode now exists through `PAWSE_PUBLIC_DEMO=1` and the Cloud Run/container setup. Host checking accepts localhost/test hosts plus `PAWSE_ALLOWED_HOSTS`, read at startup. A random HttpOnly, SameSite=Strict browser cookie isolates result retrieval between sessions and is Secure on HTTPS. It is not a login system; public demo mode does not provide authenticated private-document storage or production multi-user authorization.
+
+Public mode caps selected POST requests at 60 per session and 600 per process per rolling hour by default. Limits are configurable with `PAWSE_SESSION_CALLS_PER_HOUR` and `PAWSE_TOTAL_CALLS_PER_HOUR`. Covered prefixes are `/care/requests`, `/agents/runs`, `/voice/`, `/live/` and `/knowledge/search`; rejected validation/provider requests also consume an admitted attempt. Knowledge search is local but is currently included. The quota counts HTTP requests, not tokens, audio duration or provider spend; a Live token's subsequent provider audio stream is outside this HTTP counter. State resets on restart and is not shared across workers/instances.
+
+Exhaustion returns HTTP 429 with `error: demo_quota_reached`, plus identical human-readable `detail` and `message` fields. Existing frontend helpers read `detail`; the keyless Mimi rehearsal and GET routes remain available. Quota errors retain the normal session cookie and no-store headers. This is separate from the active-work limits of care, Live and voice. See [team integration status](TEAM_INTEGRATION.md) for deployment and pending frontend/testing work.
 
 Mutation request bodies are bounded at 4.5 MB by both declared Content-Length and actual streamed bytes. Photos and WAV audio are each limited to 3 MB decoded. Validation errors omit submitted payloads. Responses use `Cache-Control: no-store`; no wildcard CORS is enabled.
 
