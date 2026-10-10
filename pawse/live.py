@@ -15,6 +15,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import Field, ValidationError
 
+from .crawling import ZURICH
 from .knowledge import KnowledgeQuery, search_knowledge
 from .models import CareRequest, InsuranceProfile, Location, Model, RedFlag
 from .orchestration import run_workflow
@@ -38,7 +39,8 @@ RED_FLAGS = list(RedFlag.__args__)
 TOOLS = [
     {"name": "assess_and_find_vets",
      "description": "Prepare care navigation for the owner's concern (urgency, summary, questions for the vet) and "
-                    "retrieve ranked nearby veterinary clinics when the owner has shared a location. Not a diagnosis.",
+                    "retrieve ranked nearby veterinary clinics (near the owner if their browser shared a location, otherwise "
+                    "around central Zurich). Not a diagnosis.",
      "behavior": "NON_BLOCKING",
      "parameters": {"type": "OBJECT", "properties": {
          "concern": {"type": "STRING", "description": "What the owner said about the cat, in their words."},
@@ -93,6 +95,8 @@ def instruction(language):
         "that a tool returned. Insurance evidence comes from a demo policy and is never an approval. "
         "If you do not know the owner's insurer and plan, ask them once, then call set_insurance_profile. "
         "If search_policy says the evidence is not from the owner's policy, say so and suggest calling their insurer. "
+        "Never say you cannot access the owner's location: clinic search uses their location when shared, "
+        "otherwise central Zurich; if location_source is zurich_default, say the clinics are around Zurich. "
         "You cannot make phone calls, bookings or claims yourself; say so plainly."
     )
 
@@ -206,9 +210,11 @@ async def create_token(payload: TokenRequest, request: Request):
 
 
 async def assess_and_find_vets(args, context, owner):
+    # Use the owner's location only with their consent; otherwise search around central Zurich (no personal data).
+    shared = context.share_location and context.location is not None
     req = CareRequest(query=args.concern, cat_name=context.cat_name, language=context.language,
-                      red_flags=args.warning_signs, share_with_ai=True, share_location=context.share_location,
-                      location=context.location if context.share_location else None)
+                      red_flags=args.warning_signs, share_with_ai=True, share_location=True,
+                      location=context.location if shared else ZURICH)
     run = await run_workflow(req)
     care = run.care
     remember(owner, care.model_dump())
@@ -222,6 +228,7 @@ async def assess_and_find_vets(args, context, owner):
     response = {"urgency": care.assessment.urgency, "summary": care.assessment.summary,
                 "questions_for_vet": care.assessment.questions, "clinics": clinics,
                 "clinic_search": care.providers.get("clinics", "unavailable"),
+                "location_source": "owner_shared" if shared else "zurich_default",
                 "note": care.assessment.disclaimer}
     if not clinics:
         response["clinic_search_detail"] = nearby.detail

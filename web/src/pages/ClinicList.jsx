@@ -4,18 +4,7 @@ import { searchClinics, IS_LIVE_CLINICS } from '../agents/index.js';
 import ProviderChips from '../components/ProviderChips.jsx';
 import { clinicProviders } from '../agents/providers.js';
 import { validateClinics } from '../contracts.js';
-
-/** Best-effort location; resolves null if refused, unavailable or slow. */
-function getLocation() {
-  return new Promise((resolve) => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 5000, maximumAge: 120000 }
-    );
-  });
-}
+import { getLocation, ZURICH } from '../agents/location.js';
 
 // Attribution for each clinic source; OSM data is ODbL and Google Maps content must be credited.
 const SOURCE_LABELS = {
@@ -32,7 +21,7 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
     setState((s) => ({ ...s, status: 'loading' }));
     const location = await getLocation();
     try {
-      const res = await searchClinics({ lang, location, triage });
+      const res = await searchClinics({ lang, location: location || ZURICH, triage });
       const problems = validateClinics(res);
       if (problems.length) console.warn('[Pawse] clinic list violates the contract:', problems, res);
       setState({ status: 'ok', clinics: (res && res.clinics) || [], located: !!location });

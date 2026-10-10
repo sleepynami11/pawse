@@ -4,16 +4,19 @@ import { mapCareResult } from './liveVoiceAgent.js';
 import { createNativeAudio } from './nativeAudio.js';
 import { loadInsuranceProfile, saveInsuranceProfile } from './insuranceProfile.js';
 import { createGradiumStt, createGradiumReply, gradiumSupports } from './gradiumVoice.js';
+import { getLocation } from './location.js';
 
 // Injectable transport/audio factories keep protocol tests offline and deterministic.
 // voice={engine:'gradium',voiceId}: Gemini Live still runs the conversation and tools, but Gradium hears the
 // owner (streaming STT, its text goes to Live) and speaks Pawse's replies from Live's transcript.
 export function createGeminiLiveAgent({lang='en',shareWithGemini=false,voice=null,
-  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio,
+  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio, locate=getLocation,
   sttFactory=createGradiumStt, replyFactory=createGradiumReply}={}) {
   const listeners=new Set(), pending=new Set(), toolIds=new Set(), cancelledTools=new Set();
   let started=false, ended=false, session=null, audio=null, media=null, muted=true, outputMuted=false, timer=null;
   let audioEpoch=0;
+  // Asked once at start; the server searches around central Zurich when this resolves null.
+  let located=Promise.resolve(null);
   let inputText='',outputText='', userOpen=false, playback=Promise.resolve();
   let gradium=voice?.engine==='gradium'&&voice.voiceId&&gradiumSupports(lang)?voice:null, stt=null, reply=null, spoken=0;
   const base=VOICE_AGENT_URL || '';
@@ -57,7 +60,8 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,voice=nul
     emit({type:'tool_status',name:call.name,state:'running'});
     let response;
     try{
-      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:false,insurance:loadInsuranceProfile()}});
+      const location=call.name==='assess_and_find_vets'?await located:null;
+      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:!!location,...(location?{location}:{}),insurance:loadInsuranceProfile()}});
       response=result.response;
       if(ended||cancelledTools.has(call.id))return;
       const ui=result.ui;
@@ -95,6 +99,7 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,voice=nul
       if(started||ended)return;
       if(!shareWithGemini){error('Confirm sharing with Gemini before starting.');return;}
       started=true;
+      located=Promise.resolve(locate()).catch(()=>null);
       try{
         audio=audioFactory(frame=>{if(muted||!session||ended)return;if(gradium)stt?.send(frame);else send({audio:{data:frame,mimeType:'audio/pcm;rate=16000'}});}, speaking=>emit({type:'speaking',who:speaking?'ai':'none'}));
         audio.setMuted(outputMuted);
