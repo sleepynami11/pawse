@@ -17,6 +17,14 @@ function getLocation() {
   });
 }
 
+// Attribution for each clinic source; OSM data is ODbL and Google Maps content must be credited.
+const SOURCE_LABELS = {
+  google_places: 'Google Maps',
+  gemini_maps: 'Google Maps',
+  openstreetmap: '© OpenStreetMap contributors',
+  mapify: 'Mapify',
+};
+
 export default function ClinicList({ t, lang, triage, onPick, onBack }) {
   const [state, setState] = useState({ status: 'loading', clinics: [], located: true });
 
@@ -105,7 +113,14 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
                 {typeof c.rating === 'number' && <span className="tag plain">★ {c.rating.toFixed(1)}</span>}
               </div>
               {c.hoursText && !c.openUnknown && <p className="muted small">{c.hoursText}</p>}
-              <p className="muted small">{c.source} {c.retrievedAt}</p>
+              {c.callUrl && <p className="small"><a href={c.callUrl}>{c.phone}</a></p>}
+              {c.hoursList && (
+                <details className="muted small">
+                  <summary>Listed opening hours (call to confirm)</summary>
+                  {c.hoursList.map((h) => <div key={h}>{h}</div>)}
+                </details>
+              )}
+              <p className="muted small"><span translate="no">{SOURCE_LABELS[c.source] || c.source}</span> {c.retrievedAt}</p>
               <p className="clinic-addr small">{c.address}</p>
               <div className="clinic-actions">
                 {c.mapsUrl && (

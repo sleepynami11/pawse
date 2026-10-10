@@ -1546,11 +1546,21 @@
             "type": "array",
             "title": "Reasons"
           },
+          "opening_hours": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 14,
+            "title": "Opening Hours"
+          },
           "source": {
             "type": "string",
             "enum": [
               "google_places",
-              "mapify"
+              "gemini_maps",
+              "mapify",
+              "openstreetmap"
             ],
             "title": "Source"
           },
@@ -1748,6 +1758,18 @@
             "type": "string",
             "maxLength": 40,
             "title": "Phone"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
           }
         },
         "additionalProperties": false,
@@ -1758,6 +1780,35 @@
         ],
         "title": "Insurance"
       },
+      "InsuranceProfile": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Company"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company"
+        ],
+        "title": "InsuranceProfile",
+        "description": "What the owner told Pawse about their policy. Never proof of cover."
+      },
       "InsuranceResult": {
         "properties": {
           "company": {
@@ -1767,6 +1818,17 @@
           "phone": {
             "type": "string",
             "title": "Phone"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
           },
           "call_url": {
             "type": "string",
@@ -2423,6 +2485,7 @@
             "type": "string",
             "enum": [
               "assess_and_find_vets",
+              "set_insurance_profile",
               "search_policy",
               "draft_vet_call_script",
               "open_clinic_call"
@@ -2485,6 +2548,16 @@
             "type": "boolean",
             "title": "Share Location",
             "default": false
+          },
+          "insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InsuranceProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

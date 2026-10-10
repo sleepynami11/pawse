@@ -98,3 +98,14 @@ Mint counters, active-call counts and the latest clinic list are process-local. 
 ## 5. Handoff acceptance
 
 Backend checks cover consent, token constraints, argument validation, tool-error envelopes, clinic lookup and concurrency in `tests/test_live.py`. Frontend acceptance must additionally cover all four starting languages, microphone denial, reconnect failure, interrupted playback, simultaneous tools, draft subtitles and confirm-before-dialing. Record real microphone/speaker validation separately from the existing server-session check.
+
+## Owner insurance and clinic sources
+
+`ToolContext.insurance` accepts owner-reported `company` and optional `plan`.
+`set_insurance_profile` records these facts; `search_policy` asks for them when absent and labels
+indexed demo evidence as unrelated to the owner's actual policy unless the exact demo insurer
+matches. This is not verification of coverage.
+
+Clinic discovery can use Google Places, Gemini Maps grounding, or the configured clinic adapter,
+with an optional local OpenStreetMap snapshot. Snapshot files remain private runtime data and are
+not included in Git. Opening hours are listing text; `open_now` remains unknown without evidence.

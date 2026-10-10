@@ -17,7 +17,7 @@ async def care_events(req):
     yield {"type": "safety", "assessment": assessment.model_dump()}
     insurance = None
     if req.insurance:
-        insurance = {"company": req.insurance.company, "phone": req.insurance.phone,
+        insurance = {"company": req.insurance.company, "phone": req.insurance.phone, "plan": req.insurance.plan,
                      "call_url": phone_uri(req.insurance.phone), "source": "user_provided", "coverage": "unconfirmed",
                      "questions": ["Is this policy active for my cat?", "Is emergency treatment covered and is pre-authorization required?", "Which invoices and records do you need?"],
                      "note": "Use the number on your policy. Do not delay urgent veterinary care while checking insurance."}

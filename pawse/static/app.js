@@ -66,6 +66,12 @@ function clinicCards(clinics) {
     const list = node("ul");
     c.reasons.forEach((r) => list.append(node("li", r)));
     box.append(list);
+    if (c.opening_hours.length) {
+      const hours = node("details", null, "small");
+      hours.append(node("summary", "Listed opening hours (call to confirm)"));
+      c.opening_hours.forEach((h) => hours.append(node("div", h)));
+      box.append(hours);
+    }
     const links = node("div", null, "input-actions");
     if (c.call_url) links.append(action("Call clinic ↗", c.call_url));
     if (c.maps_url) links.append(action("Map & directions ↗", c.maps_url));
@@ -82,12 +88,14 @@ function clinicCards(clinics) {
         "small",
       ),
     );
-    if (c.source === "google_places") {
+    if (c.source === "google_places" || c.source === "gemini_maps") {
       const attribution = node("p", null, "small maps-attribution");
-      attribution.append(
-        action("Google Maps", c.maps_url || "https://maps.google.com"),
-      );
+      const link = action("Google Maps", c.maps_url || "https://maps.google.com");
+      link.setAttribute("translate", "no");
+      attribution.append(link);
       box.append(attribution);
+    } else if (c.source === "openstreetmap") {
+      box.append(node("p", "© OpenStreetMap contributors (ODbL)", "small"));
     }
     root.append(box);
   });
@@ -99,7 +107,7 @@ function insuranceCard(i) {
   const card = node("div", null, "panel");
   card.append(
     node("span", "Your policy contact", "badge"),
-    node("h3", i.company),
+    node("h3", i.plan ? i.company + " · " + i.plan : i.company),
     node("p", "Contact supplied by you · coverage unconfirmed", "small"),
     action("Call insurer ↗", i.call_url),
   );
@@ -272,7 +280,9 @@ $("care-form").onsubmit = async (e) => {
         (i) => i.value,
       ),
       photo,
-      insurance: insurer ? { company: insurer, phone } : null,
+      insurance: insurer
+        ? { company: insurer, phone, plan: $("insurance-plan").value.trim() || null }
+        : null,
       share_with_ai: $("ai-consent").checked,
       share_location: $("location-consent").checked,
     };

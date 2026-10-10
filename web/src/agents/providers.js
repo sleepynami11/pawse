@@ -48,12 +48,14 @@ export function voiceCallProviders({ path, caps, browser, muted = false }) {
   ];
 }
 
+const CLINIC_KEYS = { google_places: 'places', gemini_maps: 'gemini_maps', mapify: 'mapify', openstreetmap: 'osm' };
+
 /** Clinic search. `clinics` are the mapped results (each has .source from the backend). */
 export function clinicProviders({ live, clinics = [], failed = false }) {
   if (!live) return [{ step: 'clinics', key: 'demo' }];
   const sources = [...new Set(clinics.map((c) => c && c.source).filter(Boolean))];
   if (failed || !sources.length) return [{ step: 'clinics', key: 'none' }];
-  return sources.map((s) => ({ step: 'clinics', key: s === 'google_places' ? 'places' : s === 'mapify' ? 'mapify' : 'none' }));
+  return sources.map((s) => ({ step: 'clinics', key: CLINIC_KEYS[s] || 'none' }));
 }
 
 /**

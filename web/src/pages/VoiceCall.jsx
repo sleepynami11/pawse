@@ -191,6 +191,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       {toolResults.map((result,i) => <details className="card" key={i}><summary>{result.name}</summary>
         {result.ui.lines?.map((line,j)=><p key={j}>{line.german}<br/>{line.subtitle}</p>)}
         {result.ui.evidence?.map(e=><p key={e.evidence_id}>Demo policy · {e.title} · {e.section}: {e.snippet}</p>)}
+        {result.ui.action === 'save_insurance_profile' && <p>Insurance saved on this device: {result.ui.company}{result.ui.plan ? ` · ${result.ui.plan}` : ''} (as you told Pawse, not checked with the insurer)</p>}
         {result.ui.action === 'confirm_call' && /^tel:\+[1-9]\d{6,14}$/.test(result.ui.call_url || '') && <p>No call placed. <a href={result.ui.call_url}>Open device dialer for {result.ui.clinic_name}</a></p>}
       </details>)}
       {trace.length > 0 && <details className="card"><summary>Agent results</summary>{trace.map(x => <p key={x.agent_id}>{x.agent_id}: {x.state} — {x.detail}</p>)}</details>}

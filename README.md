@@ -125,7 +125,7 @@ React app: [localhost:5173/app/](http://localhost:5173/app/) (live; the scripted
 | `GEMINI_MODEL` | Default model: `gemini-3-flash-preview`; optional care/voice overrides are documented in `.env.example` |
 | `GRADIUM_API_KEY` | Voice cloning, localization and German audio |
 | `GRADIUM_VOICE_ID_DE` | Optional approved German voice to reuse across restarts |
-| `GOOGLE_PLACES_API_KEY` | Live clinic search with Places; additional provider settings are documented in `.env.example` |
+| `GOOGLE_PLACES_API_KEY` | Optional clinic search with Places. Without it, `GEMINI_API_KEY` finds clinics through Gemini's Google Maps grounding, with an optional offline OpenStreetMap snapshot; see `.env.example` |
 | `LEGACY_AGENT_BASE_URL`, `LEGACY_AGENT_USER_ID`, `LEGACY_AGENT_CAT_IDS` | Optional connection to the existing CatAgent backend |
 
 The story rehearsal and local demo-policy search work without provider keys. See the [voice guide](docs/VOICE_CONCIERGE.md), [clinic data contract](docs/controller-knowledge-contract.md) and [API contract](docs/API_CONTRACT.md) for integration details.

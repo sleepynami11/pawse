@@ -1,6 +1,7 @@
 import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
 import { IS_MOCK } from '../agents/index.js';
+import InsuranceProfileForm from '../components/InsuranceProfileForm.jsx';
 
 const PETALS = [
   { left: '8%', delay: '0s', dur: '11s', size: 12 },
@@ -58,6 +59,8 @@ export default function Home({ t, lang, setLang, onStart, onOwnVoice }) {
         <p><a href="?live=1">Use backend agents</a> · <a href="?demo=1">Simulated rehearsal</a></p>
         {IS_MOCK && <span className="badge">{t.mockBadge}</span>}
       </section>
+
+      <InsuranceProfileForm />
 
       <footer className="disclaimer">{t.disclaimer}</footer>
     </main>

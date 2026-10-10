@@ -39,9 +39,16 @@ def phone_uri(value: str | None) -> str | None:
     return "tel:" + cleaned if re.fullmatch(r"\+[1-9]\d{6,14}", cleaned) else None
 
 
+class InsuranceProfile(Model):
+    """What the owner told Pawse about their policy. Never proof of cover."""
+    company: str = Field(min_length=1, max_length=100)
+    plan: str | None = Field(default=None, max_length=120)
+
+
 class Insurance(Model):
     company: str = Field(min_length=1, max_length=100)
     phone: str = Field(max_length=40)
+    plan: str | None = Field(default=None, max_length=120)
 
     @field_validator("phone")
     @classmethod
@@ -97,7 +104,8 @@ class Clinic(Model):
     emergency_service: Literal["unknown", "provider_reported"] = "unknown"
     services: list[str] = Field(default_factory=list)
     reasons: list[str] = Field(default_factory=list)
-    source: Literal["google_places", "mapify"]
+    opening_hours: list[str] = Field(default_factory=list, max_length=14)
+    source: Literal["google_places", "gemini_maps", "mapify", "openstreetmap"]
     retrieved_at: str
     availability_note: str = "Call to confirm opening hours, services, and whether the clinic can see your cat."
 
@@ -124,6 +132,7 @@ class LegacyRequest(Model):
 class InsuranceResult(Model):
     company: str
     phone: str
+    plan: str | None = None
     call_url: str
     source: Literal["user_provided"]
     coverage: Literal["unconfirmed"]

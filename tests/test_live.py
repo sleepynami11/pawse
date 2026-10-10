@@ -75,7 +75,7 @@ def test_tool_call_envelope_requires_consent_and_known_tool():
 
 def test_search_policy_returns_cited_demo_evidence_never_approval():
     with TestClient(app) as c:
-        r = call(c, 'search_policy', {'question': 'What is the deductible?'})
+        r = call(c, 'search_policy', {'question': 'What is the deductible?'}, context={'insurance': {'company': 'Example Insurer'}})
     body = r.json()
     assert r.status_code == 200 and body['id'] == 'fc1'
     assert body['response']['insurance_approval'] == 'not_obtained' and body['response']['evidence']
@@ -134,3 +134,12 @@ def test_status_reports_live_model(monkeypatch):
     with TestClient(app) as c:
         status = c.get('/api/v1/voice/status').json()
     assert status['live_configured'] is True and status['live_model'] == 'gemini-3.8-live-extended-thinking'
+
+
+def test_policy_requires_owner_profile_and_does_not_match_partial_demo_name():
+    with TestClient(app) as c:
+        missing = call(c, 'search_policy', {'question': 'deductible'})
+        assert missing.json()['response']['status'] == 'needs_insurance_profile'
+        for company in ['Pet', 'Demo insurer unrelated']:
+            result = call(c, 'search_policy', {'question': 'deductible'}, context={'insurance': {'company': company}})
+            assert result.json()['response']['matches_owner_policy'] is False

@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { VOICE_AGENT_URL } from '../config.js';
 import { mapCareResult } from './liveVoiceAgent.js';
 import { createNativeAudio } from './nativeAudio.js';
+import { loadInsuranceProfile, saveInsuranceProfile } from './insuranceProfile.js';
 
 // Injectable transport/audio factories keep protocol tests offline and deterministic.
 export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
@@ -35,10 +36,11 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
     emit({type:'tool_status',name:call.name,state:'running'});
     let response;
     try{
-      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:false}});
+      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:false,insurance:loadInsuranceProfile()}});
       response=result.response;
       if(ended||cancelledTools.has(call.id))return;
       const ui=result.ui;
+      if(ui?.action==='save_insurance_profile')saveInsuranceProfile(ui);
       if(ui?.care){emit({type:'agents',trace:ui.trace||[],actions:[]});emit(mapCareResult(ui.care,lang));}
       else if(ui)emit({type:'tool_result',name:call.name,ui});
     }catch(e){response={error:'tool_unavailable',detail:e.message};}

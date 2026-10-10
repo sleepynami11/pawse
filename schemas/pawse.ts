@@ -22,7 +22,7 @@ export interface CareRequest {
     mime_type: "image/jpeg" | "image/png" | "image/webp";
     data: string;
   } | null;
-  insurance?: { company: string; phone: string } | null;
+  insurance?: { company: string; phone: string; plan?: string | null } | null;
   share_with_ai?: boolean;
   share_location?: boolean;
 }
@@ -49,12 +49,14 @@ export interface Clinic {
   emergency_service: "unknown" | "provider_reported";
   services: string[];
   reasons: string[];
-  source: "google_places" | "mapify";
+  opening_hours: string[];
+  source: "google_places" | "gemini_maps" | "mapify" | "openstreetmap";
   retrieved_at: string;
   availability_note: string;
 }
 export interface InsuranceContact {
   company: string;
+  plan?: string | null;
   phone: string;
   call_url: string;
   source: "user_provided";

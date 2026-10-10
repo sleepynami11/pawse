@@ -28,7 +28,7 @@ instead of 510) → Pawse confirms the vet, books a cat-friendly taxi, and hands
 | Time | Beat | Backed by | Today |
 |---|---|---|---|
 | 0:00–0:17 | Owner records Mimi and says "My cat is limping" in English | `voice.py` transcription, `/care` intake | ✅ photo + audio via Gemini · ⚠️ video intake not connected |
-| 0:17–0:30 | Triage card 🟡, follow-up "fall or jump?", nearest open practice | `providers.py` care guidance + clinic adapters, `orchestration.py` ranking | ✅ Gemini guidance · ⚠️ clinic search needs `GOOGLE_PLACES_API_KEY` or `MAPIFY_BASE_URL` |
+| 0:17–0:30 | Triage card 🟡, follow-up "fall or jump?", nearest open practice | `providers.py` care guidance + clinic adapters, `orchestration.py` ranking | ✅ Gemini guidance · ✅ clinic search with phone numbers via Gemini Google Maps grounding (`GEMINI_API_KEY`), Places when configured, OSM snapshot fallback |
 | 0:30–0:58 | German call to the vet: 16:30 or a home visit, ~CHF 600 + 150 | `voice.py` German script + subtitles, Gradium speech | ✅ script · ⚠️ own voice needs a Gradium key · 🎭 call and reply simulated (no telephony) |
 | 0:58–1:30 | Insurer call: accident covered, home visit and physio not; clinic CHF 385 vs home CHF 510 | `knowledge.py` cited AVB clauses, `demo.py` cost maths, `research/pet-insurance/` | ✅ citations + maths (real AVB terms, synthetic policyholder) · 🎭 insurer reply simulated |
 | 1:30–1:42 | Pawse confirms 16:30 with the vet, asks for an itemised invoice | `voice.py` script | ✅ script · 🎭 reply and booking simulated |

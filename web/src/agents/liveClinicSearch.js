@@ -41,6 +41,7 @@ export function mapClinic(c, location) {
   out.source = c.source; out.retrievedAt = c.retrieved_at;
   out.reasons = c.reasons || [];
   out.website = c.website;
+  if (Array.isArray(c.opening_hours) && c.opening_hours.length) out.hoursList = c.opening_hours.map(String);
   return out;
 }
 

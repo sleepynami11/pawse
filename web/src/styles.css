@@ -542,3 +542,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 .prov-detail { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; }
 .prov-simulated, .prov-scripted, .prov-demo { background: #fff3cd; border-color: #e6cf80; }
 .prov-simulated strong, .prov-scripted strong, .prov-demo strong { color: #7a5b00; }
+
+/* Optional owner insurance profile on the home screen */
+.insurance-profile { position: relative; z-index: 1; max-width: 420px; margin: 0 auto 16px; padding: 0 20px; }
+.insurance-profile summary { cursor: pointer; text-align: center; color: var(--muted, #6b6b6b); }
+.insurance-profile form { display: grid; gap: 10px; margin-top: 12px; }
+.insurance-profile label { display: grid; gap: 4px; font-size: 14px; }
+.insurance-profile input { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.15); font: inherit; }

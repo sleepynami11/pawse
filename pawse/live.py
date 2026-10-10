@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import Field, ValidationError
 
 from .knowledge import KnowledgeQuery, search_knowledge
-from .models import CareRequest, Location, Model, RedFlag
+from .models import CareRequest, InsuranceProfile, Location, Model, RedFlag
 from .orchestration import run_workflow
 from .state import remember
 from .voice import LANGUAGES, draft_script
@@ -31,6 +31,8 @@ TOKEN_WINDOW_SECONDS = 600
 minted: dict[str, deque] = {}
 tool_active: dict[str, int] = {}
 session_clinics: dict[str, dict] = {}
+session_insurance: dict[str, InsuranceProfile] = {}
+DEMO_INSURER = "Pawse Demo Pet Insurance (fictional)"
 
 RED_FLAGS = list(RedFlag.__args__)
 TOOLS = [
@@ -43,9 +45,18 @@ TOOLS = [
          "warning_signs": {"type": "ARRAY", "items": {"type": "STRING", "enum": RED_FLAGS},
                            "description": "Only warning signs the owner actually reported."}},
          "required": ["concern"]}},
+    {"name": "set_insurance_profile",
+     "description": "Save the insurer and plan the owner just told you, for this session. Call it only with what "
+                    "the owner said; never guess an insurer or plan.",
+     "behavior": "NON_BLOCKING",
+     "parameters": {"type": "OBJECT", "properties": {
+         "company": {"type": "STRING", "description": "Insurer name as the owner said it."},
+         "plan": {"type": "STRING", "description": "Plan or product name, if the owner knows it."}},
+         "required": ["company"]}},
     {"name": "search_policy",
-     "description": "Search the demo pet-insurance policy and terms for cited clauses (deductible, exclusions, claims). "
-                    "Returns evidence excerpts only, never a coverage approval.",
+     "description": "Search the indexed pet-insurance policy and terms for cited clauses (deductible, exclusions, claims). "
+                    "Returns evidence excerpts only, never a coverage approval. If it returns needs_insurance_profile, "
+                    "ask the owner for their insurer and plan first.",
      "behavior": "NON_BLOCKING",
      "parameters": {"type": "OBJECT", "properties": {
          "question": {"type": "STRING", "description": "The insurance question to look up."}},
@@ -80,6 +91,8 @@ def instruction(language):
         "when they want help calling, and open_clinic_call only when they ask to call a specific clinic. "
         "While a tool runs, briefly say what you are doing. Only mention clinics, phone numbers, prices or coverage "
         "that a tool returned. Insurance evidence comes from a demo policy and is never an approval. "
+        "If you do not know the owner's insurer and plan, ask them once, then call set_insurance_profile. "
+        "If search_policy says the evidence is not from the owner's policy, say so and suggest calling their insurer. "
         "You cannot make phone calls, bookings or claims yourself; say so plainly."
     )
 
@@ -111,11 +124,12 @@ class ToolContext(Model):
     cat_name: str = Field(default="My cat", min_length=1, max_length=80)
     location: Location | None = None
     share_location: bool = False
+    insurance: InsuranceProfile | None = None
 
 
 class ToolCall(Model):
     id: str | None = Field(default=None, max_length=200)
-    name: Literal["assess_and_find_vets", "search_policy", "draft_vet_call_script", "open_clinic_call"]
+    name: Literal["assess_and_find_vets", "set_insurance_profile", "search_policy", "draft_vet_call_script", "open_clinic_call"]
     args: dict = Field(default_factory=dict)
     context: ToolContext = Field(default_factory=ToolContext)
     share_with_gemini: Literal[True]
@@ -131,6 +145,10 @@ class ToolResult(Model):
 class AssessArgs(Model):
     concern: str = Field(min_length=1, max_length=4000)
     warning_signs: list[RedFlag] = Field(default_factory=list, max_length=6)
+
+
+class InsuranceArgs(InsuranceProfile):
+    pass
 
 
 class PolicyArgs(Model):
@@ -210,10 +228,29 @@ async def assess_and_find_vets(args, context, owner):
     return response, {"care": care.model_dump(), "trace": [t.model_dump() for t in run.trace]}
 
 
-def search_policy(args):
+def set_insurance_profile(args, owner):
+    session_insurance.pop(owner, None)
+    if len(session_insurance) >= 100:
+        del session_insurance[next(iter(session_insurance))]
+    session_insurance[owner] = args
+    return ({"status": "saved_for_this_session", "company": args.company, "plan": args.plan,
+             "note": "Owner-reported; not checked with the insurer."},
+            {"action": "save_insurance_profile", "company": args.company, "plan": args.plan})
+
+
+def search_policy(args, context, owner):
+    profile = context.insurance or session_insurance.get(owner)
+    if not profile:
+        return ({"status": "needs_insurance_profile",
+                 "ask_owner": "Which insurer is your cat with, and which plan? You can also say you don't know."}, None)
     result = search_knowledge(KnowledgeQuery(query=args.question))
+    own = profile.company.strip().casefold() == DEMO_INSURER.casefold()
     response = {"status": result.status, "insurance_approval": "not_obtained", "source": "demo policy",
+                "owner_insurer": profile.company, "owner_plan": profile.plan, "matches_owner_policy": own,
                 "evidence": [{"section": e.section, "title": e.title, "excerpt": e.snippet[:600]} for e in result.evidence]}
+    if not own:
+        response["note"] = ("Only the demo policy is indexed. These clauses are not from the owner's policy; "
+                            "the owner should check their own terms or call their insurer.")
     return response, result.model_dump()
 
 
@@ -247,8 +284,10 @@ async def run_tool(payload: ToolCall, request: Request):
         try:
             if name == "assess_and_find_vets":
                 response, ui = await assess_and_find_vets(AssessArgs.model_validate(payload.args), context, owner)
+            elif name == "set_insurance_profile":
+                response, ui = set_insurance_profile(InsuranceArgs.model_validate(payload.args), owner)
             elif name == "search_policy":
-                response, ui = search_policy(PolicyArgs.model_validate(payload.args))
+                response, ui = search_policy(PolicyArgs.model_validate(payload.args), context, owner)
             elif name == "draft_vet_call_script":
                 response, ui = await draft_vet_call_script(ScriptArgs.model_validate(payload.args), context)
             else:

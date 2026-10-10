@@ -22,6 +22,7 @@ assert.ok(!v.care && !v.transcription, 'mock claims no AI model');
 assert.deepEqual(clinicProviders({ live: false }), [{ step: 'clinics', key: 'demo' }]);
 assert.deepEqual(clinicProviders({ live: true, clinics: [{ source: 'mapify' }, { source: 'mapify' }] }).map((p) => p.key), ['mapify']);
 assert.deepEqual(clinicProviders({ live: true, clinics: [{ source: 'google_places' }, { source: 'mapify' }] }).map((p) => p.key), ['places', 'mapify']);
+assert.deepEqual(clinicProviders({ live: true, clinics: [{ source: 'gemini_maps' }, { source: 'openstreetmap' }] }).map((p) => p.key), ['gemini_maps', 'osm']);
 assert.deepEqual(clinicProviders({ live: true, clinics: [] }).map((p) => p.key), ['none']);
 assert.deepEqual(clinicProviders({ live: true, clinics: [{ source: 'mapify' }], failed: true }).map((p) => p.key), ['none']);
 
@@ -43,7 +44,7 @@ assert.deepEqual([h.draft.model, h.voice.key, h.voice.pending, h.evidence.key, h
 // every key/step used has en and zh text
 const used = new Set(), steps = new Set();
 for (const p of [...voiceCallProviders({ path: 'rest', caps }), ...voiceCallProviders({ path: 'native', caps }), ...voiceCallProviders({ path: 'native', caps, muted: true }), ...voiceCallProviders({ path: 'mock', caps }),
-  ...clinicProviders({ live: false }), ...clinicProviders({ live: true, clinics: [{ source: 'google_places' }, { source: 'mapify' }] }), ...clinicProviders({ live: true }),
+  ...clinicProviders({ live: false }), ...clinicProviders({ live: true, clinics: [{ source: 'google_places' }, { source: 'mapify' }, { source: 'gemini_maps' }, { source: 'openstreetmap' }] }), ...clinicProviders({ live: true }),
   ...phoneProviders({ live: true, target: 'insurance', voice: { voice: 'gradium', variant: 'my_voice' } }), ...phoneProviders({ live: true, target: 'vet', voice: { voice: 'gradium' } }),
   ...phoneProviders({ live: false, target: 'vet' }), ...handoffProviders({ caps, voice: 'my_voice', target: 'insurance' }), browserVoice(null)]) { used.add(p.key); steps.add(p.step); }
 for (const lang of ['en', 'zh']) {
