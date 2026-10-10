@@ -109,6 +109,15 @@ uvicorn pawse.app:app --host 127.0.0.1 --port 8765
 
 App: [localhost:8765](http://127.0.0.1:8765) · Swagger UI: [localhost:8765/docs](http://127.0.0.1:8765/docs)
 
+### Docker (backend + React app)
+
+```sh
+cp -n .env.example .env   # fill in keys; they are read at runtime, never baked into an image
+bash scripts/dev.sh       # frees ports 8765 and 5173, then runs docker compose up --build
+```
+
+React app: [localhost:5173/app/](http://localhost:5173/app/) (live; the scripted rehearsal is at `/app/?demo=1`) · API: [localhost:8765/docs](http://127.0.0.1:8765/docs). Backend and frontend code reload on save; run the script again after changing `requirements.txt` or `web/package-lock.json`. `scripts/dev.sh` stops whatever holds those ports first (an old Pawse stack, another container, a stray `uvicorn`); to keep something running, pick other ports: `WEB_PORT=5174 PAWSE_PORT=8766 bash scripts/dev.sh`. Stop with Ctrl+C, then `docker compose down`.
+
 | Setting | Purpose |
 | --- | --- |
 | `GEMINI_API_KEY` | Care guidance, transcription, translation and Gemini Live tokens |
