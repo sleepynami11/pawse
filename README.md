@@ -2,7 +2,7 @@
 
 > Your cat is limping, it's 9 pm, and every vet in Zürich answers in German. Just talk to Pawse in your own language. A team of AI agents, driven by a real-time **Gemini Live** conversation with tool calling, triages the symptoms, finds and ranks nearby vets, checks what your insurance covers, books a slot that fits your calendar, and calls the clinic in fluent German, in **your own cloned voice** with **Gradium**. From worried owner to booked appointment in one conversation.
 
-[Local Demo](http://127.0.0.1:8765) · [Engineering Docs](docs/README.md) · [API Docs](docs/API_CONTRACT.md) · [Architecture](docs/ARCHITECTURE.md)
+**[Live Demo](https://pawse-114215092948.europe-west6.run.app/app/)** · [Mimi rehearsal](https://pawse-114215092948.europe-west6.run.app) · [Local Demo](http://127.0.0.1:8765) · [Engineering Docs](docs/README.md) · [API Docs](docs/API_CONTRACT.md) · [Architecture](docs/ARCHITECTURE.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Stage: Hackathon prototype](https://img.shields.io/badge/Stage-Hackathon_prototype-orange.svg)](docs/SPEC.md)
@@ -50,7 +50,7 @@ Ranking, cost calculations and execution control use deterministic tools. The co
 
 ## Demo
 
-Run the app locally and open [Pawse](http://127.0.0.1:8765) to try **Mimi's two-minute story**:
+Open the [voice-first app](https://pawse-114215092948.europe-west6.run.app/app/) or the [Mimi rehearsal](https://pawse-114215092948.europe-west6.run.app) (or run the app locally) to try **Mimi's two-minute story**:
 
 The [complete 120-second scenario](docs/DEMO_STORY.md) includes the timeline, model/agent handoffs, cost assumptions and acceptance checks. The target experience accepts English, Mandarin Chinese, German or Hindi and prepares German dialogue with selectable subtitles and Gradium own-voice audio; see the [language and delivery requirements](docs/VOICE_CONCIERGE.md#language-and-delivery-requirements).
 
@@ -59,6 +59,12 @@ The [complete 120-second scenario](docs/DEMO_STORY.md) includes the timeline, mo
 3. The insurer explains the deductible and the services the policy does not cover.
 4. The owner compares a clinic visit at an estimated **CHF 385** with a home visit at **CHF 510**.
 5. The rehearsal ends with a taxi request and a case/claim checklist.
+
+| Voice-first app | Start | German vet call | Insurance | Case summary |
+| --- | --- | --- | --- | --- |
+| ![Pawse voice-first app](docs/images/screenshot-app.png) | ![Pawse start screen](docs/images/screenshot-home.png) | ![German vet call with subtitles](docs/images/screenshot-vet-call.png) | ![Cited insurance clauses and cost comparison](docs/images/screenshot-insurance.png) | ![Taxi, plan and claim checklist](docs/images/screenshot-together.png) |
+
+The public demo has an hourly usage limit on live Gemini and Gradium features; the rehearsal is unlimited. Calls, replies and bookings in the story are simulated.
 
 Calls, replies, calendar slots, coverage and prices in this story are simulated. The estimates use a [demo policy](research/pet-insurance/README.md) on real Swiss pet-insurance terms (AVB, December 2025); the policyholder and schedule are synthetic. The live interface currently accepts photos and recorded audio; the story's video intake is not connected.
 
@@ -119,7 +125,7 @@ Run the automated checks with `pip install -r requirements-dev.txt` followed by 
 
 ### Public demo (Cloud Run)
 
-The `Dockerfile` runs the same app as a container. `scripts/deploy_cloudrun.sh <gcp-project>` deploys it to Cloud Run with one instance (the case cache is in memory), keys from Secret Manager (`pawse-gemini-key`, optional `pawse-gradium-key`) and these public-demo settings:
+The `Dockerfile` builds the React app in `web/` and runs it with the API as one container. `scripts/deploy_cloudrun.sh <gcp-project>` deploys it to Cloud Run with one instance (the case cache is in memory), keys from Secret Manager (`pawse-gemini-key`, optional `pawse-gradium-key`) and these public-demo settings:
 
 | Setting | Purpose |
 | --- | --- |

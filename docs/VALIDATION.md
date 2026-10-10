@@ -74,3 +74,10 @@ Real Gemini with synthetic speech (`espeak-ng`, 3 sentences per language, stored
 
 None of this measures accuracy for human speakers; that still needs consented recordings run through the same tests.
 
+## Public demo deployment (10 October 2026)
+
+- Deployed to Cloud Run (https://pawse-114215092948.europe-west6.run.app), one instance, `PAWSE_PUBLIC_DEMO=1`, Gemini and Gradium keys from Secret Manager.
+- Verified on the public URL: health reports `public_demo`; the Mimi rehearsal plays all six scenes in Chromium at desktop and 390px width with no horizontal overflow; a live care request ("jumped off the wardrobe and is limping") returned urgency `contact_vet` from Gemini.
+- Not verified on the public URL: clinic search (no Places key or Mapify configured, so care results are `partial`), Gradium voice cloning, Gemini Live voice.
+- The React app (`/app/`) loads at desktop and 390px width with no console errors or horizontal overflow; its live flows were not walked on the public URL.
+- Known: `/favicon.ico` returns 404 on the rehearsal page (also locally).

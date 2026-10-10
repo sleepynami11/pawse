@@ -37,7 +37,7 @@ Gotchas:
 - [ ] Record official event details and submission requirements.
 - [ ] Add team members with their consent.
 - [ ] Document the implemented stack and setup commands.
-- [ ] Add demo URL, screenshots, and a short video when available.
+- [x] Demo URL: https://pawse-114215092948.europe-west6.run.app/app/ (voice-first app) and https://pawse-114215092948.europe-west6.run.app (Mimi rehearsal). Hosted on Cloud Run in the event project; screenshots in the README. Short video: still open.
 - [ ] Explain which Gemini capabilities actually work in the demo.
 - [ ] Note limitations and any pre-existing components.
 - [ ] Check that all assets have suitable licenses.
