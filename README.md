@@ -9,7 +9,7 @@ A voice-first AI cat companion that aims to help you get things done online. Paw
 [![Built for: Tech Europe](https://img.shields.io/badge/Built_for-Tech_Europe_AI_Hackathon-purple.svg)](docs/HACKATHON.md)
 [![Planned: Gemini Live API](https://img.shields.io/badge/Planned-Gemini_Live_API-4285F4.svg)](https://ai.google.dev/gemini-api/docs/live-api)
 
-[中文说明](README.zh-CN.md) · [Product spec](docs/SPEC.md) · [Hackathon notes](docs/HACKATHON.md) · [Contributing](CONTRIBUTING.md)
+[Product spec](docs/SPEC.md) · [Hackathon notes](docs/HACKATHON.md) · [Contributing](CONTRIBUTING.md)
 
 ## Built for the hackathon
 
