@@ -8,8 +8,9 @@ The terms are adapted from a real Swiss product so the coverage logic is realist
 | --- | --- |
 | [`policy/policy.json`](policy/policy.json) | Policy schedule for the demo owner (`user_id` 1) and the three cats from `backend/utils/mock_data.py`: chosen coverages, limits, deductible, waiting period, declared lifestyle |
 | [`avb/avb-en.md`](avb/avb-en.md) | General terms (AVB), English adaptation of the Calingo AVB, December 2025 edition, with clause numbers kept for citations |
-| [`scenarios/scenarios.yaml`](scenarios/scenarios.yaml) | 7 emergency scenarios following the demo flow, plus 5 routine follow-up questions, each with expected triage, coverage verdict, AVB clauses and payout |
+| [`scenarios/scenarios.yaml`](scenarios/scenarios.yaml) | 8 emergency scenarios following the demo flow, plus 5 routine follow-up questions, each with expected triage, coverage verdict, AVB clauses and payout |
 | [`check_scenarios.py`](check_scenarios.py) | Recomputes every expected payout from the invoice lines and the policy (`python research/pet-insurance/check_scenarios.py`) |
+| [`demo-video-script.md`](demo-video-script.md) | 2-minute demo video script: limping cat, German calls to vet, insurer and taxi, limited coverage (home visit not covered) |
 
 ## Demo flow
 

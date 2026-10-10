@@ -260,6 +260,48 @@ emergency_scenarios:
       per cat per day. I found two catteries with space today. Keep the invoice and your admission letter.
     why_good_demo: The emergency is the owner's; shows the assistant isn't only about vet bills.
 
+  - id: S13-limping-home-visit-vs-clinic
+    hero: true
+    video_script: ../demo-video-script.md
+    cat_id: 1
+    event_date: "2026-10-10"
+    input: {type: video, content: "Mimi limping, no weight on front left paw"}
+    user_says: "My cat is limping, please help me."
+    follow_up_questions:
+      - {q: "Did she fall or jump?", purpose: [medical, insurance], why: "a jump injury is an accident: covered from day one, even in the illness waiting period"}
+    triage: yellow
+    triage_reason: "Non-weight-bearing limp without bleeding; see a vet today."
+    insurance_before_vet:
+      - "Accident: covered after the CHF 300 deductible at 80%."
+      - "Home-visit surcharge NOT covered (annual sum below CHF 12'000), so go to the clinic."
+      - "Physiotherapy afterwards NOT covered (complementary medicine not selected)."
+    branches:
+      clinic:
+        coverage:
+          invoice:
+            - {item: "Exam and X-ray", chf: 600, decision: covered}
+            - {item: "Pet-friendly taxi", chf: 25, decision: excluded, reason: "transport is not an insured cost"}
+          deductible_used_before_chf: 0
+          limit_used_before_chf: 0
+          verdict: partially_covered
+          clauses: ["AVB 1.2.1", "AVB 3.2 a", "AVB 1.5"]
+          calculation: "(600 - 300) x 80% = 240"
+          expected_payout_chf: 240
+          owner_pays_chf: 385
+      home_visit:
+        coverage:
+          invoice:
+            - {item: "Exam and X-ray", chf: 600, decision: covered}
+            - {item: "Home-visit surcharge", chf: 150, decision: excluded, reason: "AVB 1.2.5: needs an annual sum of at least CHF 12'000"}
+          deductible_used_before_chf: 0
+          limit_used_before_chf: 0
+          verdict: partially_covered
+          clauses: ["AVB 1.2.1", "AVB 1.2.5", "AVB 1.5"]
+          calculation: "(600 - 300) x 80% = 240"
+          expected_payout_chf: 240
+          owner_pays_chf: 510
+    claim_checklist: ["Keep the video", "Itemised vet invoice", "Submit within 30 days"]
+
 # Post-visit and routine questions: no triage, useful as short follow-ups after an emergency demo.
 routine_scenarios:
   - id: S03-physio-after-fracture
