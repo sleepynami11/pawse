@@ -48,7 +48,7 @@ For a public-page retrieval tool, validate URLs and block private/local network 
 
 ## Decisions still open
 
-- Frontend and backend stack.
+- Frontend stack and how much of the existing Python/FastAPI/PocketFlow backend to reuse.
 - Exact Live model available to the hackathon project.
 - First task and tool schema.
 - Cat artwork and animation assets, including their licensing.
@@ -62,3 +62,7 @@ For a public-page retrieval tool, validate URLs and block private/local network 
 - [ ] Failure is shown honestly when the tool fails.
 - [ ] No permanent key is shipped to the browser or committed.
 - [ ] Demo materials distinguish working features from future plans.
+
+## Existing source baseline
+
+Selected pre-existing cat-care and IoT backend source is available in `backend/`. It currently uses OpenAI/OpenRouter and depends on excluded knowledge content and external services for some paths. It does not implement the proposed public-page tool or Gemini Live. See [import review](IMPORT_REVIEW.md) and [integration plan](GEMINI_INTEGRATION.md).

@@ -14,7 +14,7 @@ The exact event edition, location, dates, submission URL, and judging criteria h
 - Function calling to connect spoken requests to application tools.
 - A hackathon-provided Gemini project for development, if assigned.
 
-These integrations are planned; there is no working demo in the repository yet.
+These integrations are planned; there is no verified working demo yet. The repository includes a pre-existing CatAgent backend. Its source must be disclosed as prior work; new Gemini and voice work should be identified separately in the submission. See [source import review](IMPORT_REVIEW.md).
 
 ## Temporary account setup
 

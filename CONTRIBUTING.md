@@ -9,7 +9,7 @@ Pawse is in its initial hackathon stage. Read [the spec](docs/SPEC.md) before st
 3. Update the README when setup or user-facing behavior changes.
 4. Check your changes and describe how you verified them in a pull request.
 
-There is no build or test suite yet. For documentation, check links, examples, and whether feature claims match the repository. Once application code exists, add actual setup and validation commands here.
+The imported backend has no validated build or test suite in this repository. Follow the limitations in `backend/README.md`. For documentation, check links, examples, and whether feature claims match the repository. Once application code exists, add actual setup and validation commands here.
 
 Never commit credentials, recordings of others without permission, or assets you do not have permission to distribute. Use placeholders in configuration examples.
 

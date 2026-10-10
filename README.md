@@ -15,6 +15,8 @@ A voice-first AI cat companion that aims to help you get things done online. Paw
 
 **Pawse is being built specifically for the Tech Europe AI Hackathon, sponsored by Google DeepMind.** Our goal is to turn a friendly cat interface into a useful assistant through Gemini-powered conversation, real-time voice, and tool calling.
 
+The repository includes a pre-existing CatAgent backend imported as a starting point. The voice interface and Gemini integration are the planned hackathon extension; the full backend was not created during the event.
+
 This is an independent participant project. Event sponsorship does not imply endorsement of Pawse by Google or Google DeepMind.
 
 ## The idea
@@ -31,11 +33,12 @@ Instead of making users navigate another dashboard for every small task, we want
 
 ## Current status
 
-This repository currently contains the initial documentation and project setup only. There is no runnable application, deployed demo, or verified Gemini integration yet. Features below describe the intended hackathon MVP.
+This repository contains project documentation and selected pre-existing Python backend source in [`backend/`](backend/README.md). The backend implements cat-care and IoT workflows using FastAPI and PocketFlow, with OpenAI/OpenRouter calls. It has not been verified end to end in this repository. There is no deployed demo or verified Gemini integration yet. The general online-task and voice experiences below remain planned.
 
 | Capability | Status |
 | --- | --- |
 | Project documentation and MIT license | Available |
+| Existing cat-care / IoT backend source | Imported; runtime not verified |
 | Cat companion interface | Planned |
 | Real-time voice conversation with Gemini Live API | Planned |
 | One useful online task through function calling | Planned |
@@ -59,22 +62,22 @@ flowchart TD
 - **Authentication:** the backend holds the Gemini API key and issues ephemeral tokens for browser Live sessions.
 - **Interface:** a cat companion with a transcript, task status, and visible results.
 
-The frontend framework, backend runtime, model ID, and first task tool are still to be selected. Function calling proposes actions; our application must implement and execute the tools.
+The imported backend uses Python, FastAPI, and PocketFlow. The frontend framework, Gemini model, and first demo tool are still to be selected. Function calling proposes actions; our application must implement and execute the tools.
 
 ## Getting started
 
-There is no installation or start command yet. For now:
+Start with the [backend setup outline](backend/README.md), [source import review](docs/IMPORT_REVIEW.md), and [Gemini migration guide](docs/GEMINI_INTEGRATION.md).
 
-1. Clone this repository.
-2. Read the [MVP spec](docs/SPEC.md).
-3. Obtain a Gemini API key through [Google AI Studio](https://aistudio.google.com/api-keys), using your assigned hackathon project if available.
-4. Use `.env.example` as a reference for local configuration once the application is implemented. The future runtime must explicitly load those values.
+The imported backend has a `main.py` entry point, but its dependencies and service integrations have not been tested here. Knowledge collections, credentials, external services, and old deployment files are intentionally excluded. `backend/.env.example` documents the legacy settings; root `.env.example` describes the planned Gemini configuration.
+
+Get a Gemini key from [Google AI Studio](https://aistudio.google.com/api-keys). Setting that key alone will not switch the current OpenAI/OpenRouter clients to Gemini; follow the migration guide.
 
 Never put a permanent API key in browser code or commit it to Git. See [Security](SECURITY.md) and the [temporary account notes](docs/HACKATHON.md).
 
 ## MVP roadmap
 
-- [ ] Choose the application stack and one concrete online task.
+- [x] Import selected existing backend source and document its provenance.
+- [ ] Validate the backend dependencies and choose one concrete demo task.
 - [ ] Build the cat interface and microphone controls.
 - [ ] Connect a real Gemini Live session.
 - [ ] Implement one tool and send its result back to the model.
@@ -95,4 +98,4 @@ Small, focused contributions are welcome. Start with the [contribution guide](CO
 
 ## License
 
-[MIT](LICENSE) — Copyright © 2026 Pawse contributors. Third-party services, models, and assets remain subject to their respective terms and licenses.
+[MIT](LICENSE) — Copyright © 2026 Pawse contributors. Third-party services, models, and assets remain subject to their respective terms and licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).

@@ -19,3 +19,22 @@ __pycache__/
 .DS_Store
 *.log
 coverage/
+
+# Local source backup; never publish wholesale
+/agent留底版本/
+*.zip
+*.bak
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Private runtime state and excluded knowledge collections
+backend/.memory/
+backend/.skills/
+backend/rag/
+backend/docs/
+backend/data/
+backend/chroma_db/
+backend/chroma_data/
+backend/.knowledge_base_state.json
