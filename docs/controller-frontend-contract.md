@@ -2,6 +2,8 @@
 
 This document maps the current screens to backend controllers. It defines what the frontend sends, what it may display as confirmed, and how it handles incomplete work. For payload details, follow the domain contracts below.
 
+The target acceptance journey is [Mimi in Zurich](DEMO_STORY.md). Its complete telephone/calendar sequence is a product requirement, not a claim that those connectors exist. Four-language input and German own-voice output follow [Voice concierge](VOICE_CONCIERGE.md#language-and-delivery-requirements).
+
 ## 1. Global conventions
 
 - **Base URL:** `/api/v1`, on the same origin as the app. Send JSON for POST bodies; read the response content type before treating it as JSON, SSE or WAV.
@@ -93,3 +95,26 @@ Completed summaries share a maximum of 100 in-memory entries and a 15-minute lif
 - Complete record → clone → localize → preview → save → speech with mocks; record real provider verification separately.
 - Check keyboard controls and narrow layouts while preserving the existing pink/gray palette in `style.css`.
 - Keep transcripts and provider/model output as text; never insert them as trusted HTML.
+
+## 8. Journey layout and visual requirements
+
+Retain Pawse's existing pink/gray palette from `pawse/static/style.css`. Keep public labels and shell copy in English; language controls change conversation/transcript content, not the product branding.
+
+| Use | Existing token / value |
+| --- | --- |
+| Primary actions and selected states | `--green: hsl(333 71% 50%)` (the legacy variable name holds pink) |
+| Soft highlighted surfaces | `--mint: hsl(355 100% 97%)` |
+| Page background | `--paper: hsl(240 4% 95%)` |
+| Primary text | `--ink: hsl(240 5% 10%)` |
+| Secondary text | `--muted: #706d75` |
+| Card borders | `--line: hsl(240 4% 83%)` |
+
+Use this screen sequence for the [story](DEMO_STORY.md#the-story-120-s):
+
+1. **Concern intake:** photo/recording, input-language control, transcript correction and one follow-up. Show video/document uploads only when their controllers are connected, or explicitly as planned.
+2. **Care and nearby practices:** urgency text, clinic contact and opening-status evidence. Do not rely on color alone to communicate urgency.
+3. **Conversation:** German lines paired with owner-language subtitles. Distinguish draft, generated audio, simulated conversation and future actual recipient replies. Wrap long Mandarin/Hindi/German text without clipping.
+4. **Policy and options:** cited exclusions, visible estimate assumptions and two comparable clinic/home cards. Preserve the owner's explicit choice.
+5. **Confirmation and handoff:** review recipient, script, voice and sharing; show appointment/taxi status from its actual source, then the copyable case summary and checklist.
+
+Own-voice enrollment should be accessible before the timed story. The owner can record, listen, consent, localize and preview without starting a case. Missing credentials must leave transcripts and drafts usable. For a future call, include visible stop/take-over controls; editing an approved recipient, script, voice or cost must invalidate that approval. These future controls do not imply new callable endpoints today.

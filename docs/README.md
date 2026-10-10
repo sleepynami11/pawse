@@ -7,6 +7,8 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 | Document | Purpose |
 | --- | --- |
 | [Product scope](SPEC.md) | Zurich care journey, implemented features and remaining integrations |
+| [Mimi: the 120-second story](DEMO_STORY.md) | Complete scenario, four-language experience, demo cost maths, agent handoffs and acceptance checklist |
+| [Multilingual voice concierge](VOICE_CONCIERGE.md) | EN/ZH/DE/HI input and subtitles, German own-voice audio, enrollment and future phone calls |
 | [Architecture](ARCHITECTURE.md) | Runtime agents, dependencies and execution boundaries |
 | [Multimodal design](MULTIMODAL_ARCHITECTURE.md) | Voice, Vision and Document agents, proposed document handoffs and module assignments |
 | [Architecture diagram](images/README.md) | English diagram, full-resolution PNG, editable SVG and arrow legend |
@@ -18,7 +20,7 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 
 | Document | Producer → consumer | Read this for |
 | --- | --- | --- |
-| [Controller–Frontend](controller-frontend-contract.md) | HTTP controllers → web app | Screen-to-endpoint mapping, rendering, consent and error handling |
+| [Controller–Frontend](controller-frontend-contract.md) | HTTP controllers → web app | Screen-to-endpoint mapping, journey layout, pink/gray palette, consent and errors |
 | [Controller–Service](controller-service-contract.md) | Controllers → Python services/adapters | Function boundaries, routing ownership, deadlines and data handoffs |
 | [Care controller](controller-care-contract.md) | Care navigation → frontend/coordinator | Request/result schemas, nearby clinics, SSE and result retention |
 | [Agent controller](controller-agent-contract.md) | Runtime coordinator → frontend | Graph metadata, run requests, traces and action gates |

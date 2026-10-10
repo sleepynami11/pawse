@@ -2,6 +2,8 @@
 
 Implementation: [pawse/voice.py](../pawse/voice.py). Prefix: `/api/v1/voice`. Gemini handles transcription and German scripts; Gradium handles own-voice cloning, localization and audio. The current output is playable WAV, with `telephony: not_connected`.
 
+Product acceptance: [four-language delivery requirements](VOICE_CONCIERGE.md#language-and-delivery-requirements) and [Mimi's 120-second story](DEMO_STORY.md). Real-time session/token/tool contracts live separately in [Gemini Live](GEMINI_LIVE.md); they do not turn this speech endpoint into a telephone connection.
+
 ## 1. Routes and schemas
 
 | Method and path | Request model | Success response | Handler |
@@ -26,6 +28,8 @@ Transcription input is `{audio: {data: base64Wav}, language, share_with_gemini: 
 Accepted WAV: mono, 16-bit PCM, 8–48 kHz, 0.5–60 seconds and at most 3 MB decoded. Response is `{text: string}` with at most 4,000 characters; silence/unintelligible input can produce empty text. Display it for review before starting another request.
 
 Transcription `language`, script `input_language` and `subtitle_language` accept `en`, `zh` (Mandarin Chinese), `de` and `hi` (Hindi). These are the input options implemented in this app, not measured accuracy guarantees. Hindi does not imply support for every Indian language.
+
+Keep these fields independent: a `zh` or `hi` source may request subtitles in the same language while retaining `target_language: de`. Do not pass the owner's conversation language as Gradium `sample_language` unless that is the actual supported language of the enrollment recording. Location-based target-language selection beyond German is a proposed extension, not an accepted request value today.
 
 Schema: `ScriptRequest`.
 

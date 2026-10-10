@@ -52,6 +52,8 @@ Ranking, cost calculations and execution control use deterministic tools. The co
 
 Run the app locally and open [Pawse](http://127.0.0.1:8765) to try **Mimi's two-minute story**:
 
+The [complete 120-second scenario](docs/DEMO_STORY.md) includes the timeline, model/agent handoffs, cost assumptions and acceptance checks. The target experience accepts English, Mandarin Chinese, German or Hindi and prepares German dialogue with selectable subtitles and Gradium own-voice audio; see the [language and delivery requirements](docs/VOICE_CONCIERGE.md#language-and-delivery-requirements).
+
 1. Mimi is limping after jumping from a wardrobe.
 2. Pawse prepares a German vet conversation with English subtitles.
 3. The insurer explains the deductible and the services the policy does not cover.

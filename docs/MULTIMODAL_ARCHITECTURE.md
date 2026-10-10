@@ -2,6 +2,8 @@
 
 **Target design, 10 October 2026.** This extends Pawse with separate voice, visual and document responsibilities. It does not change the seven IDs returned by `/api/v1/agents/graph`, add document endpoints, or switch deployed defaults. [Current runtime](ARCHITECTURE.md) · [Model decisions and access evidence](MODEL_ALLOCATION.md).
 
+The end-to-end acceptance scenario is [Mimi in Zurich: the 120-second journey](DEMO_STORY.md). It connects four-language intake, document-backed insurance questions and reviewed German own-voice audio to the proposed vet/insurer/taxi calling sequence. [Voice requirements](VOICE_CONCIERGE.md#language-and-delivery-requirements) define the language and delivery-mode boundaries.
+
 ![Pawse multimodal agent design with selected models and integration status](images/pawse-multi-agent-architecture.png)
 
 ## Agent responsibilities

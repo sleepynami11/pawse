@@ -2,7 +2,31 @@
 
 For endpoint payloads, lifecycle states and frontend/backend responsibilities, see the [voice controller contract](controller-voice-contract.md). This guide provides product flow and provider integration context.
 
+The complete product scenario is [Mimi's 120-second journey](DEMO_STORY.md): multilingual intake → vet conversation in German → cited policy explanation → owner choice → vet/taxi handoff. The [multimodal design](MULTIMODAL_ARCHITECTURE.md) assigns these tasks to agents; [model allocation](MODEL_ALLOCATION.md) distinguishes selected models from deployed defaults.
+
 Pawse accepts typed messages and recorded audio in English, Mandarin Chinese, German and Hindi. Gemini transcribes the original speech and prepares a German telephone script with paired subtitles. Gradium generates German WAV audio using an owner-approved voice. Hindi is one supported Indian language; the app does not claim to support every language spoken in India.
+
+## Language and delivery requirements
+
+| Owner input / subtitle choice | Code | Zurich recipient language | Own-voice output |
+| --- | --- | --- | --- |
+| English | `en` | German (`de`) | Gradium with the approved German voice |
+| Mandarin Chinese | `zh` | German (`de`) | The same approved German voice |
+| German | `de` | German (`de`) | The same approved German voice |
+| Hindi | `hi` | German (`de`) | The same approved German voice |
+
+Input, subtitles, recipient language and sample language are separate choices. The owner can speak Mandarin and read Mandarin subtitles while Pawse prepares German speech. The current schemas support only `de` as the recipient/synthesis target. Selecting the appropriate language for another country, or changing it after confirming a practice's preference, requires a future contract extension; it is not automatic geographic language detection today. Zurich uses standard German first, without promising Swiss German dialect.
+
+The interface keeps its English shell and offers the four input/subtitle choices. Show the source transcript and allow corrections before translation. Preserve names, addresses, times, CHF amounts and negations. Human recording tests are still required for all four languages, accents and switching mid-conversation.
+
+| Delivery mode | Required behavior | Status |
+| --- | --- | --- |
+| Talk to Pawse | Gemini Live dialogue with transcripts and server-run tools; keep Gemini's assistant voice distinct from the owner's voice | Token/tool backend and server session checked; browser mic/playback still to do |
+| Prepare audio for the owner | Reviewed German text → Gradium own-voice WAV → preview/download | Endpoints exist; real synthesis requires credentials and validation |
+| Open the device dialer | Owner chooses a clinic and confirms opening its `tel:` link | Manual dialer handoff; no agent participation in the call |
+| Let Pawse conduct a call | Approved recipient/purpose → carrier connection → two-way translated conversation → reviewed offers and provider receipts | Planned; requires a telephony/media adapter in addition to Gradium |
+
+For future live calls, subtitle both the assistant and the recipient, allow interruption or cancellation, and ask before booking or agreeing to costs. The German audio must identify Pawse as an AI assistant acting for the owner even when it uses the owner's voice. Keep ready-to-play audio useful independently of telephone transport.
 
 ## Record your own voice first
 
