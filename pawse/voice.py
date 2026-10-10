@@ -231,6 +231,39 @@ def complete_wav(data):
     return out.getvalue()
 
 
+class StreamTokenRequest(Model):
+    share_with_gradium: Literal[True]
+
+
+class StreamToken(Model):
+    token: str = Field(repr=False)
+    expires_at: str
+
+
+STREAM_TOKENS_PER_WINDOW = 120
+STREAM_TOKEN_WINDOW = 600
+stream_tokens: dict[str, list[float]] = {}
+
+
+@router.post("/voice/stream-tokens", response_model=StreamToken, status_code=201)
+async def stream_token(payload: StreamTokenRequest, request: Request):
+    """One-use Gradium token so the browser streams STT/TTS to Gradium directly; the API key stays here."""
+    owner, now = request.state.owner, time.monotonic()
+    recent = [t for t in stream_tokens.get(owner, []) if now - t < STREAM_TOKEN_WINDOW]
+    if len(recent) >= STREAM_TOKENS_PER_WINDOW:
+        raise HTTPException(429, "Too many Gradium voice sessions. Wait a few minutes or switch to the Gemini voice.")
+    stream_tokens[owner] = recent + [now]
+    if len(stream_tokens) > 1000:
+        stream_tokens.pop(next(iter(stream_tokens)))
+    async with httpx.AsyncClient() as client:
+        r = await gradium(client, "GET", "/api-keys/token", max_bytes=10_000, request_timeout=15)
+    try:
+        data = r.json()
+        return StreamToken(token=data["token"], expires_at=data["expires_at"])
+    except (ValueError, KeyError, TypeError):
+        raise HTTPException(502, "Gradium did not return a streaming token.") from None
+
+
 @router.get("/voice/status")
 async def voice_status(request: Request):
     state = profile(request.state.owner)

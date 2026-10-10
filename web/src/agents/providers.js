@@ -32,8 +32,17 @@ export function browserVoice(v, muted = false) {
 }
 
 /** Voice call with Pawse. path: 'mock' | 'rest' (transcribe + care REST) | 'native' (Gemini Live). */
-export function voiceCallProviders({ path, caps, browser, muted = false }) {
+export function voiceCallProviders({ path, caps, browser, muted = false, gradium = null }) {
   if (path === 'mock') return [{ step: 'conversation', key: 'scripted' }, browserVoice(browser, muted)];
+  if (path === 'native' && gradium) {
+    // Gradium hears the owner and speaks Pawse's replies; Gemini Live runs the conversation and tools.
+    return [
+      { step: 'conversation', key: 'gemini_live', model: model(caps, 'live') },
+      { step: 'transcription', key: 'gradium_stt' },
+      { step: 'care', key: 'gemini', model: model(caps, 'care') },
+      muted ? { step: 'voice', key: 'muted' } : { step: 'voice', key: 'gradium_voice', name: gradium },
+    ];
+  }
   if (path === 'native') {
     return [
       { step: 'conversation', key: 'gemini_live', model: model(caps, 'live') },

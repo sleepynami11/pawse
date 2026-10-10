@@ -572,3 +572,31 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 .insurance-profile form { display: grid; gap: 10px; margin-top: 12px; }
 .insurance-profile label { display: grid; gap: 4px; font-size: 14px; }
 .insurance-profile input { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.15); font: inherit; }
+
+/* Pawse's voice picker (live calls): a pill with a small equaliser, the label and a native select. */
+.voice-picker {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  padding: 6px 34px 6px 12px; border-radius: 999px; background: var(--surface);
+  border: 1.5px solid var(--petal); box-shadow: 0 4px 14px rgba(200, 72, 122, 0.12);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.voice-picker:hover { border-color: var(--brand); }
+.voice-picker:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(200, 72, 122, 0.22); }
+.voice-picker-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.voice-picker select {
+  appearance: none; -webkit-appearance: none; border: 0; background: transparent; outline: none;
+  font: inherit; font-size: 14px; font-weight: 800; color: var(--brand-strong); cursor: pointer;
+  min-width: 0; max-width: 100%; text-overflow: ellipsis; padding: 0;
+}
+.voice-picker-chevron { position: absolute; right: 12px; color: var(--brand); pointer-events: none; }
+.voice-picker-icon { display: inline-flex; align-items: center; gap: 2px; height: 16px; }
+.voice-picker-icon i { width: 3px; border-radius: 2px; background: var(--brand); }
+.voice-picker-icon i:nth-child(1) { height: 6px; } .voice-picker-icon i:nth-child(2) { height: 14px; }
+.voice-picker-icon i:nth-child(3) { height: 9px; } .voice-picker-icon i:nth-child(4) { height: 12px; }
+.talking ~ .voice-picker .voice-picker-icon i, .voice-picker.live .voice-picker-icon i { animation: vp-bounce 0.9s ease-in-out infinite; }
+.voice-picker-icon i:nth-child(2) { animation-delay: 0.15s; } .voice-picker-icon i:nth-child(3) { animation-delay: 0.3s; }
+.voice-picker-icon i:nth-child(4) { animation-delay: 0.45s; }
+@keyframes vp-bounce { 50% { transform: scaleY(0.4); } }
+@media (prefers-reduced-motion: reduce) { .voice-picker-icon i { animation: none !important; } }
+.voice-picker.compact { margin: 6px auto 2px; }
+.card .voice-picker { align-self: flex-start; margin-bottom: 4px; }

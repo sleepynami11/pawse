@@ -81,7 +81,7 @@ export const strings = {
       pending: '生成后',
       steps: { conversation: '对话', transcription: '语音转文字', care: '护理建议', voice: 'Pawse 的声音', clinics: '诊所搜索', script: '德语脚本', callee: '对方回复', logic: '费用与保险', draft: '德语草稿', evidence: '保单依据' },
       keys: {
-        scripted: '脚本演示', gemini: 'Gemini', gemini_live: 'Gemini Live', gemini_native_voice: 'Gemini Live 语音',
+        scripted: '脚本演示', gemini: 'Gemini', gemini_live: 'Gemini Live', gemini_native_voice: 'Gemini Live 语音', gradium_stt: 'Gradium 实时转写', gradium_voice: 'Gradium 声音',
         browser_voice: '浏览器语音', muted: '已静音', no_voice: '没有可用的声音',
         gradium_standard: 'Gradium 标准德语声音', gradium_own: 'Gradium，你自己的声音',
         demo: '演示诊所', places: 'Google Places', gemini_maps: 'Gemini + Google 地图', osm: 'OpenStreetMap 快照', mapify: 'Mapify', none: '没有数据源',
@@ -205,7 +205,7 @@ export const strings = {
       pending: 'when generated',
       steps: { conversation: 'Conversation', transcription: 'Transcription', care: 'Care guidance', voice: "Pawse's voice", clinics: 'Clinic search', script: 'German script', callee: 'Replies', logic: 'Costs and cover', draft: 'German draft', evidence: 'Policy evidence' },
       keys: {
-        scripted: 'Scripted demo', gemini: 'Gemini', gemini_live: 'Gemini Live', gemini_native_voice: 'Gemini Live voice',
+        scripted: 'Scripted demo', gemini: 'Gemini', gemini_live: 'Gemini Live', gemini_native_voice: 'Gemini Live voice', gradium_stt: 'Gradium streaming STT', gradium_voice: 'Gradium voice',
         browser_voice: 'Browser speech', muted: 'Muted', no_voice: 'No voice available',
         gradium_standard: 'Gradium standard German voice', gradium_own: 'Gradium, your own voice',
         demo: 'Demo clinics', places: 'Google Places', gemini_maps: 'Gemini + Google Maps', osm: 'OpenStreetMap snapshot', mapify: 'Mapify', none: 'No provider',
