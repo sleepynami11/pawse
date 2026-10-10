@@ -20,6 +20,11 @@ Local recording works without Gradium credentials. Clone, localization and gener
 
 ## Where the voice goes
 
-The source clone is stored in the authenticated Gradium organization; the page displays its ID. A localized candidate is temporary until you listen and choose **Save approved voice**, which keeps a permanent German voice in Gradium. The prototype currently associates these IDs with the browser session in server memory: a server restart loses that association, not the provider voice. Do not restart during enrollment; retain the displayed German ID for later configuration/recovery.
+The source clone is stored in the authenticated Gradium organization; the page displays its ID. A localized candidate is temporary until you listen and choose **Save approved voice**, which keeps a permanent German voice in Gradium. After approval, local single-user mode atomically saves the profile to `.pawse-private/voice.json` (mode 0600, ignored by Git). Reopening the app or restarting the backend reuses the saved German voice, including in the emergency rehearsal and reviewed vet/insurer handoff. No new clone or preview is required; consent to share each script remains required. Public-demo mode never reads this private file. Unapproved enrollment remains session-only.
 
 The clone endpoint can return an ID together with “Please wait a bit till the voice is ready to be used.” That exact pending notice is accepted only for cloning; other provider errors remain errors. Cloning has a bounded 90-second transport deadline. German preparation polls at most 20 times, three seconds apart, then offers an explicit Continue action. These bounds are not latency guarantees. Recording directly in German avoids a separate language-localization stage; English samples need it. No claim of fastest performance across providers is made.
+
+Persistence verification (2026-10-10): the approved German candidate was saved in Gradium,
+the local backend was stopped and restarted, and reopening `/app/?live=1` restored the voice.
+The emergency rehearsal generated playable German WAV without another recording or clone.
+Regression coverage also checks public-demo isolation and deletion across restarts.

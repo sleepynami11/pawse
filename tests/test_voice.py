@@ -370,3 +370,41 @@ def test_clone_keeps_uid_when_provider_is_still_preparing(monkeypatch):
         r = c.post('/api/v1/voice/clone', json={'audio': audio(), 'sample_language': 'en', 'own_voice_consent': True, 'share_with_gradium': True})
         assert r.status_code == 201
         assert r.json()['source_id'] == 'pending123'
+
+
+def test_saved_voice_survives_restart_and_new_local_session(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    upstream(monkeypatch, lambda r: httpx.Response(200, json={'uid': 'saved-german'}))
+    with TestClient(app) as c:
+        c.get('/api/v1/voice/status')
+        voice.voices[c.cookies['pawse_session']] = {'source_id': 'source', 'candidate_id': 'vox_emb_test', 'candidate_ready': True, 'previewed': True}
+        assert c.post('/api/v1/voice/localizations/current/save', json={'share_with_gradium': True, 'listened_to_preview': True}).status_code == 201
+    voice.voices.clear()  # Equivalent to process restart.
+    with TestClient(app) as c:
+        status = c.get('/api/v1/voice/status').json()
+        assert status['german_voice_id'] == 'saved-german'
+        assert status['voice_saved'] is True
+        monkeypatch.setenv('PAWSE_PUBLIC_DEMO', '1')
+        assert c.get('/api/v1/voice/status').json()['german_voice_id'] is None
+
+
+def test_restored_voice_used_for_emergency_and_deletion_persists(monkeypatch):
+    from pawse import voice_store
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    voice_store.write({'source_id': 'source', 'german_id': 'approved-de', 'approved': True})
+    seen = []
+    def handler(r):
+        seen.append((r.method, r.url.path))
+        if r.method == 'POST':
+            assert json.loads(r.content)['voice_id'] == 'approved-de'
+            return httpx.Response(200, content=wav(1))
+        return httpx.Response(204)
+    upstream(monkeypatch, handler)
+    with TestClient(app) as c:
+        payload = {'text': 'Dies ist eine Übung.', 'language': 'de', 'voice': 'my_voice', 'share_with_gradium': True}
+        assert c.post('/api/v1/voice/speech', json=payload).status_code == 200
+        assert c.delete('/api/v1/voice/profile').status_code == 204
+    voice.voices.clear()
+    assert voice_store.read() == {}
+    assert not voice_store.path().exists()
+    assert ('POST', '/api/post/speech/tts') in seen

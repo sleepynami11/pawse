@@ -44,3 +44,6 @@ backend/.knowledge_base_state.json
 demo/demo-out/
 demo/test-results/
 demo/playwright-report/
+
+# Private saved voice IDs (no recordings)
+.pawse-private/

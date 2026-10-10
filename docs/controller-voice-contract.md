@@ -95,7 +95,7 @@ Schema: `SaveVoice`:
 {"share_with_gradium": true, "listened_to_preview": true}
 ```
 
-**German-source exception:** cloning a German sample immediately sets the session's German voice ID. Skip localization and candidate saving; use `/preview` for owner review before speech. The backend does not require a saved-candidate acknowledgement for this direct-German path. Frontend review remains part of the interaction contract.
+**German-source exception:** cloning a German sample immediately sets the session's German voice ID. Skip localization; use `/preview`, then `/localizations/current/save` to persist owner approval without creating another provider voice. Repeated save of an approved German voice is idempotent.
 
 **Configured-voice exception:** `GRADIUM_VOICE_ID_DE` can make `my_voice_ready` true without a session source. `/speech` can use it, but `/preview` requires a session source and cannot preview that environment-only voice through the candidate endpoint.
 
@@ -107,6 +107,7 @@ Schema: `SaveVoice`:
 | `input_languages` | Code-to-label map for English, Mandarin Chinese, German and Hindi |
 | `speech_language` | `de` |
 | `telephony` | `not_connected` |
+| `voice_saved` | Approved German voice exists; local mode persists it across restarts |
 | `source_id` | Nullable source voice ID created in this session |
 | `german_voice_id` | Nullable saved/direct-German session voice ID |
 | `candidate_ready` | Boolean for localization candidate readiness |
@@ -154,3 +155,7 @@ Pawse stores voice IDs and flags in process memory, not raw recordings. Restart 
 The coordinator may supply reviewed handoff text, but it does not automatically trigger these operations. Playing a WAV or opening a `tel:` link does not make Pawse speak into a phone call. Telephone transport, recipient audio, live interruption handling and call outcomes remain future integration work.
 
 `tests/test_voice.py` covers request bounds, consent, state order, provider contracts, speech validation and deletion behavior with mocks. Real cloning, localization and voice similarity require a configured Gradium account and an owner sample; do not present mocked checks as successful live voice verification.
+
+## Local persistence
+
+Local single-user mode reuses the approved operator voice across browser sessions from `.pawse-private/voice.json` (0600, Git-ignored). Only IDs and lifecycle flags are stored, never recordings. Public-demo mode ignores this file and retains session isolation. `/speech` with `voice: my_voice` resolves this saved voice automatically for emergency rehearsal and reviewed care handoff. Sharing consent is still required per request. This does not connect telephone calls.

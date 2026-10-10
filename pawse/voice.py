@@ -17,13 +17,14 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import Field, field_validator, model_validator
 from .models import Model
+from . import voice_store, public
 
 router = APIRouter(prefix="/api/v1", tags=["Voice concierge"])
 BASE = "https://api.gradium.ai/api"
 DISCLOSURE = "Guten Tag, hier ist Pawse, die KI-Assistenz im Auftrag der Katzenhalterin oder des Katzenhalters."
 PREVIEW = DISCLOSURE + " Ich rufe wegen der Katze Mimi an. Sie hinkt nach einem Sprung. Können wir heute vorbeikommen?"
 LANGUAGES = {"en": "English", "zh": "Mandarin Chinese", "de": "German", "hi": "Hindi"}
-# Only IDs are retained, never recordings. State is isolated to the local browser session.
+# Only IDs are retained. Pending enrollment is session-local; approved local voices persist.
 voices: dict[str, dict] = {}
 voice_active: set[str] = set()
 # Calls whose first spoken line carried DISCLOSURE: owner -> {call_id: expiry}. Only server-issued ids
@@ -183,7 +184,10 @@ def uid(response, allow_preparing=False):
 
 
 def profile(owner):
-    return voices.get(owner, {})
+    state = voices.get(owner, {})
+    if not public.enabled() and state.get("approved"):
+        return voice_store.read()
+    return state or voice_store.read()
 
 
 def require_profile(owner):
@@ -232,6 +236,7 @@ async def voice_status(request: Request):
     state = profile(request.state.owner)
     return {"gradium_configured": bool(os.getenv("GRADIUM_API_KEY")), "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
             "input_languages": LANGUAGES, "speech_language": "de", "telephony": "not_connected",
+            "voice_saved": bool(state.get("approved") and state.get("german_id")),
             "source_id": state.get("source_id"), "german_voice_id": state.get("german_id"),
             "candidate_ready": state.get("candidate_ready", False), "candidate_pending": bool(state.get("candidate_id")),
             "my_voice_ready": bool(state.get("german_id") or os.getenv("GRADIUM_VOICE_ID_DE")),
@@ -353,10 +358,16 @@ async def save_voice(payload: SaveVoice, request: Request):
     owner = request.state.owner
     async with operation(owner), httpx.AsyncClient() as client:
         state = require_profile(owner)
-        if state.get("german_id") or not (state.get("candidate_ready") and state.get("previewed")):
+        if state.get("approved") and state.get("german_id"):
+            voice_store.write(state)
+            return await voice_status(request)
+        if not (state.get("previewed") and (state.get("german_id") or state.get("candidate_ready"))):
             raise HTTPException(409, "Generate and listen to the German preview before saving.")
-        r = await gradium(client, "POST", "/voices/from-embedding", json={"voxium_embedding_id": state["candidate_id"], "name": "Pawse — my German voice"})
-        state["german_id"] = uid(r)
+        if not state.get("german_id"):
+            r = await gradium(client, "POST", "/voices/from-embedding", json={"voxium_embedding_id": state["candidate_id"], "name": "Pawse — my German voice"})
+            state["german_id"] = uid(r)
+        state["approved"] = True
+        voice_store.write(state)
         return await voice_status(request)
 
 
@@ -378,6 +389,8 @@ async def delete_voice(request: Request):
             for k in list(state):
                 if k.endswith("_id") and state[k] == value:
                     state.pop(k)
+            voice_store.write(state)
+        voice_store.clear()
         voices.pop(owner, None)
 
 

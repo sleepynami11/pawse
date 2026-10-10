@@ -75,13 +75,13 @@ Suggested future boundary (not implemented): `POST /calls/proposals` creates a r
 
 Pawse keeps audio in request/browser memory and does not write recordings to disk. Transcription sends the selected recording to Gemini. Cloning sends the selected voice sample to Gradium. Speech generation sends the reviewed German text and voice ID to Gradium. These actions have separate opt-ins.
 
-Voice IDs live in server memory, associated with the browser's local session. Reloading the page preserves them while that session remains valid; restarting the server or losing the session loses Pawse's references. **Gradium voices remain in your provider account until deleted there or through the in-app delete action.** Copy a saved German voice ID into server-side `GRADIUM_VOICE_ID_DE` to reuse it across restarts. That configured voice belongs to the local operator and is not deleted by the session delete action. Manage lost/orphaned voices in Gradium. A network timeout after creation can leave a provider-side voice even if Pawse did not receive the ID.
+Approved voice IDs are saved in `.pawse-private/voice.json` in local single-user mode (atomic writes, mode 0600; no recording). This local operator profile survives browser sessions and server restarts. Public-demo mode does not read or write it. `PAWSE_VOICE_PROFILE_PATH` optionally changes its location. Unapproved enrollment stays in session memory. Deletion removes the saved profile after provider deletion; partial failures retain remaining IDs for retry. Gradium voices remain in the provider account until deleted. An optional `GRADIUM_VOICE_ID_DE` is separately operator-managed and not deleted by this endpoint.
 
 This is a localhost-only, single-user prototype. Multi-user deployment needs durable ownership, authentication, retention controls, deletion recovery and abuse limits. Recorded audio is not retained in care results. The app does not claim that downstream providers have zero retention.
 
 ## Verification
 
-Mocked tests exercise multipart cloning, candidate readiness, preview before save, German speech, AI disclosure, session isolation, deletion retries, duration checks, explicit consent and redacted errors. Real Gradium calls have **not** been tested because this workspace has no Gradium key. Gemini text, a synthetic image and a silent WAV were accepted in [the model access check](model-access-check.json); silence acceptance is not a speech-recognition quality evaluation.
+Mocked tests exercise multipart cloning, candidate readiness, preview before save, German speech, AI disclosure, session isolation, deletion retries, duration checks, explicit consent and redacted errors. Owner-authorized live checks produced a localized German clone and playable preview; local persistence and emergency reuse are covered by regression tests. Gemini text, a synthetic image and a silent WAV were accepted in [the model access check](model-access-check.json); silence acceptance is not a speech-recognition quality evaluation.
 
 ## Official references
 

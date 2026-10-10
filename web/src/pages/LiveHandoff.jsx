@@ -48,7 +48,7 @@ export default function LiveHandoff({ t, lang, target, clinic, context, onDone, 
       <h2>Review before using</h2>
       {script.lines.map((line,i) => <div key={i}><p lang="de">{line.german}</p><p>{line.subtitle}</p></div>)}
       <label>Speech voice <select value={voice} onChange={e => {setVoice(e.target.value); clearAudio();}}><option value="my_voice">My approved voice</option><option value="standard">Standard German voice</option></select></label>
-      <p>Own-voice enrollment is available in the <a href="/">existing voice setup</a> in this same browser session.</p>
+      <p>Your saved German voice is reused automatically in local mode. Set it up once from “My voice” on the home screen; no new clone is needed for each emergency.</p>
       <label><input type="checkbox" checked={gradiumConsent} onChange={e => setGradiumConsent(e.target.checked)} /> I reviewed the script and agree to share it with Gradium using the selected voice.</label>
       <button className="btn primary" disabled={busy || !gradiumConsent} onClick={() => run(async signal => { clearAudio(); const blob = await generateSpeech(script.lines.map(x=>x.german).join('\n'),voice,gradiumConsent,signal); audioRef.current = URL.createObjectURL(blob); setAudio(audioRef.current); })}>Generate reviewed audio</button>
       {audio && <><audio controls src={audio} /><a href={audio} download="pawse-reviewed-script.wav">Download audio</a></>}

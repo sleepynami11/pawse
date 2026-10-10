@@ -60,20 +60,21 @@ export default function OwnVoice({onBack}) {
   }
   return <main className="plan handoff">
     <h1>My voice · emergency rehearsal</h1>
-    <p>Record your own voice for 10–25 seconds. Nothing is sent until you confirm cloning. This rehearsal does not call a clinic.</p>
+    <p>{profile.voice_saved ? "Use your saved German voice for the emergency rehearsal below." : "Record your own voice for 10–25 seconds. Nothing is sent until you confirm cloning."} This rehearsal does not call a clinic.</p>
     <p>{profile.gradium_configured?'Gradium configured':'Gradium key missing: local recording and playback work; cloning needs GRADIUM_API_KEY on the server.'}</p>
     {(stage||busy)&&<p role="status">{stage||'Working…'}</p>}
     {error&&<p role="alert">{error}</p>}
     <button className="btn ghost" disabled={busy||recording} onClick={()=>task(async signal=>{setProfile(await api('status',null,false,signal));setStage('Voice status refreshed.');})}>Refresh voice status</button>
     <section className="card">
-      <label>Recording language<select disabled={busy||recording} value={language} onChange={e=>{setLanguage(e.target.value);setSample(null);setSampleUrl('');}}><option value="en">English</option><option value="de">German</option></select></label>
+      {profile.voice_saved&&<p role="status">Your approved German voice is saved on this device. No new recording or clone is needed. Scroll down to the emergency rehearsal.</p>}
+      {!profile.voice_saved&&<><label>Recording language<select disabled={busy||recording} value={language} onChange={e=>{setLanguage(e.target.value);setSample(null);setSampleUrl('');}}><option value="en">English</option><option value="de">German</option></select></label>
       <p>{language==='en'?'Hello, I am recording my own voice for Pawse. My cat is very important to me. I want to explain calmly to the veterinary practice what happened, ask whether they can see her today, and understand every next step. Please include me in every decision.':'Hallo, ich nehme meine eigene Stimme für Pawse auf. Meine Katze ist mir sehr wichtig. Ich möchte der Tierarztpraxis ruhig erklären, was passiert ist, und alle nächsten Schritte verstehen. Bitte beziehen Sie mich bei jeder Entscheidung mit ein.'}</p>
       <button className="btn primary" disabled={busy} onClick={()=>recording?resources.current.recorder.stop():record()}>{recording?'Stop recording':'Record my voice'}</button>
-      {sampleUrl&&<audio controls src={sampleUrl}/>}
-      <label><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> This is my own voice. I agree to send this recording to Gradium to create and preview my voice.</label>
-      <button className="btn soft" disabled={busy||recording||!sample||!consent||!profile.gradium_configured||!!profile.source_id} onClick={()=>task(prepare)}>Clone and preview in German</button>
+      {sampleUrl&&<audio controls src={sampleUrl}/>}</> }
+      <label><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> {profile.voice_saved ? "I agree to send the rehearsal text to Gradium using my saved German voice." : "This is my own voice. I agree to send this recording to Gradium to create and preview my voice."}</label>
+      {!profile.voice_saved&&<button className="btn soft" disabled={busy||recording||!sample||!consent||!profile.gradium_configured||!!profile.source_id} onClick={()=>task(prepare)}>Clone and preview in German</button>}
     </section>
-    {profile.source_id&&<section className="card">
+    {profile.source_id&&!profile.voice_saved&&<section className="card">
       <h2>German voice preview</h2>
       <p>Source clone saved in your Gradium voice library: <code>{profile.source_id}</code></p>
       <p>{profile.german_voice_id?`Saved German voice: ${profile.german_voice_id}`:'German candidate is not saved as a permanent voice yet.'}</p>
@@ -83,11 +84,11 @@ export default function OwnVoice({onBack}) {
       <button className="btn soft" disabled={busy||recording||!consent||!(profile.german_voice_id||profile.candidate_ready)} onClick={()=>task(async signal=>{setHeard(false);setApproved(false);setPreview(makeUrl(await api('preview',{share_with_gradium:true},true,signal)));})}>Generate preview</button>
       {preview&&<audio controls src={preview} onEnded={()=>setHeard(true)}/>}
       <label><input type="checkbox" disabled={!heard} checked={approved} onChange={e=>setApproved(e.target.checked)}/> I listened to the preview and approve this voice for the test below.</label>
-      {profile.candidate_ready&&!profile.german_voice_id&&<button className="btn soft" disabled={busy||recording||!approved||!consent} onClick={()=>task(async signal=>setProfile(await api('localizations/current/save',{share_with_gradium:true,listened_to_preview:true},false,signal)))}>Save approved voice</button>}
+      {(profile.candidate_ready||profile.german_voice_id)&&!profile.voice_saved&&<button className="btn soft" disabled={busy||recording||!approved||!consent} onClick={()=>task(async signal=>setProfile(await api('localizations/current/save',{share_with_gradium:true,listened_to_preview:true},false,signal)))}>Save approved voice</button>}
     </section>}
     <section className="card"><h2>Emergency scenario · test only</h2><p lang="de">{EMERGENCY_TEST}</p>
       <p>English: This is a rehearsal, not a real emergency call. Mimi is limping after a jump. Can she be examined today? Please confirm the address and that the practice treats cats.</p>
-      <button className="btn primary" disabled={busy||recording||!consent||!approved||!profile.my_voice_ready} onClick={()=>task(async signal=>setResult(makeUrl(await generateSpeech(EMERGENCY_TEST,'my_voice',consent,signal))))}>Speak the rehearsal in my voice</button>
+      <button className="btn primary" disabled={busy||recording||!consent||!(approved||profile.voice_saved)||!profile.my_voice_ready} onClick={()=>task(async signal=>setResult(makeUrl(await generateSpeech(EMERGENCY_TEST,'my_voice',consent,signal))))}>Speak the rehearsal in my voice</button>
       {result&&<><audio controls src={result}/><a href={result} download="pawse-own-voice-rehearsal.wav">Download rehearsal</a></>}
     </section>
     <button className="btn ghost" onClick={onBack}>Back</button>
