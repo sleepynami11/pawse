@@ -28,7 +28,7 @@ The existing localhost rehearsal was also walked through all six clinic-path sce
 
 ## Not verified or not connected
 
-- Gradium live cloning, German localization, TTS and speaker similarity: no Gradium key was supplied. Provider contracts are mocked; no owner sample has been uploaded.
+- Gradium live cloning, German localization and speaker similarity: unverified, no owner sample has been uploaded. Live German TTS with the standard voice was verified on 2026-10-10 with a real key through `POST /api/v1/voice/speech` (200, 9 s WAV). That test exposed and fixed a bug: Gradium streams WAV with placeholder header sizes, which the app had rejected as incomplete.
 - Microphone permissions, real microphone capture and local uploaded-audio playback still require a manual browser check. An automated file-chooser attempt timed out, so no successful browser audio-upload test is claimed.
 - Chinese, English, German and Hindi recognition quality with representative human recordings. The API audio smoke check used silence only.
 - Live clinic discovery: no Mapify backend URL or Google Places key was supplied. Only provider adapters and normalization are tested.

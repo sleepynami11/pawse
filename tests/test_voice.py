@@ -219,6 +219,32 @@ def test_invalid_upstream_audio_never_returns_playable_success(monkeypatch, body
         assert r.status_code == 502 and 'private' not in r.text
 
 
+def streamed_wav(seconds=1):
+    """Gradium streams TTS, so its WAV header carries 0xFFFFFFFF placeholder sizes instead of real ones."""
+    raw = bytearray(wav(seconds))
+    raw[4:8] = raw[40:44] = b'\xff\xff\xff\xff'
+    return bytes(raw)
+
+
+def test_streamed_upstream_wav_is_returned_with_real_sizes(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    upstream(monkeypatch, lambda req: httpx.Response(200, content=streamed_wav(1)))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
+    assert r.status_code == 200 and r.headers['content-type'] == 'audio/wav'
+    with wave.open(io.BytesIO(r.content)) as f:
+        assert f.getnframes() == 16000 and len(f.readframes(f.getnframes())) == 32000
+
+
+@pytest.mark.parametrize('body', [streamed_wav(0), streamed_wav(1)[:45]])
+def test_streamed_upstream_wav_without_whole_frames_is_rejected(monkeypatch, body):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    upstream(monkeypatch, lambda req: httpx.Response(200, content=body))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
+    assert r.status_code == 502
+
+
 def test_upstream_download_stops_at_bound(monkeypatch):
     monkeypatch.setenv('GRADIUM_API_KEY', 'test')
     chunks_read = []

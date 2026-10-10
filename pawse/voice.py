@@ -196,15 +196,34 @@ async def tts(client, voice_id, text):
     r = await gradium(client, "POST", "/post/speech/tts", max_bytes=30_000_000, json={
         "text": text, "voice_id": voice_id, "model_name": "default", "output_format": "wav", "only_audio": True})
     try:
-        with wave.open(io.BytesIO(r.content)) as f:
-            frames = f.getnframes()
-            if not frames or f.getsampwidth() != 2 or f.getnchannels() not in (1, 2) or not 8000 <= f.getframerate() <= 48000:
-                raise ValueError()
-            if len(f.readframes(frames)) != frames * f.getnchannels() * f.getsampwidth():
-                raise ValueError()
+        audio = complete_wav(r.content)
     except (wave.Error, EOFError, ValueError):
         raise HTTPException(502, "Gradium returned no complete playable WAV audio.") from None
-    return Response(r.content, media_type="audio/wav", headers={"Content-Disposition": 'inline; filename="pawse-german.wav"'})
+    return Response(audio, media_type="audio/wav", headers={"Content-Disposition": 'inline; filename="pawse-german.wav"'})
+
+
+def complete_wav(data):
+    """Return a 16-bit PCM WAV with exact header sizes, or raise ValueError.
+
+    Gradium streams TTS, so its header carries the 0xFFFFFFFF "unknown length" placeholder: there the
+    real length is whatever audio arrived. A header with a real size must match the audio exactly
+    (anything shorter is truncated). The header is rewritten so every player sees the true length.
+    """
+    with wave.open(io.BytesIO(data)) as f:
+        channels, width, rate, declared = f.getnchannels(), f.getsampwidth(), f.getframerate(), f.getnframes()
+        if width != 2 or channels not in (1, 2) or not 8000 <= rate <= 48000:
+            raise ValueError()
+        frame = channels * width
+        streamed = declared == 0xFFFFFFFF // frame
+        pcm = f.readframes(declared)
+    frames = len(pcm) // frame
+    if not frames or (not streamed and len(pcm) != declared * frame):
+        raise ValueError()
+    out = io.BytesIO()
+    with wave.open(out, "wb") as w:
+        w.setnchannels(channels); w.setsampwidth(width); w.setframerate(rate)
+        w.writeframes(pcm[:frames * frame])
+    return out.getvalue()
 
 
 @router.get("/voice/status")
