@@ -361,3 +361,12 @@ def test_streaming_wav_rejects_empty_or_partial_frames(monkeypatch, payload):
     with TestClient(app) as c:
         r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
         assert r.status_code == 502
+
+
+def test_clone_keeps_uid_when_provider_is_still_preparing(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    upstream(monkeypatch, lambda req: httpx.Response(201, json={'uid': 'pending123', 'error': 'Please wait a bit till the voice is ready to be used.', 'was_updated': True}))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/clone', json={'audio': audio(), 'sample_language': 'en', 'own_voice_consent': True, 'share_with_gradium': True})
+        assert r.status_code == 201
+        assert r.json()['source_id'] == 'pending123'

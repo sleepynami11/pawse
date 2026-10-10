@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "check": "node scripts/check-agents.mjs && node scripts/check-clinics.mjs && node scripts/check-voice.mjs && node scripts/check-phone.mjs && node scripts/check-handoff.mjs && node scripts/check-cache.mjs && node scripts/check-native-live.mjs && node scripts/check-providers.mjs"
+    "check": "node scripts/check-agents.mjs && node scripts/check-clinics.mjs && node scripts/check-voice.mjs && node scripts/check-phone.mjs && node scripts/check-handoff.mjs && node scripts/check-cache.mjs && node scripts/check-native-live.mjs && node scripts/check-providers.mjs && node scripts/check-own-voice.mjs"
   },
   "dependencies": {
     "@google/genai": "2.28.0",

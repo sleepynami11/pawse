@@ -151,13 +151,13 @@ async def gemini_json(client, instruction, parts):
         raise HTTPException(502, "Gemini could not process this request. Please retry or type your message.") from None
 
 
-async def gradium(client, method, path, max_bytes=2_000_000, **kwargs):
+async def gradium(client, method, path, max_bytes=2_000_000, request_timeout=45, **kwargs):
     key = os.getenv("GRADIUM_API_KEY")
     if not key:
         raise HTTPException(503, "Set GRADIUM_API_KEY in the local .env and restart the server to enable your voice.")
     try:
-        async with asyncio.timeout(45):
-            async with client.stream(method, BASE + path, headers={"x-api-key": key}, timeout=45, **kwargs) as response:
+        async with asyncio.timeout(request_timeout):
+            async with client.stream(method, BASE + path, headers={"x-api-key": key}, timeout=request_timeout, **kwargs) as response:
                 if method != "DELETE" or response.status_code != 404:
                     response.raise_for_status()
                 body = bytearray()
@@ -170,11 +170,12 @@ async def gradium(client, method, path, max_bytes=2_000_000, **kwargs):
         raise HTTPException(502, "Gradium could not complete this request. Check your key, credits and voice access; then retry.") from None
 
 
-def uid(response):
+def uid(response, allow_preparing=False):
     try:
         data = response.json()
         value = data["uid"]
-        if not isinstance(value, str) or not value or data.get("error"):
+        preparing = allow_preparing and data.get("error") == "Please wait a bit till the voice is ready to be used."
+        if not isinstance(value, str) or not value or (data.get("error") and not preparing):
             raise ValueError()
         return value
     except (ValueError, KeyError, TypeError):
@@ -290,9 +291,9 @@ async def clone(payload: CloneRequest, request: Request):
         if len(voices) >= 100:
             raise HTTPException(429, "Local voice session capacity reached. Delete an existing session voice first.")
         raw, _ = inspect_wav(payload.audio.data)
-        r = await gradium(client, "POST", "/voices/", files={"audio_file": ("my-voice.wav", raw, "audio/wav")},
+        r = await gradium(client, "POST", "/voices/", request_timeout=90, files={"audio_file": ("my-voice.wav", raw, "audio/wav")},
                           data={"name": "Pawse — my voice", "language": payload.sample_language, "input_format": "wav", "start_s": "0", "timeout_s": "20"})
-        source = uid(r)
+        source = uid(r, allow_preparing=True)
         voices[owner] = {"source_id": source, "sample_language": payload.sample_language}
         if payload.sample_language == "de":
             voices[owner]["german_id"] = source

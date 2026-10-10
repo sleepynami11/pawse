@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { blobToWavBase64 } from '../agents/liveVoiceAgent.js';
+import { prepareGermanPreview } from '../agents/ownVoice.js';
 import { generateSpeech } from '../agents/handoff.js';
 
 const EMERGENCY_TEST = 'Dies ist eine Übung, kein echter Notruf. Guten Tag, hier spricht die KI-Assistenz im Auftrag der Katzenhalterin oder des Katzenhalters. Meine Katze Mimi hinkt nach einem Sprung. Können wir sie heute untersuchen lassen? Bitte bestätigen Sie die Adresse und ob Sie Katzen behandeln.';
@@ -7,6 +8,7 @@ export default function OwnVoice({onBack}) {
   const [profile,setProfile]=useState({}),[language,setLanguage]=useState('en'),[consent,setConsent]=useState(false);
   const [recording,setRecording]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const [sample,setSample]=useState(null),[sampleUrl,setSampleUrl]=useState(''),[preview,setPreview]=useState(''),[result,setResult]=useState('');
+  const [stage,setStage]=useState('');
   const [heard,setHeard]=useState(false),[approved,setApproved]=useState(false);
   const resources=useRef({stream:null,recorder:null,timer:null,urls:[],controller:null,alive:true});
   const makeUrl=blob=>{if(!resources.current.alive)return '';const u=URL.createObjectURL(blob);resources.current.urls.push(u);return u;};
@@ -22,10 +24,15 @@ export default function OwnVoice({onBack}) {
   },[]);
   async function task(fn){
     if(resources.current.controller||recording)return;
-    const ctl=new AbortController();resources.current.controller=ctl;const timer=setTimeout(()=>ctl.abort(),65000);
+    const ctl=new AbortController();resources.current.controller=ctl;const timer=setTimeout(()=>ctl.abort(),240000);
     setBusy(true);setError('');
-    try{await fn(ctl.signal);}catch(e){if(resources.current.alive)setError(e.name==='AbortError'?'Request timed out. Check voice status before retrying.':e.message);}
+    try{await fn(ctl.signal);}catch(e){if(resources.current.alive)setError(e.name==='AbortError'?'Request timed out. Your voice may already be saved. Use Refresh voice status before retrying.':e.message);}
     finally{clearTimeout(timer);resources.current.controller=null;if(resources.current.alive)setBusy(false);}
+  }
+  async function prepare(signal){
+    setHeard(false);setApproved(false);
+    const blob=await prepareGermanPreview({api,profile,sample,language,signal,onProfile:setProfile,onStage:setStage});
+    if(resources.current.alive)setPreview(makeUrl(blob));
   }
   async function record(){
     if(busy||recording)return;
@@ -55,16 +62,22 @@ export default function OwnVoice({onBack}) {
     <h1>My voice · emergency rehearsal</h1>
     <p>Record your own voice for 10–25 seconds. Nothing is sent until you confirm cloning. This rehearsal does not call a clinic.</p>
     <p>{profile.gradium_configured?'Gradium configured':'Gradium key missing: local recording and playback work; cloning needs GRADIUM_API_KEY on the server.'}</p>
+    {(stage||busy)&&<p role="status">{stage||'Working…'}</p>}
+    {error&&<p role="alert">{error}</p>}
+    <button className="btn ghost" disabled={busy||recording} onClick={()=>task(async signal=>{setProfile(await api('status',null,false,signal));setStage('Voice status refreshed.');})}>Refresh voice status</button>
     <section className="card">
       <label>Recording language<select disabled={busy||recording} value={language} onChange={e=>{setLanguage(e.target.value);setSample(null);setSampleUrl('');}}><option value="en">English</option><option value="de">German</option></select></label>
       <p>{language==='en'?'Hello, I am recording my own voice for Pawse. My cat is very important to me. I want to explain calmly to the veterinary practice what happened, ask whether they can see her today, and understand every next step. Please include me in every decision.':'Hallo, ich nehme meine eigene Stimme für Pawse auf. Meine Katze ist mir sehr wichtig. Ich möchte der Tierarztpraxis ruhig erklären, was passiert ist, und alle nächsten Schritte verstehen. Bitte beziehen Sie mich bei jeder Entscheidung mit ein.'}</p>
       <button className="btn primary" disabled={busy} onClick={()=>recording?resources.current.recorder.stop():record()}>{recording?'Stop recording':'Record my voice'}</button>
       {sampleUrl&&<audio controls src={sampleUrl}/>}
       <label><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> This is my own voice. I agree to send this recording to Gradium to create and preview my voice.</label>
-      <button className="btn soft" disabled={busy||recording||!sample||!consent||!profile.gradium_configured||!!profile.source_id} onClick={()=>task(async signal=>{setHeard(false);setApproved(false);setProfile(await api('clone',{audio:{data:sample},sample_language:language,own_voice_consent:true,share_with_gradium:true},false,signal));})}>Clone my voice</button>
+      <button className="btn soft" disabled={busy||recording||!sample||!consent||!profile.gradium_configured||!!profile.source_id} onClick={()=>task(prepare)}>Clone and preview in German</button>
     </section>
     {profile.source_id&&<section className="card">
       <h2>German voice preview</h2>
+      <p>Source clone saved in your Gradium voice library: <code>{profile.source_id}</code></p>
+      <p>{profile.german_voice_id?`Saved German voice: ${profile.german_voice_id}`:'German candidate is not saved as a permanent voice yet.'}</p>
+      <button className="btn primary" disabled={busy||recording||!consent} onClick={()=>task(prepare)}>Continue to German preview</button>
       {!profile.german_voice_id&&!profile.candidate_pending&&<button className="btn soft" disabled={busy||recording||!consent} onClick={()=>task(async signal=>setProfile(await api('localizations',{share_with_gradium:true},false,signal)))}>Create German version</button>}
       {profile.candidate_pending&&!profile.candidate_ready&&<button className="btn soft" disabled={busy||recording} onClick={()=>task(async signal=>setProfile(await api('localizations/current',null,false,signal)))}>Check readiness</button>}
       <button className="btn soft" disabled={busy||recording||!consent||!(profile.german_voice_id||profile.candidate_ready)} onClick={()=>task(async signal=>{setHeard(false);setApproved(false);setPreview(makeUrl(await api('preview',{share_with_gradium:true},true,signal)));})}>Generate preview</button>
@@ -77,7 +90,6 @@ export default function OwnVoice({onBack}) {
       <button className="btn primary" disabled={busy||recording||!consent||!approved||!profile.my_voice_ready} onClick={()=>task(async signal=>setResult(makeUrl(await generateSpeech(EMERGENCY_TEST,'my_voice',consent,signal))))}>Speak the rehearsal in my voice</button>
       {result&&<><audio controls src={result}/><a href={result} download="pawse-own-voice-rehearsal.wav">Download rehearsal</a></>}
     </section>
-    {busy&&<p role="status">Preparing voice…</p>}{error&&<p role="alert">{error}</p>}
     <button className="btn ghost" onClick={onBack}>Back</button>
   </main>;
 }
