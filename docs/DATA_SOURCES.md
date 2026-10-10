@@ -35,7 +35,7 @@ nwr["amenity"="veterinary"](around:10000,47.3769,8.5417);
 out center tags;
 ```
 
-This query is documented but not executed by the app yet. Map a returned node/way/relation ID to a stable source ID. Do not infer phone numbers, round-the-clock service, cat-specific expertise, appointments, road ETA, or current opening from a name alone. Straight-line distance is not travel time.
+This query is now available in the standalone `scripts/crawl_zurich_vets.py` collector, with normalized output and provenance described in the [Crawling contract](controller-crawling-contract.md). It is not called by the live app yet. Source IDs retain node/way/relation identity. Do not infer phone numbers, round-the-clock service, cat-specific expertise, appointments, road ETA, or current opening from a name alone. Straight-line distance is not travel time.
 
 ## Data Module Deliverables
 

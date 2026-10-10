@@ -88,6 +88,8 @@ Exact upstream paths and normalization differences are in [Mapify adapter](MAPIF
 
 **Current:** runtime clinics come from configured providers; local policy retrieval uses reviewed synthetic files. No Zurich open-data ingestion job or vector index is wired into these routes. Source candidates and reuse conditions are recorded in [Data sources](DATA_SOURCES.md).
 
+The standalone [Crawling collector](controller-crawling-contract.md) now produces an OSM clinic staging dataset with source tags, hashes, attribution and unknown-state preservation. It is not a new runtime discovery provider or policy-search corpus. Use that contract for data collection work and the explicit adapter/schema handoff before runtime integration.
+
 **Proposed:** a new open-data adapter should record source URL, license/attribution, update date, veterinary classification evidence and missing-field rules before joining the normalized `Clinic` boundary. Use source-qualified IDs to avoid collisions. Preserve unknown opening hours and contact verification status.
 
 **Proposed:** actual owner-policy retrieval needs a new authenticated scope with upload consent, ownership, document edition/effective dates, source/page citations and deletion. Do not replace the synthetic files with private documents. If embeddings are introduced, version the model and dimensions and rebuild both document and query vectors; existing legacy OpenAI vectors cannot be mixed with Gemini vectors.

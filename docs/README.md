@@ -33,6 +33,7 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 | [Communication and actions](controller-action-contract.md) | Reviewed draft → future connectors | Current audio/dialer boundary; proposed approvals, execution and provider receipts |
 | [Voice controller](controller-voice-contract.md) | Voice pipeline → frontend/coordinator | Transcription, German scripts, own-voice lifecycle and WAV output |
 | [Knowledge controller](controller-knowledge-contract.md) | Retrieval/data → frontend/coordinator | Evidence search, clinic-data boundary and demo isolation |
+| [Crawling and data handoff](controller-crawling-contract.md) | Public-data collector → discovery/RAG | Runnable Zurich collector, staging fields, website-enrichment plan and your module deliverables |
 | [API overview](API_CONTRACT.md) | All modules | Complete route inventory and shared conventions |
 | [OpenAPI](openapi.json) | Pydantic/FastAPI → API clients | Generated request/response schemas |
 

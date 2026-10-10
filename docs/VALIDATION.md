@@ -4,6 +4,8 @@ Date: 2026-10-10. Scope: the unified `pawse/` app and its new voice, agent and e
 
 ## Passed
 
+- Crawling slice: 83 automated tests pass, including ten new normalization, source/unknown-state, query bound, malformed-content, provenance, duplicate-ID and mocked HTTP cases. An initial live Zurich Overpass query retained 27 of 29 candidate elements. Final-schema refresh was unavailable; the first exploratory snapshot is retained separately and does not contain the later-added raw `source_elements`. See the [crawling result and limits](controller-crawling-contract.md#7-initial-collection-result). No live API adapter or official-site enrichment is claimed.
+
 - Team integration alignment: 73 tests pass, including a regression first reproduced against the new public quota guard. HTTP 429 now provides the frontend-readable `detail`, no-store/nosniff headers and a session cookie. On a separate local server with public quota set to zero and provider keys blank, the browser care form displayed the specific quota message; all six Mimi clinic-path scenes remained usable through the CHF 385 handoff. The completed walkthrough reported no browser console errors. This did not exercise real providers, own-voice cloning, telephone transport or PR #29's unmerged opt-in suite.
 
 - 68 automated tests with synthetic HTTP responses. Coverage includes warning signs, provider failure/deadlines, consent, image/audio validation, bounded streaming, session ownership, shared care/run cache, safe phone links, clinic normalization/ranking, legacy authorization, the seven-role workflow, exact policy citations, Gradium clone/localize/preview/save/delete contracts and synthetic scenario arithmetic.
