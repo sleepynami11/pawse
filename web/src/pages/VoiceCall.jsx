@@ -10,6 +10,18 @@ import { isSpeechMuted, setSpeechMuted, resolveVoiceName, onVoicesChanged } from
 import { loadCapabilities, voiceCallProviders } from '../agents/providers.js';
 import { VOICE_AGENT_URL } from '../config.js';
 import { validateTriage } from '../contracts.js';
+import { gradiumSupports, gradiumVoiceName, resolveVoiceChoice } from '../agents/gradiumVoice.js';
+import VoicePicker from '../components/VoicePicker.jsx';
+
+// Pawse's voice in a live call: a Gradium voice id (default) or 'gemini' (Gemini Live native audio). Remembered per browser.
+const VOICE_KEY = 'pawse.liveVoice';
+function loadVoiceChoice() {
+  try {
+    return localStorage.getItem(VOICE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
 
 function fmt(sec) {
   return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
@@ -18,6 +30,17 @@ function fmt(sec) {
 // Voice first. The camera and photos are optional extras the user can add any time.
 export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, onCall, onEnd }) {
   const [consent, setConsent] = useState(false);
+  const [voiceChoice, setVoiceChoiceState] = useState(loadVoiceChoice);
+  const setVoiceChoice = (v) => {
+    setVoiceChoiceState(v);
+    try {
+      localStorage.setItem(VOICE_KEY, v);
+    } catch {
+      /* storage unavailable */
+    }
+  };
+  // A Gradium voice only applies in a language Gradium speaks; otherwise the call uses Gemini's voice.
+  const gradiumVoice = resolveVoiceChoice(voiceChoice, lang);
   const [toolResults, setToolResults] = useState([]);
   const [trace, setTrace] = useState([]);
   const [camOn, setCamOn] = useState(false);
@@ -56,7 +79,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   // ---- the conversation with Pawse
   useEffect(() => {
     if (IS_LIVE_VOICE && !consent) return;
-    const agent = createVoiceAgent({ lang, shareWithGemini: consent });
+    const agent = createVoiceAgent({ lang, shareWithGemini: consent, voice: gradiumVoice ? { engine: 'gradium', voiceId: gradiumVoice } : null });
     agentRef.current = agent;
     const off = agent.on((e) => {
       switch (e.type) {
@@ -105,7 +128,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       off();
       agent.end();
     };
-  }, [lang, consent]);
+  }, [lang, consent, gradiumVoice]); // a new voice restarts the conversation
 
   // ---- which AI runs this call (model ids come from the backend, never hardcoded)
   useEffect(() => {
@@ -199,7 +222,11 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   return (
     <main className="vcall">
       {IS_LIVE_VOICE && !consent && <section className="card">
-        <p>Share your messages, selected photos and recorded speech with Gemini for care guidance. Gemini Live returns native audio. Camera video is a local preview only. Enable your microphone after starting; headphones help prevent echo.</p>
+        <VoicePicker lang={lang} value={gradiumVoice} onChange={setVoiceChoice} />
+        {!gradiumSupports(lang) && <p className="muted">Gradium voices speak English and German; this language uses the Gemini voice.</p>}
+        {gradiumVoice
+          ? <p>Share your messages, selected photos and recorded speech with Gemini for care guidance, and your speech and Pawse's replies with Gradium, which transcribes you and speaks Pawse's answers. Camera video is a local preview only. Enable your microphone after starting; headphones help prevent echo.</p>
+          : <p>Share your messages, selected photos and recorded speech with Gemini for care guidance. Gemini Live returns native audio. Camera video is a local preview only. Enable your microphone after starting; headphones help prevent echo.</p>}
         <button className="btn primary" onClick={() => setConsent(true)}>Agree and start</button>
         <button className="btn ghost" onClick={onEnd}>Back</button>
       </section>}
@@ -252,7 +279,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
           </div>
         )}
         <p className="stage-name">Pawse</p>
-        <ProviderChips t={t} items={voiceCallProviders({ path: VOICE_PATH, caps, browser, muted: !soundOn })} />
+        {IS_LIVE_VOICE && consent && <VoicePicker compact lang={lang} value={gradiumVoice} onChange={setVoiceChoice} />}
+        <ProviderChips t={t} items={voiceCallProviders({ path: VOICE_PATH, caps, browser, muted: !soundOn, gradium: gradiumVoice ? gradiumVoiceName(lang, gradiumVoice) : null })} />
         <p className="stage-status" aria-live="polite">
           {transcribing ? (
             <span className="listening-label">

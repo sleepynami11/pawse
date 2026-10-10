@@ -408,3 +408,30 @@ def test_restored_voice_used_for_emergency_and_deletion_persists(monkeypatch):
     assert voice_store.read() == {}
     assert not voice_store.path().exists()
     assert ('POST', '/api/post/speech/tts') in seen
+
+
+def test_stream_token_needs_consent_key_and_never_leaks_the_api_key(monkeypatch):
+    voice.stream_tokens.clear()
+    with TestClient(app) as c:
+        assert c.post('/api/v1/voice/stream-tokens', json={}).status_code == 422
+        assert c.post('/api/v1/voice/stream-tokens', json={'share_with_gradium': False}).status_code == 422
+        assert c.post('/api/v1/voice/stream-tokens', json={'share_with_gradium': True}).status_code == 503
+    monkeypatch.setenv('GRADIUM_API_KEY', 'private-test-key')
+    def handler(req):
+        assert req.method == 'GET' and req.url.path == '/api/api-keys/token' and req.headers['x-api-key'] == 'private-test-key'
+        return httpx.Response(200, json={'token': 'one-use', 'expires_at': '2026-10-10T15:00:00Z'})
+    upstream(monkeypatch, handler)
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/stream-tokens', json={'share_with_gradium': True})
+        assert r.status_code == 201 and r.json() == {'token': 'one-use', 'expires_at': '2026-10-10T15:00:00Z'}
+        assert 'private-test-key' not in r.text
+        monkeypatch.setattr(voice, 'STREAM_TOKENS_PER_WINDOW', 1)
+        assert c.post('/api/v1/voice/stream-tokens', json={'share_with_gradium': True}).status_code == 429
+
+
+def test_stream_token_upstream_failure_is_502(monkeypatch):
+    voice.stream_tokens.clear()
+    monkeypatch.setenv('GRADIUM_API_KEY', 'private-test-key')
+    upstream(monkeypatch, lambda req: httpx.Response(200, json={'unexpected': True}))
+    with TestClient(app) as c:
+        assert c.post('/api/v1/voice/stream-tokens', json={'share_with_gradium': True}).status_code == 502

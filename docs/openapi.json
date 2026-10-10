@@ -219,6 +219,48 @@
         }
       }
     },
+    "/api/v1/voice/stream-tokens": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Stream Token",
+        "description": "One-use Gradium token so the browser streams STT/TTS to Gradium directly; the API key stays here.",
+        "operationId": "stream_token_api_v1_voice_stream_tokens_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamToken"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/voice/status": {
       "get": {
         "tags": [
@@ -2397,6 +2439,40 @@
           "text"
         ],
         "title": "SpeechRequest"
+      },
+      "StreamToken": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "expires_at": {
+            "type": "string",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "expires_at"
+        ],
+        "title": "StreamToken"
+      },
+      "StreamTokenRequest": {
+        "properties": {
+          "share_with_gradium": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gradium"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "share_with_gradium"
+        ],
+        "title": "StreamTokenRequest"
       },
       "TokenRequest": {
         "properties": {

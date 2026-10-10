@@ -3,14 +3,32 @@ import { VOICE_AGENT_URL } from '../config.js';
 import { mapCareResult } from './liveVoiceAgent.js';
 import { createNativeAudio } from './nativeAudio.js';
 import { loadInsuranceProfile, saveInsuranceProfile } from './insuranceProfile.js';
+import { createGradiumStt, createGradiumReply, gradiumSupports } from './gradiumVoice.js';
 
 // Injectable transport/audio factories keep protocol tests offline and deterministic.
-export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
-  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio}={}) {
+// voice={engine:'gradium',voiceId}: Gemini Live still runs the conversation and tools, but Gradium hears the
+// owner (streaming STT, its text goes to Live) and speaks Pawse's replies from Live's transcript.
+export function createGeminiLiveAgent({lang='en',shareWithGemini=false,voice=null,
+  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio,
+  sttFactory=createGradiumStt, replyFactory=createGradiumReply}={}) {
   const listeners=new Set(), pending=new Set(), toolIds=new Set(), cancelledTools=new Set();
   let started=false, ended=false, session=null, audio=null, media=null, muted=true, outputMuted=false, timer=null;
   let audioEpoch=0;
   let inputText='',outputText='', userOpen=false, playback=Promise.resolve();
+  let gradium=voice?.engine==='gradium'&&voice.voiceId&&gradiumSupports(lang)?voice:null, stt=null, reply=null, spoken=0;
+  const base=VOICE_AGENT_URL || '';
+  function play(data,rate){const epoch=audioEpoch;playback=playback.then(()=>{if(!ended && epoch===audioEpoch)return audio.play(data,rate);}).catch(()=>{error('Audio playback failed. Restart the session.');end();});}
+  // Stop Pawse mid-sentence: the owner started talking or typing.
+  function bargeIn(){audioEpoch++;audio?.flush();reply?.cancel();reply=null;spoken=0;}
+  // Gradium mode: hand finished sentences of Live's transcript to the current Gradium reply.
+  function speakNew(final){
+    if(!gradium||ended)return;
+    if(!reply&&outputText.slice(spoken).trim())reply=replyFactory({base,voiceId:gradium.voiceId,onAudio:a=>play(a,24000),onError:m=>error(m)});
+    if(!reply)return;
+    const rest=outputText.slice(spoken), cut=final?rest.length:Math.max(...['.','!','?','…','。'].map(p=>rest.lastIndexOf(p)))+1;
+    if(cut>0){reply.text(rest.slice(0,cut));spoken+=cut;}
+    if(final){reply.end();reply=null;spoken=0;}
+  }
   // The owner's words stream in as a partial caption; the first sign of Pawse answering seals them.
   const sealUser=()=>{if(userOpen){userOpen=false;emit({type:'transcript',role:'user',text:inputText,partial:false});}};
   const emit=e=>{if(!ended||e.type==='ended') for(const fn of listeners){try{fn(e);}catch{}}};
@@ -27,6 +45,7 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
     if(ended)return;ended=true;clearTimeout(timer);
     for(const c of pending)c.abort();pending.clear();
     try{session?.close();}catch{}session=null;
+    stt?.close();stt=null;reply?.cancel();reply=null;
     media?.getTracks().forEach(t=>t.stop());media=null;
     audio?.close().catch(()=>{});emit({type:'ended'});
   }
@@ -56,18 +75,15 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
     try{
       for(const id of msg.toolCallCancellation?.ids||[])cancelledTools.add(id);
       const c=msg.serverContent;
-      if(c?.interrupted){audioEpoch++;audio.flush();sealUser();inputText='';outputText='';}
+      if(c?.interrupted){bargeIn();sealUser();inputText='';outputText='';}
       if(c?.inputTranscription?.text){inputText+=c.inputTranscription.text;userOpen=true;emit({type:'transcript',role:'user',text:inputText,partial:true});}
-      if(c?.outputTranscription?.text){sealUser();outputText+=c.outputTranscription.text;emit({type:'transcript',role:'ai',text:outputText});}
+      if(c?.outputTranscription?.text){sealUser();outputText+=c.outputTranscription.text;emit({type:'transcript',role:'ai',text:outputText});speakNew(false);}
       for(const part of c?.modelTurn?.parts||[]){
         const data=part.inlineData;
-        if(data?.data&&data.mimeType?.startsWith('audio/pcm')){
-          const rate=Number(/rate=(\d+)/.exec(data.mimeType)?.[1]||24000);
-          const epoch=audioEpoch;
-          playback=playback.then(()=>{if(!ended && epoch===audioEpoch)return audio.play(data.data,rate);}).catch(()=>{error('Native audio playback failed. Restart the session.');end();});
-        }
+        // Gradium mode speaks from the transcript instead, so Gemini's own audio is not played.
+        if(!gradium&&data?.data&&data.mimeType?.startsWith('audio/pcm'))play(data.data,Number(/rate=(\d+)/.exec(data.mimeType)?.[1]||24000));
       }
-      if(c?.turnComplete){sealUser();inputText='';outputText='';emit({type:'listening',on:!muted});}
+      if(c?.turnComplete){speakNew(true);sealUser();inputText='';outputText='';emit({type:'listening',on:!muted});}
       if(msg.toolCall)sealUser();
       for(const call of msg.toolCall?.functionCalls||[]) void tool(call).catch(()=>error('Tool response could not be delivered.'));
       if(msg.goAway){error('Live session is ending. Start a new conversation.');end();}
@@ -80,12 +96,20 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
       if(!shareWithGemini){error('Confirm sharing with Gemini before starting.');return;}
       started=true;
       try{
-        audio=audioFactory(frame=>{if(!muted&&session&&!ended)send({audio:{data:frame,mimeType:'audio/pcm;rate=16000'}});}, speaking=>emit({type:'speaking',who:speaking?'ai':'none'}));
+        audio=audioFactory(frame=>{if(muted||!session||ended)return;if(gradium)stt?.send(frame);else send({audio:{data:frame,mimeType:'audio/pcm;rate=16000'}});}, speaking=>emit({type:'speaking',who:speaking?'ai':'none'}));
         audio.setMuted(outputMuted);
         const token=await post('tokens',{language:lang,share_with_gemini:true});if(ended)return;
         const ai=clientFactory({apiKey:token.token,httpOptions:{apiVersion:token.api_version}});
         const connected=await ai.live.connect({model:token.model,config:{responseModalities:['AUDIO']},callbacks:{onmessage:message,onerror:()=>{error('Gemini Live connection failed. Restart or use text fallback.');end();},onclose:()=>{if(!ended){error('Gemini Live disconnected. Start a new session.');end();}}}});
         if(ended){connected.close();return;}session=connected;
+        if(gradium){
+          stt=sttFactory({base,lang,
+            onPartial:text=>{if(!userOpen)bargeIn();inputText=text;userOpen=true;emit({type:'transcript',role:'user',text,partial:true});},
+            onTurn:text=>{inputText=text;sealUser();inputText='';outputText='';spoken=0;send({text});},
+            onError:m=>error(m)});
+          try{await stt.start();}catch(e){stt=null;gradium=null;error(`${e.message} Using the Gemini voice instead.`);}
+          if(ended)return;
+        }
         timer=setTimeout(()=>{error('Session time limit reached. Start a new conversation.');end();},8*60*1000);
         if(media&&!muted)await audio.attach(media);
         emit({type:'listening',on:!muted});
@@ -93,7 +117,7 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
       }catch(e){if(!ended){error(e.message?.includes('key')?'Live audio could not start. Check server configuration.':e.message||'Live audio could not start.');end();}}
     },
     end,
-    sendText(text){if(!session){error('Wait for the Live connection, then try again.');return;}const s=String(text||'').trim();if(!s||s.length>4000)return;audio.flush();userOpen=false;inputText='';outputText='';send({text:s});emit({type:'transcript',role:'user',text:s});},
+    sendText(text){if(!session){error('Wait for the Live connection, then try again.');return;}const s=String(text||'').trim();if(!s||s.length>4000)return;bargeIn();userOpen=false;inputText='';outputText='';send({text:s});emit({type:'transcript',role:'user',text:s});},
     async sendImage(file){
       if(!session||ended)return;
       if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>3000000){error('Use JPEG, PNG or WebP up to 3 MB.');return;}
