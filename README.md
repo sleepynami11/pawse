@@ -173,6 +173,8 @@ Pawse provides care navigation, not a diagnosis or a guarantee of treatment, cov
 
 See [Contributing](CONTRIBUTING.md) for contribution guidance and [Agent Development](docs/AGENT_DEVELOPMENT.md) for module boundaries, development branches and integration checks.
 
+**AI session checkpoints.** We build with coding agents (Claude Code, Gemini CLI, Cursor). The [Entire](https://entire.io) CLI captures each agent session as a checkpoint linked to the commit it produced: commits carry an `Entire-Checkpoint:` trailer and the checkpoints live under `refs/entire/checkpoints/` on this repo, so the reasoning behind a change sits next to the code. Setup: `curl -fsSL https://entire.io/install.sh | sh`, then `entire enable` in the repo (config in `.entire/settings.json`).
+
 ---
 
 ## License
