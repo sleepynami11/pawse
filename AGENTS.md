@@ -72,6 +72,7 @@ cp -n .env.example .env                          # add keys; many flows work wit
 uvicorn pawse.app:app --host 127.0.0.1 --port 8765   # app on :8765, API docs on /docs
 bash scripts/check.sh                            # everything CI runs (needs Node for the JS check)
 python -m pytest -q tests/test_voice.py -k clone # one test
+PAWSE_E2E=1 python -m pytest tests/e2e           # browser tests (requirements-e2e.txt, see tests/e2e/README.md)
 python scripts/export_contract.py                # after changing API models
 cd web && npm install && npm run dev            # React app on :5173/app/ (proxies /api to :8765); ?live=1 uses the backend
 cd web && npm run build                          # then uvicorn serves it at :8765/app/

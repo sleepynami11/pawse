@@ -29,12 +29,12 @@ The existing localhost rehearsal was also walked through all six clinic-path sce
 ## Not verified or not connected
 
 - Gradium live cloning, German localization and speaker similarity: unverified, no owner sample has been uploaded. Live German TTS with the standard voice was verified on 2026-10-10 with a real key through `POST /api/v1/voice/speech` (200, 9 s WAV). That test exposed and fixed a bug: Gradium streams WAV with placeholder header sizes, which the app had rejected as incomplete.
-- Microphone permissions, real microphone capture and local uploaded-audio playback still require a manual browser check. An automated file-chooser attempt timed out, so no successful browser audio-upload test is claimed.
-- Chinese, English, German and Hindi recognition quality with representative human recordings. The API audio smoke check used silence only.
+- A physical microphone and real speakers. The browser suite (below) uses Chromium's fake capture device and a synthetic signal; it proves the capture, encoding and upload path, not a particular device or room.
+- Chinese, English, German and Hindi recognition quality with representative human recordings. Only synthetic `espeak-ng` speech has been run (below); no human recording has been collected.
 - Live clinic discovery: no Mapify backend URL or Google Places key was supplied. Only provider adapters and normalization are tested.
 - Telephone transport, audio injection into a mobile call, actual calendar checks, appointment/taxi booking and claim submission are not connected. Mimi's calls and policy decisions are explicitly synthetic.
 - Real owner-policy ingestion and vector RAG: the current retrieval baseline is lexical and searches only the demo schedule and adapted terms under `synthetic_demo`. Legacy book collections and OpenAI/Chroma indexes remain excluded.
-- Imported device/report services, live video ingestion, full desktop-width QA beyond the rehearsal and public multi-user deployment have not been validated in this iteration.
+- Imported device/report services, live video ingestion and public multi-user deployment have not been validated in this iteration.
 
 `gemini-2.5-flash` appeared in the model listing but returned HTTP 404 for generation in this project. Credentials and recordings are not included in test fixtures or publication artifacts.
 
@@ -61,3 +61,16 @@ The initial request exposed Gradium's streaming WAV headers with unknown RIFF/da
 A real owner-authorized sample reached Gradium and returned a source ID with a pending-readiness notice. The app previously rejected that successful-but-preparing result. A regression now preserves the ID for that exact notice, while other errors are still rejected. Through the local browser session, cloning then returned 201, German localization produced a candidate, readiness succeeded, and a German own-voice preview appeared as playable audio. Speaker similarity and permanent save still require the owner's listening approval. No real call was made. Neither the recording, voice IDs nor the preview are committed.
 
 The React enrollment now sequences clone → German localization → bounded readiness polling → preview with visible progress, top-of-page errors, a refresh action and a resume action. Recording directly in German skips localization. No cross-provider speed benchmark was performed. Provider voice storage is permanent only after save; current local browser-to-voice associations remain in server memory.
+
+## Browser suite and real-speech checks (#25)
+
+`PAWSE_E2E=1 python -m pytest tests/e2e` ([tests/e2e](../tests/e2e/README.md)) runs 62 Playwright tests in headless Chromium against the built React app and the original page, with provider keys blanked: 62 passed in two consecutive runs on 10 October 2026. They cover microphone capture through Chromium's fake device (audible 16 kHz PCM to Gemini Live at real-time pace; one audible mono 16 kHz WAV per turn on the REST fallback, accepted by the server validator), mic release after hang-up, drops and recording, denied-microphone messages, audio upload on the original page (stereo/44.1 kHz/8 kHz in, mono 16-bit out; short, long and non-audio files rejected before upload), the Live client against a fake socket in the real wire format (consent, ephemeral token, transcripts as text, interruption, tool round trip, dialer-only clinic calls, failures), and layout at 1280, 1440, 1920 and 390 px (no sideways scroll, no overlapping controls, WCAG 2.2 target size, centred column).
+
+Real Gemini with synthetic speech (`espeak-ng`, 3 sentences per language, stored off git):
+
+- `/voice/transcriptions` (`gemini-3-flash-preview`): English and German transcribed exactly (WER 0); Hindi WER 0 to 0.2 in Devanagari. Two seconds of silence produced invented text in all four languages ("Hello", "你好，请问有什么可以帮您的吗？", "नमस्ते, आप कैसे हैं?", a German sentence). Several requests ran past the 40-second upstream timeout and returned 502.
+- `espeak-ng` Mandarin is not usable input: Gemini heard tone codes ("T1 F5 H4 …"). Chinese needs human recordings.
+- Gemini Live in the React call: the browser streamed 3.9 s of audible 16 kHz PCM, but with digital silence afterwards Live returned no transcription. With a faint noise floor it transcribed one word of the English sentence and then "heard" Vietnamese in the noise and answered in Vietnamese. This is inconclusive for human speech, but shows Live can invent input from noise.
+
+None of this measures accuracy for human speakers; that still needs consented recordings run through the same tests.
+

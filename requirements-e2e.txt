@@ -1,0 +1,4 @@
+# Browser tests in tests/e2e (issue #25). Not needed for scripts/check.sh.
+# After installing: python -m playwright install chromium
+-r requirements-dev.txt
+pytest-playwright>=0.7,<1

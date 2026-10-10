@@ -25,7 +25,7 @@ The language selector offers EN/ZH/DE/HI. German and Hindi use English UI labels
 - A bounded actual-HTTP smoke check against a local server without credentials verified seven-role workflow traces, local policy citations, explicit missing clinic configuration, missing Gemini and unconfigured own-voice errors. No paid provider calls occurred.
 - Browser walkthrough verified the React consent gate, typed care request, agent result entry and separate insurer preparation page. See `VALIDATION.md` for the final observed browser result.
 
-There is no independent evaluation agent in this repository. Open PR #29 contains proposed browser/audio tests for older test hooks; it has not been merged or claimed green here. Real microphone capture, speech accuracy (EN/ZH/DE/HI), human multilingual Live conversation, Gradium clone quality and actual telephony are separate evaluations. They cannot be established by mocked contract checks or a successful build.
+There is no independent evaluation agent in this repository. `PAWSE_E2E=1 python -m pytest tests/e2e` runs the browser suite against this React build (mic capture, REST fallback, own-voice recording, Live client against a fake socket, layout); see [tests/e2e](../tests/e2e/README.md) and `VALIDATION.md`. Real microphone capture, speech accuracy (EN/ZH/DE/HI), human multilingual Live conversation, Gradium clone quality and actual telephony are separate evaluations. They cannot be established by mocked contract checks or a successful build.
 
 ## Data boundary
 
