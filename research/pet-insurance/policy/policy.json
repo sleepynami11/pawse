@@ -1,0 +1,139 @@
+{
+  "_comment": "FICTIONAL demo policy. Synthetic data only; not a real contract. Modeled on the Calingo 'Unfall- & Krankenversicherung fuer Hunde und Katzen' AVB, December 2025 edition. See ../README.md.",
+  "policy_number": "PAWSE-DEMO-2026-000001",
+  "insurer": "Pawse Demo Pet Insurance (fictional)",
+  "avb": {
+    "file": "../avb/avb-en.md",
+    "edition": "2025-12",
+    "modeled_on": "Calingo Insurance AG, AVB Unfall- & Krankenversicherung fuer Hunde und Katzen, Ausgabe Dezember 2025"
+  },
+  "policyholder": {
+    "user_id": 1,
+    "name": "Demo user 1",
+    "email": "user1@example.com",
+    "residence_country": "CH"
+  },
+  "term": {
+    "start": "2026-09-15",
+    "end": "2027-09-14",
+    "renewal": "tacit, yearly",
+    "illness_waiting_period_days": 30,
+    "illness_covered_from": "2026-10-15"
+  },
+  "cost_sharing": {
+    "annual_deductible_chf": 300,
+    "deductible_basis": "per cat, per policy year; prevention costs count toward it",
+    "reimbursement_rate": 0.8,
+    "order_of_application": [
+      "annual_deductible",
+      "reimbursement_rate",
+      "annual_limit"
+    ]
+  },
+  "coverages": {
+    "accident_illness_base": {
+      "selected": true,
+      "annual_limit_chf": 5000,
+      "includes": [
+        "general_treatment",
+        "dental_treatment",
+        "emergency_treatment"
+      ],
+      "notes": "Annual limit below CHF 12'000, so extra costs of a vet house call are NOT covered (AVB 1.2.5)."
+    },
+    "prevention": {
+      "selected": true,
+      "annual_limit_chf": 200,
+      "reimbursement_rate": 1.0,
+      "notes": "Paid only after the annual deductible is used up (AVB 1.2.3). No waiting period."
+    },
+    "emergency_pet_care": {
+      "selected": true,
+      "limit_chf_per_day": 40,
+      "max_days_per_year": 10,
+      "notes": "Boarding when the policyholder or a family member is hospitalised in an emergency (AVB 1.2.4). Limit is per cat. Not a vet cost, so this demo schedule pays it in full up to the limit, outside the deductible.",
+      "subject_to_deductible": false,
+      "reimbursement_rate": 1.0
+    },
+    "prescription_diet": {
+      "selected": true,
+      "annual_limit_chf": 300,
+      "notes": "Sub-limit inside the base annual limit (AVB 1.2.9)."
+    },
+    "complementary_medicine": {
+      "selected": false,
+      "notes": "Physiotherapy, acupuncture, hydrotherapy, osteopathy, laser therapy, homeopathy NOT covered (AVB 1.2.6)."
+    },
+    "advanced_treatments": {
+      "selected": false,
+      "notes": "Stem cells, gene therapy, prostheses NOT covered (AVB 1.2.7)."
+    },
+    "behavioural_medicine": {
+      "selected": false,
+      "notes": "Behavioural specialist treatment NOT covered (AVB 1.2.8)."
+    },
+    "pre_existing_conditions": {
+      "selected": false,
+      "notes": "Add-on not taken for any cat. Pre-existing conditions and their consequences are excluded (AVB 1.4 e)."
+    }
+  },
+  "insured_animals": [
+    {
+      "cat_id": 1,
+      "name": "Mimi (咪咪)",
+      "species": "cat",
+      "breed": "orange tabby (橘猫)",
+      "age_years_at_start": 3,
+      "declared_lifestyle": "indoor_outdoor",
+      "known_conditions_at_start": [],
+      "last_annual_checkup": "2026-08-30",
+      "vaccinations": [
+        "rabies",
+        "FVRCP"
+      ]
+    },
+    {
+      "cat_id": 2,
+      "name": "Xiaohua (小花)",
+      "species": "cat",
+      "breed": "Dragon Li (狸花猫)",
+      "age_years_at_start": 2,
+      "declared_lifestyle": "indoor_only",
+      "known_conditions_at_start": [],
+      "known_allergies": [
+        "chicken"
+      ],
+      "neutered": false,
+      "last_annual_checkup": "2026-07-02",
+      "vaccinations": [
+        "FVRCP"
+      ]
+    },
+    {
+      "cat_id": 3,
+      "name": "Dahuang (大黄)",
+      "species": "cat",
+      "breed": "British Shorthair (英短)",
+      "age_years_at_start": 5,
+      "declared_lifestyle": "indoor_outdoor",
+      "known_conditions_at_start": [
+        "mild arthritis (轻微关节炎), diagnosed 2025-03"
+      ],
+      "last_annual_checkup": "2025-04-12",
+      "vaccinations": [
+        "rabies",
+        "FVRCP",
+        "FeLV"
+      ]
+    }
+  ],
+  "claims_process": {
+    "submit_within_days": 30,
+    "channel": "online claim form (demo)",
+    "required_documents": [
+      "original vet invoice: first-diagnosis date, treatment date, animal name, diagnosis, services and medicines, amounts, vet name/address/phone",
+      "receipts and prescriptions",
+      "medical history on request"
+    ]
+  }
+}

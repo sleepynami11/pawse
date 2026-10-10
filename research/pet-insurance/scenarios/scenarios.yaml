@@ -1,0 +1,357 @@
+# Demo scenarios for the Pawse pet emergency action assistant, against the FICTIONAL policy
+# ../policy/policy.json and terms ../avb/avb-en.md. Synthetic data.
+#
+# Flow per emergency scenario (see ../README.md#demo-flow):
+#   1 input (photo / video / voice) -> 2 two or three follow-up questions -> 3 triage level -> 4 next steps
+#   (copy-ready case summary, nearby emergency clinic search, insurance claim checklist).
+# Insurance comes in EARLY: some follow-up questions are both medical and coverage-relevant, and
+# `insurance_before_vet` lists what to do before leaving the house so the claim is not lost.
+#
+# triage: red = go to a vet now | yellow = see a vet within 24h | green = monitor at home.
+#   Triage levels are demo expectations written by non-vets, NOT veterinary advice.
+# coverage verdict: covered | partially_covered | not_covered | depends
+# Payout rule (AVB 1.5): covered amount -> minus remaining annual deductible -> x reimbursement rate -> capped by
+#   remaining annual limit. Each scenario states the per-cat deductible/limit already used that policy year, so
+#   scenarios can be demoed in any order. ../check_scenarios.py recomputes every expected payout.
+
+policy: PAWSE-DEMO-2026-000001
+as_of_demo_day: "2026-10-10"   # hackathon day: day 26 of the 30-day illness waiting period
+
+emergency_scenarios:
+  - id: S01-balcony-fall
+    hero: true
+    cat_id: 1   # Mimi
+    event_date: "2026-10-03"
+    input: {type: video, content: "Mimi dragging her hind leg after falling from the 2nd-floor balcony"}
+    user_says: "Mimi fell off the balcony and she can't walk on her back leg!"
+    follow_up_questions:
+      - {q: "Is she breathing normally, and is there any bleeding?", purpose: medical}
+      - {q: "How high was the fall, and when did it happen?", purpose: [medical, insurance], why: "records a sudden external cause, so the claim is an accident: covered from day one, no illness waiting period"}
+    triage: red
+    triage_reason: "High-rise fall with suspected fracture; internal injuries possible."
+    insurance_before_vet:
+      - "This is an accident: covered even though the policy is only 18 days old."
+      - "Keep the video; note time and height of the fall for the claim."
+      - "Expect to pay the first 300 francs plus 20% of the rest."
+    case_summary: "Mimi, 3y orange tabby, 5.2 kg. Fell ~6 m from balcony at 18:40 today. Non-weight-bearing right hind leg, breathing normal, no visible bleeding. Vaccinated (rabies, FVRCP). No known conditions."
+    clinic_search: "24h small-animal emergency clinic with X-ray and surgery"
+    coverage:
+      invoice:
+        - {item: X-ray, chf: 380, decision: covered}
+        - {item: Fracture surgery, chf: 1650, decision: covered}
+        - {item: Hospitalisation 2 nights, chf: 270, decision: covered}
+        - {item: Pain medication, chf: 100, decision: covered}
+      deductible_used_before_chf: 0
+      limit_used_before_chf: 0
+      verdict: covered
+      clauses: ["AVB 1.2.1", "AVB 3.2 a", "AVB 1.5"]
+      calculation: "(2400 - 300) x 80% = 1680"
+      expected_payout_chf: 1680
+      owner_pays_chf: 720
+    claim_checklist: ["Itemised vet invoice with diagnosis and treatment date", "Receipts and prescriptions", "Incident note: date, time, height of fall", "Submit by 2026-11-02 (30 days)"]
+    agent_reply: >-
+      Go to the emergency clinic now, keep her still in a carrier. Good news: a fall is an accident, and accidents
+      are covered from day one. On a bill of about 2'400 you'd get back roughly 1'680.
+
+  - id: S02-vomiting-in-waiting-period
+    hero: true
+    cat_id: 1
+    event_date: "2026-10-10"
+    input: {type: photo, content: "vomit on the floor with a piece of string in it"}
+    user_says: "Mimi has thrown up three times since this morning."
+    follow_up_questions:
+      - {q: "Is she eating, drinking and alert, or hiding and lethargic?", purpose: medical}
+      - {q: "Could she have swallowed something: string, a hair tie, a plant like lilies, medication?", purpose: [medical, insurance], why: "a swallowed object or poison is an accident (covered now); plain gastritis is an illness (waiting period, not covered until 2026-10-15)"}
+    branches:
+      swallowed_string_or_toxin:
+        triage: red
+        triage_reason: "Possible linear foreign body or toxin; can be life-threatening."
+        coverage: {verdict: covered, clauses: ["AVB 5 Accident", "AVB 3.2 a"], note: "Mimi's deductible was used by S01, so 80% is paid."}
+      no_swallowed_object_alert_and_drinking:
+        triage: yellow
+        triage_reason: "Repeated vomiting without red flags; see a vet within 24h, sooner if it gets worse."
+        coverage:
+          invoice:
+            - {item: Consultation and blood test, chf: 310, decision: excluded, reason: "illness in 30-day waiting period"}
+            - {item: Anti-nausea medication, chf: 140, decision: excluded, reason: "illness in 30-day waiting period"}
+            - {item: "Follow-up check 2026-10-20", chf: 95, decision: excluded, reason: "follow-up of a waiting-period illness stays excluded"}
+          deductible_used_before_chf: 300
+          limit_used_before_chf: 1680
+          verdict: not_covered
+          clauses: ["AVB 1.4 d", "AVB 3.2 b", "AVB 5 Follow-up treatment"]
+          expected_payout_chf: 0
+          owner_pays_chf: 545
+    insurance_before_vet:
+      - "Keep the photo of the string: it is evidence that this is an accident, not an illness."
+      - "Ask the vet to write the cause (foreign body / toxin) in the diagnosis."
+    case_summary: "Mimi, 3y, 5.2 kg. Vomited 3x since 07:00, last 11:30; string visible in vomit (photo). Still drinking, less active. No known conditions."
+    clinic_search: "Open vet practice today, ultrasound available"
+    claim_checklist: ["Photo of vomit/string", "Invoice with diagnosis naming the cause", "Receipts", "Submit within 30 days"]
+    agent_reply_branch_illness: >-
+      Book a vet today. I have to be honest about cost: your policy started on 15 September and illnesses are only
+      covered from 15 October, so this visit and its follow-up on the 20th won't be covered.
+    agent_reply_branch_accident: >-
+      String can be dangerous, go now. Swallowing something counts as an accident, which is covered, so keep that photo.
+    why_good_demo: One follow-up question decides both urgency and coverage; shows insurance belongs in the triage step.
+
+  - id: S06-dog-bite
+    hero: true
+    cat_id: 2   # Xiaohua
+    event_date: "2026-11-02"
+    input: {type: photo, content: "puncture wounds on Xiaohua's shoulder"}
+    user_says: "A dog bit Xiaohua in the garden, she's bleeding a bit."
+    follow_up_questions:
+      - {q: "Is the bleeding heavy, and is she breathing normally?", purpose: medical}
+      - {q: "Do you know whose dog it was? If so, get the owner's name and liability insurer now.", purpose: insurance, why: "AVB 1.4 n: if the dog owner is insured, their liability insurer pays, not this policy"}
+    triage: yellow
+    triage_reason: "Bite punctures often look small but get infected; see a vet within a few hours. Red if bleeding is heavy or breathing is affected."
+    insurance_before_vet:
+      - "Photograph the wounds and, if possible, the dog."
+      - "Get the dog owner's name, address and liability insurer."
+      - "Report the bite to the police (required by AVB 4.2 c)."
+      - "Your policy lists Xiaohua as indoor-only but her collar shows outdoor time: notify the insurer (AVB 4.2 b)."
+    case_summary: "Xiaohua, 2y Dragon Li, 4.1 kg. Bitten by a medium-sized dog at 16:10 in the garden. Two punctures left shoulder, light bleeding. Allergic to chicken. Vaccinated FVRCP, no rabies vaccination."
+    clinic_search: "Vet practice open now or within 3 hours"
+    coverage:
+      invoice:
+        - {item: "Wound treatment and antibiotics", chf: 640, decision: depends}
+      deductible_used_before_chf: 0
+      limit_used_before_chf: 0
+      verdict: depends
+      branches:
+        dog_owner_known_and_insured: {payout_chf: 0, reason: "AVB 1.4 n: claim against the dog owner's liability insurance"}
+        dog_owner_unknown_or_uninsured: {payout_chf: 272, calculation: "(640 - 300) x 80% = 272"}
+      expected_payout_chf: 272   # "unknown dog" branch
+      clauses: ["AVB 1.4 n", "AVB 4.2 b", "AVB 4.2 c"]
+    claim_checklist: ["Wound photos", "Dog owner details and their liability insurer", "Police report reference", "Invoice and receipts", "Written notice to insurer: Xiaohua goes outdoors"]
+    agent_reply: >-
+      Not a run-to-the-hospital emergency, but see a vet in the next few hours; bites get infected. Before you go:
+      take photos and get the dog owner's details. If they have liability insurance, their insurer pays. If the dog
+      can't be found, your policy pays about 272 francs. You also need to report it to the police.
+    why_good_demo: Insurance changes what you do in the first five minutes, and the agent cross-checks the policy against the app's collar data.
+
+  - id: S08-cannot-pee-at-night
+    hero: true
+    cat_id: 1
+    event_date: "2026-11-21"
+    input: {type: voice, content: "panicked owner at 02:00"}
+    user_says: "Mimi keeps going to the litter box but nothing comes out!"
+    follow_up_questions:
+      - {q: "How long has she been straining, and is any urine coming out at all?", purpose: medical}
+      - {q: "Is she crying, vomiting or very weak?", purpose: medical}
+    triage: red
+    triage_reason: "Straining without urine can be a urinary blockage, which is life-threatening within hours."
+    insurance_before_vet:
+      - "Covered, including the night surcharge, as long as the vet confirms it couldn't wait (AVB 1.2.5)."
+      - "Drive to the clinic: a house call is NOT covered on this plan (needs a sum insured of 12'000)."
+      - "Mimi's deductible is used up, so you'll get 80% back."
+    case_summary: "Mimi, 3y, 5.2 kg. Straining in litter box since ~23:00, no urine passed, vocalising. Vomited once. Prior: femur fracture surgery 2026-10."
+    clinic_search: "24h emergency clinic, open now, nearest by drive time"
+    coverage:
+      invoice:
+        - {item: "Out-of-hours emergency surcharge", chf: 180, decision: covered}
+        - {item: "Catheterisation and hospitalisation", chf: 1520, decision: covered}
+        - {item: "Medication", chf: 120, decision: covered}
+        - {item: "Prescription urinary diet, 3 months", chf: 210, decision: covered, coverage: prescription_diet}
+        - {item: "House-call follow-up", chf: 150, decision: excluded, reason: "AVB 1.2.5: house calls need a sum insured of at least CHF 12'000"}
+      deductible_used_before_chf: 300
+      limit_used_before_chf: 1680
+      verdict: partially_covered
+      clauses: ["AVB 1.2.5", "AVB 1.2.9", "AVB 3.2 b"]
+      calculation: "2030 x 80% = 1624"
+      expected_payout_chf: 1624
+      owner_pays_chf: 556
+    claim_checklist: ["Invoice showing the emergency surcharge and that treatment could not wait", "Diet prescription", "Receipts", "Submit within 30 days"]
+    agent_reply: >-
+      Go now, this can be life-threatening. It's covered, including the night surcharge; you'll get about 80% back.
+      Drive her in rather than calling a home visit: house calls aren't covered on your plan.
+    why_good_demo: Insurance changes logistics in a real emergency (drive in, skip the house call).
+
+  - id: S05-swallowed-hair-tie
+    cat_id: 3   # Dahuang
+    event_date: "2026-12-01"
+    input: {type: voice, content: "owner saw the cat swallow a hair tie"}
+    user_says: "Dahuang just swallowed a hair tie!"
+    follow_up_questions:
+      - {q: "When did he swallow it, and is he vomiting or gagging?", purpose: [medical, insurance], why: "time and object document the accident"}
+      - {q: "Is any of it still hanging from his mouth? Don't pull it.", purpose: medical}
+    triage: red
+    triage_reason: "Swallowed elastic/linear object can cause obstruction; vet may induce vomiting if early."
+    insurance_before_vet:
+      - "Accident, so his pre-existing arthritis doesn't matter here."
+      - "Dahuang has 120 francs of deductible left this year."
+    case_summary: "Dahuang, 5y British Shorthair, 6.8 kg. Swallowed an elastic hair tie at 20:15, gagging once. Known mild arthritis. Vaccinated rabies, FVRCP, FeLV."
+    clinic_search: "Emergency clinic open now with endoscopy"
+    coverage:
+      invoice:
+        - {item: "Ultrasound and gastrotomy", chf: 2900, decision: covered}
+        - {item: "Hospitalisation and medication", chf: 300, decision: covered}
+      deductible_used_before_chf: 180
+      limit_used_before_chf: 0
+      verdict: covered
+      clauses: ["AVB 5 Accident", "AVB 1.2.1", "AVB 1.5"]
+      calculation: "(3200 - 120) x 80% = 2464"
+      expected_payout_chf: 2464
+      owner_pays_chf: 736
+      flags: ["Classified as accident (sudden external factor); an insurer could dispute the classification."]
+    claim_checklist: ["Invoice with diagnosis 'foreign body'", "Receipts", "Submit by 2026-12-31"]
+    agent_reply: >-
+      Go now; if it's early the vet may get it out without surgery. It's an accident, so it's covered. With 120
+      francs of deductible left, you'd get back about 80% of the rest.
+
+  - id: S04-limping
+    cat_id: 3
+    event_date: "2026-11-12"
+    input: {type: video, content: "Dahuang limping, one claw bleeding"}
+    user_says: "Dahuang is limping and there's blood on his paw."
+    follow_up_questions:
+      - {q: "Is the bleeding from a claw, and does it stop with gentle pressure?", purpose: medical}
+      - {q: "Did something happen just now, or has the limp been coming and going?", purpose: [medical, insurance], why: "a new injury is an accident; a recurring limp points to his pre-existing arthritis, which is not covered"}
+    triage: yellow
+    triage_reason: "Torn claw plus limp; not life-threatening if bleeding stops."
+    insurance_before_vet:
+      - "Ask the vet to bill the torn claw (accident, covered) separately from the arthritis (pre-existing, not covered)."
+    case_summary: "Dahuang, 5y, 6.8 kg. Torn claw left front, caught in cat flap this morning; limping on same leg. Known mild arthritis since 2025-03, intermittent limp."
+    clinic_search: "Regular vet practice, appointment today or tomorrow"
+    coverage:
+      invoice:
+        - {item: "Arthritis X-ray and anti-inflammatories", chf: 520, decision: excluded, reason: "pre-existing condition, add-on not selected"}
+        - {item: "Torn claw treatment", chf: 180, decision: covered}
+      deductible_used_before_chf: 0
+      limit_used_before_chf: 0
+      verdict: partially_covered
+      clauses: ["AVB 1.4 e", "AVB 1.3", "AVB 1.2.1", "AVB 1.5.2"]
+      calculation: "Covered 180 goes to the 300 deductible -> 0 paid, 120 deductible left"
+      expected_payout_chf: 0
+      owner_pays_chf: 700
+    claim_checklist: ["Invoice with the claw and arthritis lines itemised separately", "Submit anyway: it counts toward the deductible"]
+    agent_reply: >-
+      See your vet today or tomorrow. The torn claw is covered as an accident, but at 180 francs it stays under your
+      deductible. The arthritis is pre-existing and not covered. Submit the claim anyway, it brings the deductible down.
+
+  - id: S10-owner-hospitalised
+    cat_id: [1, 2, 3]
+    event_date: "2027-01-08"
+    input: {type: voice, content: "owner calling from hospital"}
+    user_says: "I've been rushed to hospital, who looks after my cats?"
+    follow_up_questions:
+      - {q: "Was this an emergency admission or a planned stay?", purpose: insurance, why: "only emergency admissions are covered for pet boarding (AVB 1.2.4)"}
+      - {q: "Is there a neighbour with a key, or should I find a cattery near you?", purpose: logistics}
+    triage: green
+    triage_reason: "The cats are healthy; this is a care-logistics emergency."
+    insurance_before_vet:
+      - "Boarding is covered up to 40 francs per cat per day for up to 10 days. Keep the cattery invoice and a hospital admission note."
+    case_summary: "3 cats (Mimi, Xiaohua, Dahuang) need boarding from today, owner hospitalised. Xiaohua: no chicken (allergy). Dahuang: mild arthritis, soft bedding."
+    clinic_search: "Cattery or pet sitter with availability today"
+    coverage:
+      invoice:
+        - {item: "Cattery 3 cats x 4 days x 35", chf: 420, decision: covered, coverage: emergency_pet_care}
+      deductible_used_before_chf: null   # not subject to the deductible in this schedule
+      limit_used_before_chf: 0
+      verdict: covered
+      clauses: ["AVB 1.2.4"]
+      calculation: "35 <= 40 per cat per day, 4 <= 10 days -> 420"
+      expected_payout_chf: 420
+      owner_pays_chf: 0
+      counterfactual: "A planned operation would NOT be covered."
+    claim_checklist: ["Cattery invoice", "Hospital admission confirmation showing emergency admission"]
+    agent_reply: >-
+      I hope you're okay. Your insurance covers a cattery while you're in hospital in an emergency, up to 40 francs
+      per cat per day. I found two catteries with space today. Keep the invoice and your admission letter.
+    why_good_demo: The emergency is the owner's; shows the assistant isn't only about vet bills.
+
+# Post-visit and routine questions: no triage, useful as short follow-ups after an emergency demo.
+routine_scenarios:
+  - id: S03-physio-after-fracture
+    cat_id: 1
+    event_date: "2026-11-05"
+    user_says: "The vet wants Mimi to do six physiotherapy sessions for her leg. Is that included?"
+    coverage:
+      invoice:
+        - {item: "Physiotherapy 6 x 90", chf: 540, decision: excluded, reason: "complementary medicine module not selected"}
+      deductible_used_before_chf: 300
+      limit_used_before_chf: 1680
+      verdict: not_covered
+      clauses: ["AVB 1.2.6", "AVB 3.5"]
+      expected_payout_chf: 0
+      owner_pays_chf: 540
+    agent_reply: >-
+      The surgery was covered, but physiotherapy is complementary medicine, which isn't in your plan. Adding it at
+      renewal wouldn't help either: the leg would then count as pre-existing.
+
+  - id: S07-annual-visit-line-items
+    cat_id: 2
+    event_date: "2027-03-10"
+    user_says: "I paid 270 for Xiaohua's yearly check, vaccine, microchip and a travel certificate. What can I claim?"
+    coverage:
+      invoice:
+        - {item: "Annual check-up", chf: 90, decision: covered, coverage: prevention}
+        - {item: "FVRCP vaccination", chf: 65, decision: covered, coverage: prevention}
+        - {item: "Microchip", chf: 70, decision: excluded, reason: "AVB 1.4 g"}
+        - {item: "Health certificate for travel", chf: 45, decision: excluded, reason: "AVB 1.4 f"}
+      deductible_used_before_chf: 0
+      limit_used_before_chf: 0
+      verdict: partially_covered
+      clauses: ["AVB 1.2.3", "AVB 1.4 f", "AVB 1.4 g"]
+      calculation: "Prevention 155 must first use up the 300 deductible -> 0"
+      expected_payout_chf: 0
+      alternative: {deductible_used_before_chf: 300, payout_chf: 155}
+      owner_pays_chf: 270
+    agent_reply: >-
+      Check-up and vaccine are covered as prevention, but they go toward the deductible first, so nothing is paid
+      yet. Microchip and travel certificate aren't covered.
+
+  - id: S09-weight-loss-food
+    cat_id: 1
+    event_date: "2027-01-20"
+    user_says: "The vet says Mimi is too fat and sold me diet food for 240. Can I claim it?"
+    coverage:
+      invoice:
+        - {item: "Weight-loss diet food", chf: 240, decision: excluded, reason: "AVB 1.2.9 / 1.4 l"}
+        - {item: "Nutrition consultation", chf: 80, decision: excluded, reason: "AVB 1.4 l"}
+      deductible_used_before_chf: 300
+      limit_used_before_chf: 3304
+      verdict: not_covered
+      clauses: ["AVB 1.2.9", "AVB 1.4 l"]
+      expected_payout_chf: 0
+      owner_pays_chf: 320
+    agent_reply: >-
+      No. Prescription food is covered when it treats an illness, like the urinary diet in November, but food for
+      weight loss is excluded.
+
+  - id: S11-dental-missed-checkup
+    cat_id: 3
+    event_date: "2027-02-15"
+    user_says: "Dahuang needs two teeth pulled, 780 francs. Is dental covered?"
+    coverage:
+      invoice:
+        - {item: "Dental X-ray and two extractions", chf: 780, decision: likely_excluded}
+      deductible_used_before_chf: 300
+      limit_used_before_chf: 2464
+      verdict: depends
+      clauses: ["AVB 1.2.2", "AVB 1.4 b", "AVB 4.1 b", "AVB 5 Pre-existing condition"]
+      flags: ["No check-up since 2025-04-12: dental problems an annual check would have caught are excluded."]
+      expected_payout_chf: 0   # most likely outcome
+      upper_bound_payout_chf: 624   # if accepted: 780 x 80%
+    agent_reply: >-
+      Dental is covered in principle, but Dahuang hasn't had a check-up since April 2025, and the policy excludes
+      problems a yearly check would have caught. Expect a refusal or reduction; submit anyway and book his check-up.
+
+  - id: S12-pregnancy-vs-neutering
+    cat_id: 2
+    event_date: "2027-04-03"
+    user_says: "I think Xiaohua is pregnant. Will insurance pay for the ultrasound? And neutering afterwards?"
+    coverage:
+      invoice:
+        - {item: "Pregnancy ultrasound", chf: 160, decision: excluded, reason: "AVB 1.4 m"}
+        - {item: "Neutering", chf: 260, decision: covered, coverage: prevention}
+      deductible_used_before_chf: 300
+      limit_used_before_chf: 272
+      verdict: partially_covered
+      clauses: ["AVB 1.4 m", "AVB 1.2.3 b"]
+      calculation: "Neutering is prevention: 100% up to the 200 prevention sum -> 200"
+      expected_payout_chf: 200
+      owner_pays_chf: 220
+    agent_reply: >-
+      The pregnancy ultrasound isn't covered, since reproduction is excluded. Neutering is covered as prevention, up
+      to your 200 franc prevention limit.
