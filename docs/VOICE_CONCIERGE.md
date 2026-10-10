@@ -1,5 +1,7 @@
 # Multilingual voice concierge
 
+For endpoint payloads, lifecycle states and frontend/backend responsibilities, see the [voice controller contract](controller-voice-contract.md). This guide provides product flow and provider integration context.
+
 Pawse accepts typed messages and recorded audio in English, Mandarin Chinese, German and Hindi. Gemini transcribes the original speech and prepares a German telephone script with paired subtitles. Gradium generates German WAV audio using an owner-approved voice. Hindi is one supported Indian language; the app does not claim to support every language spoken in India.
 
 ## Record your own voice first

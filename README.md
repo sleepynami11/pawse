@@ -2,7 +2,7 @@
 
 > A multi-agent cat-care assistant that turns a worried moment into clear next steps, nearby veterinary care, and a conversation in the local language.
 
-[Local Demo](http://127.0.0.1:8765) · [API Docs](docs/API_CONTRACT.md) · [Architecture](docs/ARCHITECTURE.md)
+[Local Demo](http://127.0.0.1:8765) · [Engineering Docs](docs/README.md) · [API Docs](docs/API_CONTRACT.md) · [Architecture](docs/ARCHITECTURE.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Stage: Hackathon prototype](https://img.shields.io/badge/Stage-Hackathon_prototype-orange.svg)](docs/SPEC.md)
@@ -98,6 +98,8 @@ flowchart TD
 ```
 
 See [Architecture](docs/ARCHITECTURE.md) for execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
+
+Integration agreements are split into [Controller–Frontend](docs/controller-frontend-contract.md), [Controller–Service](docs/controller-service-contract.md), [Care](docs/controller-care-contract.md), [Agents](docs/controller-agent-contract.md), [Voice](docs/controller-voice-contract.md) and [Knowledge/Data](docs/controller-knowledge-contract.md) contracts. The [docs index](docs/README.md) explains where to start.
 
 ---
 

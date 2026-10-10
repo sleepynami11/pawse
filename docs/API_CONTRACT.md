@@ -2,6 +2,8 @@
 
 Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the running app also serves `/openapi.json` and `/docs`. This contract describes the independent Pawse integration, informed by MapifyAI's request/results and progress-event conventions.
 
+This page is the API overview. For integration work, use the [docs index](README.md), [Controller–Frontend](controller-frontend-contract.md) and [Controller–Service](controller-service-contract.md) agreements. Domain contracts cover [Care](controller-care-contract.md), [Agents](controller-agent-contract.md), [Voice](controller-voice-contract.md) and [Knowledge/Data](controller-knowledge-contract.md), with request examples, lifecycle rules and handoff responsibilities.
+
 ## Runtime and session boundaries
 
 The current app is a **local single-user prototype**. Bind to `127.0.0.1`; host checking accepts only localhost addresses and the test host. This is not a public multi-user deployment. A random HttpOnly, SameSite=Strict browser cookie isolates result retrieval between sessions. It is not a login system. External deployments need real authentication, per-cat ownership authorization, storage and quotas first.
@@ -88,20 +90,9 @@ Ranking is deterministic: provider-reported open clinics, then unknown, then rep
 
 `GET /agents/graph` describes seven roles: intake, care guidance, nearby vets, policy evidence, ranking, communication and orchestration. It distinguishes model calls, tools and deterministic code. Configuration flags do not prove a live provider was checked; see [model allocation](MODEL_ALLOCATION.md) and the sanitized access report.
 
-`POST /agents/runs` accepts `{ "care": <CareRequest> }`. It reuses the existing concurrent care providers and adds a 45-second outer deadline. The response is:
+`POST /agents/runs` accepts an `AgentRunRequest` containing the `care` object. It reuses the existing concurrent care providers and adds a 45-second outer deadline. The final JSON response contains `run_id`, `mode: bounded_workflow`, `status`, the complete nested `CareResult`, `trace`, `actions`, `external_actions_performed: false` and `note`. See the [agent controller contract](controller-agent-contract.md) for a valid request example and field/state tables. This endpoint does not stream.
 
-```json
-{
-  "run_id": "opaque-id",
-  "mode": "bounded_workflow",
-  "status": "partial",
-  "care": {"request_id": "opaque-id", "...": "CareResult fields"},
-  "trace": [{"agent_id": "care_guidance", "state": "complete", "detail": "...", "elapsed_ms": 1200}],
-  "actions": [{"id": "outbound_call", "state": "not_connected", "required": ["..."]}],
-  "external_actions_performed": false,
-  "note": "..."
-}
-```
+Trace `elapsed_ms` records the offset from run start when the role was last updated, not that agent's individual duration.
 
 `trace.state` is `pending`, `running`, `complete`, `unavailable`, `timeout`, `skipped`, `review_required` or `evidence_required`. The finished response contains terminal states. A complete care run does not mean every future action is available: live policy evidence remains required, communication requires owner review, and calls/calendar/bookings are unconnected.
 

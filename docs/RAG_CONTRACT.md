@@ -1,5 +1,7 @@
 # RAG evidence contract
 
+For controller ownership, endpoint integration and the separate clinic-data boundary, see the [knowledge controller contract](controller-knowledge-contract.md). This document defines evidence semantics and retrieval acceptance cases.
+
 The first retrieval agent is implemented in `pawse/knowledge.py`. It searches the existing **fictional demo insurance corpus** locally, returns citations, and makes no model or network calls. It is a lexical retrieval baseline with English token matching and a small synonym list, not an embedding or semantic RAG implementation.
 
 ## Request

@@ -2,6 +2,8 @@
 
 Development follows the product modules: frontend experience, orchestration, voice communication and evidence retrieval. Each module has a feature branch, an API boundary and a validation target. The runtime workflow is described in [ARCHITECTURE.md](ARCHITECTURE.md).
 
+Start integration work with [Controller–Frontend](controller-frontend-contract.md) and [Controller–Service](controller-service-contract.md). Detailed contracts are grouped by [Care](controller-care-contract.md), [Agents](controller-agent-contract.md), [Voice](controller-voice-contract.md) and [Knowledge/Data](controller-knowledge-contract.md). The [docs index](README.md) links the supporting provider and data references.
+
 ## Modules and branches
 
 | Module | Branch | Source files | Deliverable | Validation |
