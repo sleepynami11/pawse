@@ -22,7 +22,7 @@ export interface CareRequest {
     mime_type: "image/jpeg" | "image/png" | "image/webp";
     data: string;
   } | null;
-  insurance?: { company: string; phone: string; plan?: string | null } | null;
+  insurance?: { company: string; phone: string } | null;
   share_with_ai?: boolean;
   share_location?: boolean;
 }
@@ -49,14 +49,12 @@ export interface Clinic {
   emergency_service: "unknown" | "provider_reported";
   services: string[];
   reasons: string[];
-  opening_hours: string[];
-  source: "google_places" | "gemini_maps" | "mapify" | "openstreetmap";
+  source: "google_places" | "mapify" | "osm";
   retrieved_at: string;
   availability_note: string;
 }
 export interface InsuranceContact {
   company: string;
-  plan?: string | null;
   phone: string;
   call_url: string;
   source: "user_provided";
@@ -76,20 +74,6 @@ export interface CareResult {
   providers: Record<string, string>;
   elapsed_ms: number;
   target_seconds: number;
-  search_url: string;
-  completeness: string;
-}
-export interface ClinicSearchRequest {
-  location: Location;
-  radius_km?: number;
-  language?: string;
-  share_location: boolean;
-}
-export interface ClinicSearchResult {
-  status: "complete" | "unavailable";
-  clinics: Clinic[];
-  warnings: string[];
-  elapsed_ms: number;
   search_url: string;
   completeness: string;
 }
