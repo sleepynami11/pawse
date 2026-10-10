@@ -14,7 +14,38 @@ Gemini for reasoning and transcription, Gradium for voice.
 - Product scope: [docs/SPEC.md](docs/SPEC.md) · Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Modules, owners' branches, shared files: [docs/AGENT_DEVELOPMENT.md](docs/AGENT_DEVELOPMENT.md)
 - What is actually verified: [docs/VALIDATION.md](docs/VALIDATION.md)
-- Demo story (Mimi): [research/pet-insurance/demo-video-script.md](research/pet-insurance/demo-video-script.md)
+- Demo story (Mimi): see [The golden path](#the-golden-path-the-2-minute-mimi-demo) below
+
+## The golden path: the 2-minute Mimi demo
+
+This story is the product's acceptance test. Full script with German lines and timings:
+[research/pet-insurance/demo-video-script.md](research/pet-insurance/demo-video-script.md).
+
+**Mimi jumped off the wardrobe and is limping → 🟡 see a vet today → Pawse calls the vet in German → the insurer
+confirms the accident is covered, but not the home visit or physio → the owner picks the clinic (about CHF 385
+instead of 510) → Pawse confirms the vet, books a cat-friendly taxi, and hands over a case summary and claim checklist.**
+
+| Time | Beat | Backed by | Today |
+|---|---|---|---|
+| 0:00–0:17 | Owner records Mimi and says "My cat is limping" in English | `voice.py` transcription, `/care` intake | ✅ photo + audio via Gemini · ⚠️ video intake not connected |
+| 0:17–0:30 | Triage card 🟡, follow-up "fall or jump?", nearest open practice | `providers.py` care guidance + clinic adapters, `orchestration.py` ranking | ✅ Gemini guidance · ⚠️ clinic search needs `GOOGLE_PLACES_API_KEY` or `MAPIFY_BASE_URL` |
+| 0:30–0:58 | German call to the vet: 16:30 or a home visit, ~CHF 600 + 150 | `voice.py` German script + subtitles, Gradium speech | ✅ script · ⚠️ own voice needs a Gradium key · 🎭 call and reply simulated (no telephony) |
+| 0:58–1:30 | Insurer call: accident covered, home visit and physio not; clinic CHF 385 vs home CHF 510 | `knowledge.py` cited AVB clauses, `demo.py` cost maths, `research/pet-insurance/` | ✅ citations + maths (real AVB terms, synthetic policyholder) · 🎭 insurer reply simulated |
+| 1:30–1:42 | Pawse confirms 16:30 with the vet, asks for an itemised invoice | `voice.py` script | ✅ script · 🎭 reply and booking simulated |
+| 1:42–1:54 | Taxi for 16:05 that accepts a cat in a carrier | `voice.py` script | ✅ script · 🎭 reply and booking simulated |
+| 1:54–2:00 | Case summary + claim checklist (keep video, itemised invoice, 30 days) | `demo.py`, frontend | ✅ |
+
+The in-app rehearsal (`GET /api/v1/demo/mimi`, first screen of the app) plays the whole story with no keys. It is the
+fallback, not the goal.
+
+**Keep it really running.**
+- The goal is the live path: each ⚠️ above is open work to turn into ✅ (or, if cut, an honest 🎭 label), not a footnote.
+- Every change must leave the golden path working end to end. Before pushing anything that touches it, run
+  `bash scripts/check.sh` and walk the story in the browser ([demo-check](.claude/skills/demo-check/SKILL.md)).
+- Story outcomes live in pytest (`tests/test_orchestration.py`): costs, citations, statuses. If you change a number,
+  a German line or a clause, change the script, `pawse/demo.py` and the tests together so the video and the app agree.
+- 🎭 steps stay labelled "simulated" on screen. Don't present a simulated reply as real (rule 3).
+- When a ⚠️ becomes ✅, update this table and [docs/VALIDATION.md](docs/VALIDATION.md) in the same change.
 
 ## Where things are
 
@@ -59,7 +90,8 @@ secret scan, skill validation, JS syntax, OpenAPI contract in sync, pytest. Keep
    (`pawse/static/`, `schemas/pawse.ts`) in the same change.
 7. **Small commits, clear messages:** `type: plain-English what` (feat/fix/chore/docs/test/research),
    stage files by name. Push small in-module changes straight to `main`; use a PR for shared files ([gp](.claude/skills/gp/SKILL.md)).
-8. **Stay in your lane.** Several people and agents work in parallel by module (see AGENT_DEVELOPMENT).
+8. **Protect the golden path.** No change may break the 2-minute demo (see [The golden path](#the-golden-path-the-2-minute-mimi-demo)); check it before pushing.
+9. **Stay in your lane.** Several people and agents work in parallel by module (see AGENT_DEVELOPMENT).
    Don't refactor files outside your task; pull/rebase before pushing.
 
 ## Skills catalog
