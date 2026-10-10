@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1450" viewBox="0 0 1080 1450" role="img" aria-labelledby="title desc">
 <title id="title">Pawse multi-agent workflow</title>
-<desc id="desc">Intake and safety branches into parallel Care Guidance and Vet Discovery agents. Clinic results pass through Ranking. A Python Orchestrator combines available guidance and clinics into the care summary. Policy Evidence is a separate synthetic-only retrieval tool. After owner review, Communication uses Gemini and Gradium to create a German script and owner-consented audio. Calls and bookings are future integrations.</desc>
+<desc id="desc">Intake and safety branches into parallel Care Guidance and Vet Discovery agents. Clinic results pass through Ranking. The Orchestrator combines available guidance and clinics into the care summary. Policy Evidence is a separate synthetic-only retrieval tool. After owner review, Communication uses Gemini and Gradium to create a German script and owner-consented audio. Calls and bookings are future integrations.</desc>
 <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#927888"/></marker><marker id="pinkArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#D72B77"/></marker></defs>
 <rect width="1080" height="1450" fill="white"/>
 <g font-family="Arial, Helvetica, sans-serif">
@@ -56,7 +56,7 @@
 <circle cx="298" cy="874" r="16" fill="#D72B77"/>
 <text x="298" y="880" font-size="18" font-weight="700" text-anchor="middle" fill="white">5</text>
 <text x="540.0" y="894" font-size="32" font-weight="700" text-anchor="middle" fill="#27232A">Orchestrator</text>
-<text x="540.0" y="930" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Python · combine available results</text>
+<text x="540.0" y="930" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Combine available results</text>
 <text x="540.0" y="960" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Keep missing information explicit</text>
 </g>
 <path d="M540 974 V1012" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
