@@ -14,6 +14,7 @@ function ResultCard({ t, target, result }) {
     return (
       <div className="result-card">
         <h3>✓ {t.appointment}</h3>
+        {result.simulated && <span className="sim-badge">{t.simulated}</span>}
         <div className="result-big">{result.time}</div>
         <p>{result.place}</p>
         <p>
@@ -27,6 +28,7 @@ function ResultCard({ t, target, result }) {
   return (
     <div className="result-card">
       <h3>{t.insuranceAnswer}</h3>
+      {result.simulated && <span className="sim-badge">{t.simulated}</span>}
       <ul className="cov">
         {result.points.map((p, i) => (
           <li key={i} className={p.ok ? 'ok' : 'no'}>
@@ -152,6 +154,7 @@ export default function PhoneCall({ t, lang, target, clinic, context, onDone }) 
         {lines.map((l, i) => (
           <div key={i} className={`line line-${l.who}`}>
             <span className="line-who">{l.who === 'ai' ? t.pawse : callee.name}</span>
+            {l.simulated && <span className="sim-badge">{t.simulated}</span>}
             <p className="line-original" lang="de">{l.original}</p>
             <p className="line-text">{l.text}</p>
           </div>
