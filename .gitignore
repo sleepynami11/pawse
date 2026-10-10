@@ -39,3 +39,8 @@ backend/data/
 backend/chroma_db/
 backend/chroma_data/
 backend/.knowledge_base_state.json
+
+# Demo recorder output (video, trim/events logs)
+demo/demo-out/
+demo/test-results/
+demo/playwright-report/

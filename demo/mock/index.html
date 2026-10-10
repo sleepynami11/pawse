@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pawse demo mock</title>
+    <!--
+      MOCK for the scripted demo recorder (demo/e2e/demo-recording.spec.ts). It plays the
+      "Mimi is limping" story from research/pet-insurance/demo-video-script.md with canned
+      lines, cards and timings: no backend, no model, no phone calls. Every call, reply,
+      calendar slot and booking here is simulated. Replace with the real app once it can
+      run the flow end to end. ?speed=N scales every pause (the recorder passes SPEED).
+    -->
+    <style>
+      :root {
+        --bg: #f6f3f4;
+        --panel: #ffffff;
+        --ink: #241f22;
+        --muted: #786c72;
+        --line: #eadfe3;
+        --accent: #e0457b;
+        --accent-soft: #fde7ef;
+        --ok: #1f9d63;
+        --ok-soft: #e3f6ec;
+        --warn: #c98a00;
+        --warn-soft: #fff4d6;
+        --bad: #d13b3b;
+        --bad-soft: #fde6e6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 18px/1.45 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 40px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .brand { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; }
+      .brand span { color: var(--accent); }
+      .tag { color: var(--muted); font-size: 15px; }
+      .pill {
+        margin-left: auto;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--warn-soft);
+        color: #7a5600;
+      }
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 640px 1fr;
+        gap: 32px;
+        padding: 28px 40px;
+        min-height: 0;
+      }
+      /* Left: the conversation with the cat. */
+      .chat {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .cat-head {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--line);
+      }
+      .avatar {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: #ffd9a8;
+        display: grid;
+        place-items: center;
+        font-size: 40px;
+        transition: box-shadow 0.3s, transform 0.3s;
+      }
+      body[data-state="listening"] .avatar { box-shadow: 0 0 0 8px var(--accent-soft); }
+      body[data-state="working"] .avatar { animation: bob 0.9s ease-in-out infinite; }
+      body[data-state="speaking"] .avatar { box-shadow: 0 0 0 8px var(--ok-soft); }
+      @keyframes bob { 50% { transform: translateY(-5px) rotate(-4deg); } }
+      .cat-name { font-weight: 800; font-size: 22px; }
+      .state { font-size: 15px; color: var(--muted); }
+      .state b { color: var(--accent); }
+      .log {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+      }
+      .bubble {
+        max-width: 86%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        animation: pop 0.25s ease-out;
+      }
+      .bubble.pawse { background: #f3eef0; border-bottom-left-radius: 6px; }
+      .bubble.user {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #fff;
+        border-bottom-right-radius: 6px;
+      }
+      .bubble .who { display: block; font-size: 12px; font-weight: 700; opacity: 0.7; margin-bottom: 2px; }
+      @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
+      .controls {
+        border-top: 1px solid var(--line);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        min-height: 104px;
+      }
+      .mic {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        font-size: 28px;
+        cursor: pointer;
+      }
+      .mic:disabled { background: #d9cdd2; cursor: default; }
+      .wave { display: none; gap: 4px; align-items: center; height: 40px; }
+      body[data-state="listening"] .wave { display: flex; }
+      .wave i { width: 5px; background: var(--accent); border-radius: 3px; animation: wave 0.7s ease-in-out infinite; }
+      .wave i:nth-child(2n) { animation-delay: 0.15s; }
+      .wave i:nth-child(3n) { animation-delay: 0.3s; }
+      @keyframes wave { 0%, 100% { height: 8px; } 50% { height: 36px; } }
+      .chip {
+        border: 2px solid var(--accent);
+        background: #fff;
+        color: var(--accent);
+        font: inherit;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        animation: pop 0.25s ease-out;
+      }
+      /* Right: the work Pawse is doing, as cards. */
+      .board {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: min-content;
+        gap: 20px;
+        align-content: start;
+        overflow-y: auto;
+        min-height: 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 18px 22px;
+        animation: pop 0.35s ease-out;
+      }
+      .card.wide { grid-column: 1 / -1; }
+      .card h3 { margin: 0 0 8px; font-size: 19px; }
+      .card .sub { color: var(--muted); font-size: 15px; }
+      .card ul { margin: 8px 0 0; padding-left: 20px; }
+      .card.triage { border-left: 8px solid var(--warn); }
+      .card.call { border-left: 8px solid var(--accent); }
+      .card.call.done { border-left-color: var(--line); opacity: 0.75; }
+      .card.call .live { color: var(--accent); font-weight: 700; font-size: 14px; }
+      .card.call.done .live { color: var(--muted); }
+      .line { margin-top: 10px; animation: pop 0.25s ease-out; }
+      .line .de { font-weight: 600; }
+      .line .en { color: var(--muted); font-size: 15px; }
+      .line .spk { font-size: 12px; font-weight: 800; letter-spacing: 0.5px; color: var(--accent); }
+      .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+      .row:last-child { border-bottom: 0; }
+      .row.no { color: var(--bad); font-weight: 600; transition: color 0.4s; }
+      .row.yes { color: var(--ok); font-weight: 600; }
+      .slots { display: flex; gap: 8px; margin-top: 8px; }
+      .slot { flex: 1; padding: 8px; text-align: center; border-radius: 10px; background: #f3eef0; font-size: 15px; }
+      .slot.free { background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+      .slot.pick { outline: 3px solid var(--ok); }
+      .options { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .option {
+        border: 2px solid var(--line);
+        border-radius: 16px;
+        padding: 14px 18px;
+        background: #fff;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .option .big { font-size: 28px; font-weight: 800; }
+      .option.chosen { border-color: var(--ok); background: var(--ok-soft); }
+      .confirm { font-size: 24px; font-weight: 800; color: var(--ok); }
+      .summary { background: var(--ok-soft); border-color: #bfe6d1; }
+      .quote { font-size: 15px; background: #fff; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    </style>
+  </head>
+  <body data-state="idle">
+    <header>
+      <div class="brand">🐾 paw<span>se</span></div>
+      <div class="tag">Zurich, Switzerland</div>
+      <div class="pill">DEMO MOCK · SIMULATED CALLS</div>
+    </header>
+    <main>
+      <section class="chat" aria-label="Conversation">
+        <div class="cat-head">
+          <div class="avatar" aria-hidden="true">🐱</div>
+          <div>
+            <div class="cat-name">Pawse</div>
+            <div class="state" id="state-label">Status: <b>idle</b></div>
+          </div>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+        <div class="controls" id="controls">
+          <button class="mic" id="mic" aria-label="Talk to Pawse">🎙</button>
+          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </section>
+      <section class="board" id="board" aria-label="What Pawse is doing"></section>
+    </main>
+
+    <script>
+      const speed = Number(new URLSearchParams(location.search).get("speed")) || 1;
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms / speed));
+      const $ = (id) => document.getElementById(id);
+      const log = $("log");
+      const board = $("board");
+      const controls = $("controls");
+      const mic = $("mic");
+
+      function setState(s) {
+        document.body.dataset.state = s;
+        $("state-label").innerHTML = `Status: <b>${s}</b>`;
+      }
+
+      function bubble(who, text) {
+        const b = document.createElement("div");
+        b.className = `bubble ${who}`;
+        b.innerHTML = `<span class="who">${who === "user" ? "You" : "Pawse"}</span>`;
+        const t = document.createElement("span");
+        b.appendChild(t);
+        log.appendChild(b);
+        log.scrollTop = log.scrollHeight;
+        return t;
+      }
+
+      // Type text into a span so speech reads as it is "spoken".
+      async function typeInto(span, text, msPerChar = 28) {
+        for (const ch of text) {
+          span.textContent += ch;
+          log.scrollTop = log.scrollHeight;
+          await wait(msPerChar);
+        }
+      }
+
+      async function userSays(text) {
+        setState("listening");
+        mic.disabled = true;
+        await wait(500);
+        await typeInto(bubble("user", text), text, 32);
+        await wait(300);
+        setState("working");
+        await wait(1100);
+      }
+
+      async function pawseSays(text) {
+        setState("speaking");
+        await typeInto(bubble("pawse", text), text);
+        await wait(500);
+      }
+
+      function card(html, cls = "", id = "") {
+        const c = document.createElement("div");
+        c.className = `card ${cls}`;
+        if (id) c.id = id;
+        c.innerHTML = html;
+        board.appendChild(c);
+        c.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return c;
+      }
+
+      function callCard(id, name) {
+        return card(
+          `<div class="live">📞 Calling · German · live subtitles</div><h3>${name}</h3><div class="lines"></div>`,
+          "call wide",
+          id,
+        );
+      }
+
+      async function callLine(c, speaker, de, en) {
+        const l = document.createElement("div");
+        l.className = "line";
+        l.innerHTML = `<div class="spk">${speaker}</div><div class="de">${de}</div><div class="en">${en}</div>`;
+        c.querySelector(".lines").appendChild(l);
+        c.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        await wait(800 + de.length * 22);
+      }
+
+      function endCall(c) {
+        c.classList.add("done");
+        c.querySelector(".live").textContent = "✓ Call ended";
+      }
+
+      // Offer reply chips; resolves with the label the user clicked.
+      function chips(labels) {
+        setState("idle");
+        return new Promise((resolve) => {
+          for (const label of labels) {
+            const b = document.createElement("button");
+            b.className = "chip";
+            b.textContent = label;
+            b.onclick = () => {
+              controls.querySelectorAll(".chip").forEach((x) => x.remove());
+              resolve(label);
+            };
+            controls.appendChild(b);
+          }
+        });
+      }
+
+      async function story() {
+        await userSays("My cat is limping, please help me.");
+        await pawseSays("She isn't putting weight on her front left paw. Did she fall or jump?");
+        await userSays(await chips(["She jumped off the wardrobe."]));
+
+        card(
+          `<h3>🟡 See a vet today</h3><div class="sub">Not an emergency room. Demo copy, not veterinary advice.</div>
+           <ul><li>Putting no weight on front left paw</li><li>No bleeding</li><li>Keep her calm in the carrier</li></ul>`,
+          "triage",
+          "triage",
+        );
+        card(
+          `<h3>📍 Kleintierpraxis am See</h3><div class="sub">1.2 km · open now · closest practice</div>`,
+          "",
+          "clinic",
+        );
+        await pawseSays(
+          "Then see a vet today, not an emergency room. The closest open practice is Kleintierpraxis am See, 1.2 km away. Shall I call them?",
+        );
+        await userSays(await chips(["Yes, call them."]));
+
+        const vet = callCard("call-vet", "Kleintierpraxis am See");
+        setState("working");
+        await callLine(vet, "PAWSE", "Grüezi, ich rufe für Familie Demo an. Ihre Katze Mimi, drei Jahre, hinkt seit einer Stunde vorne links nach einem Sprung vom Schrank.", "Hello, I'm calling for the Demo family. Their cat Mimi, three, has been limping on the front left since jumping off a wardrobe an hour ago.");
+        card(
+          `<h3>📅 Your afternoon</h3><div class="sub">Read-only, private titles hidden</div>
+           <div class="slots"><div class="slot">15:00 busy</div><div class="slot free">16:00</div><div class="slot free" id="slot-1630">16:30</div><div class="slot free">17:30</div></div>`,
+          "",
+          "calendar",
+        );
+        await callLine(vet, "VET", "Wir können sie heute um 16:30 in der Praxis sehen, oder heute Abend einen Hausbesuch machen.", "We can see her today at 16:30 at the practice, or do a home visit tonight.");
+        await pawseSays("16:30 at the practice or a home visit tonight. You're free from 4. 16:30?");
+        await userSays(await chips(["16:30 works."]));
+        $("slot-1630").classList.add("pick");
+
+        await callLine(vet, "VET", "Mit Untersuchung und Röntgen rechnen Sie mit etwa 600 Franken. Der Hausbesuch kostet 150 Franken extra.", "Exam and X-ray come to about CHF 600. The home visit is CHF 150 extra.");
+        endCall(vet);
+        await pawseSays(
+          "That's about 600 francs, plus 150 for a home visit. A jump injury counts as an accident, so I think it's covered. Shall I check with your insurer?",
+        );
+        await userSays(await chips(["Yes, please."]));
+
+        vet.remove();
+        $("clinic").remove();
+        $("triage").remove();
+        const ins = callCard("call-insurer", "Your pet insurer");
+        const policy = card(
+          `<h3>📄 Policy PAWSE-DEMO-2026-000001</h3>
+           <div class="row yes"><span>Accident, from day 1</span><span>✅ AVB 1.2.1</span></div>
+           <div class="row"><span>Deductible</span><span>CHF 300, then 80%</span></div>
+           <div class="row" id="row-home"><span>Home-visit surcharge</span><span>…</span></div>
+           <div class="row" id="row-physio"><span>Physiotherapy</span><span>…</span></div>`,
+          "wide",
+          "policy",
+        );
+        await callLine(ins, "INSURER", "Unfälle sind ab dem ersten Tag gedeckt, auch in der Karenzfrist. Nach der Franchise von 300 Franken übernehmen wir 80 Prozent.", "Accidents are covered from day one, even in the waiting period. After the CHF 300 deductible we pay 80%.");
+        await callLine(ins, "INSURER", "Der Hausbesuch ist in Ihrem Vertrag aber nicht gedeckt, das gibt es erst ab einer Versicherungssumme von 12'000 Franken.", "The home visit isn't covered on your plan; that needs an annual sum of CHF 12,000.");
+        Object.assign($("row-home"), { className: "row no" }).lastElementChild.textContent = "❌ AVB 1.2.5";
+        await callLine(ins, "INSURER", "Und eine Physiotherapie danach wäre auch nicht versichert.", "And physiotherapy afterwards wouldn't be covered either.");
+        Object.assign($("row-physio"), { className: "row no" }).lastElementChild.textContent = "❌ AVB 1.2.6";
+        endCall(ins);
+        ins.remove();
+
+        const opts = card(
+          `<h3>Your options</h3><div class="options">
+             <button class="option" id="opt-a"><div>🅰 Clinic today 16:30</div><div class="big">~CHF 385</div><div class="sub">You pay, incl. ~CHF 25 taxi</div></button>
+             <button class="option" id="opt-b"><div>🅱 Home visit tonight</div><div class="big">CHF 510</div><div class="sub">You pay</div></button>
+           </div>`,
+          "wide",
+          "options",
+        );
+        await pawseSays(
+          "The visit is covered, but not the home-visit fee, and not physio later. Going to the clinic, you'd pay about 385, including a taxi. A home visit, about 510.",
+        );
+        setState("idle");
+        await new Promise((resolve) => {
+          $("opt-a").onclick = () => {
+            $("opt-a").classList.add("chosen");
+            resolve();
+          };
+        });
+        await userSays("Let's go to the clinic.");
+        policy.remove();
+        $("calendar").remove();
+        opts.remove();
+
+        const vet2 = callCard("call-vet-2", "Kleintierpraxis am See");
+        await callLine(vet2, "PAWSE", "Wir bestätigen 16:30 in der Praxis. Bitte stellen Sie die Rechnung detailliert aus.", "We confirm 16:30 at the practice. Please itemise the invoice.");
+        await callLine(vet2, "VET", "Alles klar, bis später.", "All right, see you later.");
+        endCall(vet2);
+        card(`<h3>✅ Vet booked</h3><div class="confirm">Today 16:30</div><div class="sub">Kleintierpraxis am See</div>`, "", "booked");
+
+        const taxi = callCard("call-taxi", "Taxi Zürich");
+        await callLine(taxi, "PAWSE", "Ein Taxi für 16:05, mit einer Katze in der Transportbox. Ist das in Ordnung?", "A taxi for 16:05, with a cat in a carrier. Is that OK?");
+        await callLine(taxi, "DRIVER", "Ja, kein Problem, in der Box.", "Yes, no problem, in the carrier.");
+        endCall(taxi);
+        card(`<h3>🚕 Taxi booked</h3><div class="confirm">16:05</div><div class="sub">🐾 Pet-friendly · ~CHF 25 · not insured</div>`, "", "taxi");
+        vet2.remove();
+        taxi.remove();
+        await pawseSays("Taxi at 4:05, the driver's fine with Mimi in her carrier. The vet visit is covered after your deductible; the taxi isn't.");
+
+        card(
+          `<h3>🧾 Ready for your claim</h3>
+           <div class="quote">Mimi, 3-year-old orange tabby, 5.2 kg. Not putting weight on the front left paw after jumping from a wardrobe (~2 m). No bleeding. Accident claim, policy PAWSE-DEMO-2026-000001.</div>
+           <ul><li>Keep this video</li><li>Ask for an itemised invoice</li><li>Submit within 30 days</li></ul>`,
+          "wide summary",
+          "summary",
+        );
+        await pawseSays("I've saved your video and checklist for the claim.");
+        setState("idle");
+        document.body.dataset.done = "true";
+      }
+
+      bubble("pawse", "").textContent = "Hi, I'm Pawse. Tap the mic and tell me what's happening.";
+      mic.addEventListener("click", story, { once: true });
+    </script>
+  </body>
+</html>

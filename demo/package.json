@@ -1,0 +1,16 @@
+{
+  "name": "pawse-demo-recorder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record:demo": "playwright test && node scripts/finalize-demo.mjs",
+    "mock": "python3 -m http.server 4173 --directory mock",
+    "test": "vitest run scripts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.3",
+    "vitest": "^2.0.5"
+  }
+}
