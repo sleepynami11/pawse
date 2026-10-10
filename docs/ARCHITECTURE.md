@@ -4,12 +4,14 @@ Pawse uses a bounded workflow with seven named responsibilities. The model prepa
 
 The existing implementation already supports parallel care guidance and clinic retrieval. The agent layer makes that execution inspectable through a graph and per-run trace. The current coordinator is Python code, not a second reasoning-model call.
 
-![Pawse multi-agent architecture: the bounded care workflow, separate evidence API and reviewed communication flow.](images/pawse-multi-agent-architecture.png)
+The illustration below is the **next multimodal design**, with current integration badges. The new Document Agent, private-policy retrieval and video intake are proposed; they are not additional executable roles in today's graph. See [Multimodal Design](MULTIMODAL_ARCHITECTURE.md) for responsibilities and document handoffs, and [Model Allocation](MODEL_ALLOCATION.md) for model selections and access checks.
+
+![Pawse target multimodal architecture with Voice, Vision, Document, care, evidence and reviewed own-voice speech.](images/pawse-multi-agent-architecture.png)
 
 [Full-resolution PNG](images/pawse-multi-agent-architecture.png) · [Editable SVG](images/pawse-multi-agent-architecture.svg) · [Diagram notes](images/README.md)
 
 <details>
-<summary>Text-based flow reference (Mermaid)</summary>
+<summary>Current runtime flow reference (Mermaid)</summary>
 
 ```mermaid
 flowchart TD
@@ -44,12 +46,12 @@ Solid arrows show implemented flow or a separate implemented API step. Dashed ar
 | Intake and safety | Validated models and rules | LLM backend | Text/photo input, explicit data-sharing flags and immediate reported-warning-sign guidance; recorded speech has a separate transcription endpoint. |
 | Care guidance | Gemini model | LLM backend | Structured care-navigation summary, questions and services to ask about; no diagnosis or treatment guarantee. |
 | Nearby veterinary practices | Clinic data adapters | RAG/data backend | Provider-backed clinic names and contacts; opening hours and services remain unknown unless supported. |
-| Policy evidence | Local retrieval tool | RAG/data backend | Cited synthetic insurance clauses for rehearsal; no live customer coverage decision. |
+| Policy evidence | Local retrieval tool | RAG/data backend | Cited demo policy schedule and adapted real terms, retained under `synthetic_demo`; no live customer coverage decision. |
 | Ranking and cost rules | Deterministic functions | LLM backend | Clinic ranking; separate demo arithmetic for the fictional policy. Straight-line distance is not journey time. |
 | Case coordinator | Bounded asynchronous Python workflow | LLM backend | Runs independent providers concurrently, retains partial results, exposes trace and action gates. |
 | Multilingual communication | Gemini plus Gradium tools | Voice backend | Multilingual transcription, reviewed German scripts/subtitles, own-voice cloning and German audio adapters. Telephone transport is still unconnected. |
 
-The frontend presents these agent outputs through a unified care interface.
+The frontend presents these agent outputs through a unified care interface. In addition, [Gemini Live](GEMINI_LIVE.md) has token and server tool-call endpoints, with a verified server session. Browser microphone capture and playback remain to be integrated.
 
 ## Executable contract
 

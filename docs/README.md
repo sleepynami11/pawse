@@ -8,9 +8,10 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 | --- | --- |
 | [Product scope](SPEC.md) | Zurich care journey, implemented features and remaining integrations |
 | [Architecture](ARCHITECTURE.md) | Runtime agents, dependencies and execution boundaries |
+| [Multimodal design](MULTIMODAL_ARCHITECTURE.md) | Voice, Vision and Document agents, proposed document handoffs and module assignments |
 | [Architecture diagram](images/README.md) | English diagram, full-resolution PNG, editable SVG and arrow legend |
 | [Agent development](AGENT_DEVELOPMENT.md) | Module responsibilities, feature branches and handoff checks |
-| [Model allocation](MODEL_ALLOCATION.md) | Which operations use Gemini, Gradium or deterministic code |
+| [Model allocation](MODEL_ALLOCATION.md) | Event model menu, Gemini 3.8 checks, Gradium and optional background models |
 | [Validation record](VALIDATION.md) | Automated checks and limits of live verification |
 
 ## Controller and integration contracts

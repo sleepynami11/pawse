@@ -1,0 +1,116 @@
+{
+  "checked_at": "2026-10-10T12:04:17.382236+00:00",
+  "scope": "Development credential only. Three synthetic requests; no owner data, recordings or private documents.",
+  "method": "v1beta generateContent; same protocol as existing Pawse adapters",
+  "gradium": "not_configured",
+  "checks": [
+    {
+      "model": "gemini-3.8-flash",
+      "modality": "structured_text",
+      "expected": {
+        "status": "OK"
+      },
+      "http_status": 200,
+      "usable_response": true,
+      "expected_fields_match": true
+    },
+    {
+      "model": "gemini-3.8-flash",
+      "modality": "synthetic_png",
+      "expected": {
+        "status": "image_received"
+      },
+      "http_status": 200,
+      "usable_response": true,
+      "expected_fields_match": true
+    },
+    {
+      "model": "gemini-3.8-flash",
+      "modality": "synthetic_pdf",
+      "expected": {
+        "invoice_id": "DEMO-42",
+        "currency": "CHF",
+        "total": 120,
+        "page": 1
+      },
+      "http_status": 200,
+      "usable_response": true,
+      "expected_fields_match": true
+    }
+  ],
+  "listing_http_status": 200,
+  "menu_listing": [
+    {
+      "model": "gemini-3.8-flash",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.8-live",
+      "listed": true,
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "antigravity-preview-09-2026",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "model": "deep-research-preview-04-2026",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "model": "gemini-nano-banana-2.1",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-omni-1.1-flash",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "model": "lyria-3.5",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "listed": true,
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    }
+  ],
+  "limits": [
+    "No live microphone or video test in this probe.",
+    "No Gradium request, cloning or telephony test.",
+    "Listed model IDs are not successful invocation checks; agents may use a separate listing.",
+    "No clinical, policy, language-quality, latency or voice-similarity evaluation."
+  ]
+}

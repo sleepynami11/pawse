@@ -1,88 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1450" viewBox="0 0 1080 1450" role="img" aria-labelledby="title desc">
-<title id="title">Pawse multi-agent workflow</title>
-<desc id="desc">Intake and safety branches into parallel Care Guidance and Vet Discovery agents. Clinic results pass through Ranking. The Orchestrator combines available guidance and clinics into the care summary. Policy Evidence is a separate synthetic-only retrieval tool. After owner review, Communication uses Gemini and Gradium to create a German script and owner-consented audio. Calls and bookings are future integrations.</desc>
-<defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#927888"/></marker><marker id="pinkArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#D72B77"/></marker></defs>
-<rect width="1080" height="1450" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1910" viewBox="0 0 1200 1910" role="img" aria-labelledby="title desc">
+<title id="title">Pawse multimodal multi-agent architecture</title>
+<desc id="desc">Target design with current integration labels. Voice uses Gemini 3.8 Live. Vision and Document use Gemini 3.8 Flash. The Orchestrator routes validated tools for care, clinic discovery and policy evidence. Documents feed cited retrieval. German script drafting and separate Gradium own-voice enrollment lead to owner review, German speech and a care handoff. Document ingestion, private RAG, video and telephone execution still need integration.</desc>
+<defs><marker id="arrow" markerWidth="11" markerHeight="11" refX="10" refY="5.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L11 5.5 L0 11 Z" fill="#A793A2"/></marker><marker id="pink" markerWidth="11" markerHeight="11" refX="10" refY="5.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L11 5.5 L0 11 Z" fill="#D72B77"/></marker></defs>
+<rect width="1200" height="1910" fill="white"/>
 <g font-family="Arial, Helvetica, sans-serif">
-<text x="540" y="62" font-size="40" font-weight="700" text-anchor="middle" fill="#27232A">Pawse Multi-Agent Workflow</text>
-<text x="540" y="102" font-size="24" font-weight="400" text-anchor="middle" fill="#6A616B">Understand the concern. Find care. Prepare the conversation.</text>
-<path d="M236 136 H283" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<text x="299" y="143" font-size="21" font-weight="400" text-anchor="start" fill="#6A616B">Care workflow</text>
-<path d="M560 136 H607" fill="none" stroke="#D72B77" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#pinkArrow)" stroke-dasharray="9 8"/>
-<text x="623" y="143" font-size="21" font-weight="400" text-anchor="start" fill="#6A616B">Reviewed follow-up</text>
-<rect x="270" y="180" width="540" height="82" rx="18" fill="#F3F0F3" stroke="#DCD3DA" stroke-width="2"/>
-<text x="540" y="214" font-size="28" font-weight="700" text-anchor="middle" fill="#27232A">Owner input</text>
-<text x="540" y="244" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Text · photo · transcribed speech</text>
-<path d="M540 262 V306" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<g data-agent-id="intake">
-<rect x="270" y="306" width="540" height="106" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="298" cy="334" r="16" fill="#D72B77"/>
-<text x="298" y="340" font-size="18" font-weight="700" text-anchor="middle" fill="white">1</text>
-<text x="540.0" y="354" font-size="28" font-weight="700" text-anchor="middle" fill="#27232A">Intake &amp; Safety Agent</text>
-<text x="540.0" y="390" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Validate input and sharing consent</text>
+<text x="600" y="63" font-size="46" fill="#27232A" font-weight="700" text-anchor="middle">Pawse Multimodal Agents</text>
+<text x="600" y="103" font-size="25" fill="#716775" font-weight="400" text-anchor="middle">Understand the owner. Read the evidence. Prepare local care.</text>
+<text x="600" y="143" font-size="19" fill="#D72B77" font-weight="700" text-anchor="middle">TARGET DESIGN · Badges show current integration status</text>
+<rect x="60" y="174" width="1080" height="84" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="600" y="210" font-size="25" fill="#27232A" font-weight="600" text-anchor="middle">Text &amp; speech  ·  Photos &amp; video  ·  Policies, invoices &amp; vet records</text>
+<text x="600" y="242" font-size="22" fill="#716775" font-weight="400" text-anchor="middle">Owner consent and input validation before provider processing</text>
+<path d="M600 258 V278 H225 V304" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 278 V304" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 278 H975 V304" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-design-role="voice_intake">
+<rect x="60" y="304" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="225.0" y="347" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Voice Agent</text>
+<text x="225.0" y="381" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Live</text>
+<text x="225.0" y="415" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Listen · reply · translate</text>
+<text x="225.0" y="444" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">EN / ZH / DE / HI</text>
+<rect x="72" y="470" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="225.0" y="489" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Backend ready · browser next</text>
 </g>
-<path d="M540 412 V446 H280 V488" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<path d="M540 446 H800 V488" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<rect x="443" y="428" width="194" height="36" rx="18" fill="#FBEAF2" stroke="#FBEAF2" stroke-width="2"/>
-<text x="540" y="453" font-size="19" font-weight="700" text-anchor="middle" fill="#D72B77">IN PARALLEL</text>
-<g data-agent-id="care_guidance">
-<rect x="60" y="488" width="440" height="140" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="88" cy="516" r="16" fill="#D72B77"/>
-<text x="88" y="522" font-size="18" font-weight="700" text-anchor="middle" fill="white">2</text>
-<text x="280.0" y="536" font-size="28" font-weight="700" text-anchor="middle" fill="#27232A">Care Guidance Agent</text>
-<text x="280.0" y="572" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Gemini</text>
-<text x="280.0" y="602" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Questions to prepare for the vet</text>
+<g data-design-role="visual_observation">
+<rect x="435" y="304" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="600.0" y="347" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Vision Agent</text>
+<text x="600.0" y="381" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Flash</text>
+<text x="600.0" y="415" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Describe visible changes</text>
+<text x="600.0" y="444" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Photos now · video next</text>
+<rect x="447" y="470" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="600.0" y="489" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Photo ready · upgrade next</text>
 </g>
-<g data-agent-id="nearby_vets">
-<rect x="580" y="488" width="440" height="140" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="608" cy="516" r="16" fill="#D72B77"/>
-<text x="608" y="522" font-size="18" font-weight="700" text-anchor="middle" fill="white">3</text>
-<text x="800.0" y="536" font-size="28" font-weight="700" text-anchor="middle" fill="#27232A">Vet Discovery Agent</text>
-<text x="800.0" y="572" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Clinic data</text>
-<text x="800.0" y="602" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Nearby clinics + contact details</text>
+<g data-design-role="document_extraction">
+<rect x="810" y="304" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="975.0" y="347" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Document Agent</text>
+<text x="975.0" y="381" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Flash</text>
+<text x="975.0" y="415" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Policy · invoice · vet report</text>
+<text x="975.0" y="444" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Facts + page citations</text>
+<rect x="822" y="470" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="975.0" y="489" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Planned · model probe passed</text>
 </g>
-<path d="M800 628 V670" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<g data-agent-id="ranking">
-<rect x="580" y="670" width="440" height="110" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="608" cy="698" r="16" fill="#D72B77"/>
-<text x="608" y="704" font-size="18" font-weight="700" text-anchor="middle" fill="white">4</text>
-<text x="800.0" y="718" font-size="28" font-weight="700" text-anchor="middle" fill="#27232A">Ranking Agent</text>
-<text x="800.0" y="754" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Hours → distance → rating</text>
+<path d="M225 512 V545 H600 V582" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 512 V582" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M975 512 V545 H600" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M975 512 V545 H1160 V913 H1140" fill="none" stroke="#D72B77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 7" marker-end="url(#pink)"/>
+<text x="1040" y="574" font-size="18" fill="#D72B77" font-weight="600" text-anchor="middle">Document</text>
+<text x="1040" y="598" font-size="18" fill="#D72B77" font-weight="600" text-anchor="middle">evidence</text>
+<rect x="270" y="582" width="660" height="160" rx="20" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
+<text x="600" y="624" font-size="35" fill="#27232A" font-weight="700" text-anchor="middle">Orchestrator</text>
+<text x="600" y="659" font-size="24" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Live + validated tools</text>
+<text x="600" y="690" font-size="23" fill="#716775" font-weight="400" text-anchor="middle">Route tasks · combine results · preserve unknowns</text>
+<rect x="318" y="705" width="564" height="28" rx="14" fill="#F0EBF0"/>
+<text x="600.0" y="724" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Care tools ready · document handoffs next</text>
+<path d="M600 742 V774 H225 V816" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 774 V816" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 774 H975 V816" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="466" y="756" width="268" height="36" rx="18" fill="#FBEAF2"/>
+<text x="600" y="781" font-size="18" fill="#D72B77" font-weight="700" text-anchor="middle">INDEPENDENT TOOLS</text>
+<g data-design-role="care_guidance">
+<rect x="60" y="816" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="225.0" y="859" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Care Guidance</text>
+<text x="225.0" y="893" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Flash</text>
+<text x="225.0" y="927" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Care summary + questions</text>
+<text x="225.0" y="956" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Reported warning signs</text>
+<rect x="72" y="982" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="225.0" y="1001" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Ready · model upgrade next</text>
 </g>
-<path d="M280 628 V810 H540 V846" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<path d="M800 780 V810 H540" fill="none" stroke="#927888" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<g data-agent-id="orchestrator">
-<rect x="270" y="846" width="540" height="128" rx="18" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
-<circle cx="298" cy="874" r="16" fill="#D72B77"/>
-<text x="298" y="880" font-size="18" font-weight="700" text-anchor="middle" fill="white">5</text>
-<text x="540.0" y="894" font-size="32" font-weight="700" text-anchor="middle" fill="#27232A">Orchestrator</text>
-<text x="540.0" y="930" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Combine available results</text>
-<text x="540.0" y="960" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Keep missing information explicit</text>
+<g data-design-role="nearby_vets">
+<rect x="435" y="816" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="600.0" y="859" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Vet Discovery</text>
+<text x="600.0" y="893" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Clinic data + ranking rules</text>
+<text x="600.0" y="927" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Hours · distance · contacts</text>
+<text x="600.0" y="956" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Keep missing data explicit</text>
+<rect x="447" y="982" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="600.0" y="1001" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Adapters ready · setup needed</text>
 </g>
-<path d="M540 974 V1012" fill="none" stroke="#927888" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
-<rect x="270" y="1012" width="540" height="84" rx="18" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
-<text x="540" y="1048" font-size="27" font-weight="700" text-anchor="middle" fill="#27232A">Care summary + ranked clinics</text>
-<text x="540" y="1080" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Guidance · contacts · next steps</text>
-<text x="60" y="1155" font-size="22" font-weight="700" text-anchor="start" fill="#D72B77">SEPARATE TOOLS</text>
-<text x="60" y="1187" font-size="22" font-weight="400" text-anchor="start" fill="#6A616B">Requested independently</text>
-<path d="M810 1054 H1046 V1260 H1020" fill="none" stroke="#D72B77" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#pinkArrow)" stroke-dasharray="9 8"/>
-<text x="816" y="1155" font-size="22" font-weight="700" text-anchor="middle" fill="#D72B77">Owner review</text>
-<text x="816" y="1187" font-size="22" font-weight="400" text-anchor="middle" fill="#6A616B">+ separate consent</text>
-<g data-agent-id="policy_evidence">
-<rect x="60" y="1212" width="440" height="142" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="88" cy="1240" r="16" fill="#D72B77"/>
-<text x="88" y="1246" font-size="18" font-weight="700" text-anchor="middle" fill="white">6</text>
-<text x="280.0" y="1260" font-size="27" font-weight="700" text-anchor="middle" fill="#27232A">Policy Evidence Agent</text>
-<text x="280.0" y="1296" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Cited policy snippets</text>
-<text x="280.0" y="1326" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Synthetic demo corpus only</text>
+<g data-design-role="policy_evidence">
+<rect x="810" y="816" width="330" height="208" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="975.0" y="859" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Policy Evidence</text>
+<text x="975.0" y="893" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Retrieval + Gemini 3.8 Flash</text>
+<text x="975.0" y="927" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Cited clauses + explanations</text>
+<text x="975.0" y="956" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Coverage stays unconfirmed</text>
+<rect x="822" y="982" width="306" height="28" rx="14" fill="#F0EBF0"/>
+<text x="975.0" y="1001" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Demo ready · private RAG next</text>
 </g>
-<g data-agent-id="communication">
-<rect x="580" y="1212" width="440" height="142" rx="18" fill="#FCFAFB" stroke="#DCD3DA" stroke-width="2"/>
-<circle cx="608" cy="1240" r="16" fill="#D72B77"/>
-<text x="608" y="1246" font-size="18" font-weight="700" text-anchor="middle" fill="white">7</text>
-<text x="800.0" y="1260" font-size="27" font-weight="700" text-anchor="middle" fill="#27232A">Communication Agent</text>
-<text x="800.0" y="1296" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Gemini + Gradium</text>
-<text x="800.0" y="1326" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">German script + own-voice audio</text>
+<path d="M225 1024 V1052 H600 V1088" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M600 1024 V1088" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M975 1024 V1052 H600" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="270" y="1088" width="660" height="92" rx="20" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
+<text x="600" y="1125" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Case summary + available options</text>
+<text x="600" y="1158" font-size="24" fill="#716775" font-weight="400" text-anchor="middle">Clinic cards · cited evidence · next steps</text>
+<path d="M600 1180 V1208 H315 V1256" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="885" y="1224" font-size="19" fill="#D72B77" font-weight="700" text-anchor="middle">SET UP ONCE · OWNER’S VOICE</text>
+<g data-design-role="communication">
+<rect x="60" y="1256" width="510" height="182" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="315.0" y="1299" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Communication Agent</text>
+<text x="315.0" y="1333" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gemini 3.8 Flash</text>
+<text x="315.0" y="1367" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">German draft + paired subtitles</text>
+<rect x="72" y="1396" width="486" height="28" rx="14" fill="#F0EBF0"/>
+<text x="315.0" y="1415" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Ready · model upgrade next</text>
 </g>
-<text x="540" y="1405" font-size="23" font-weight="400" text-anchor="middle" fill="#6A616B">Future: phone calls · appointments · calendar · taxi</text>
-</g></svg>
+<g data-design-role="voice_enrollment">
+<rect x="630" y="1256" width="510" height="182" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="885.0" y="1299" font-size="29" fill="#27232A" font-weight="700" text-anchor="middle">Own-Voice Setup</text>
+<text x="885.0" y="1333" font-size="23" fill="#D72B77" font-weight="600" text-anchor="middle">Gradium clone + localization</text>
+<text x="885.0" y="1367" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Record · consent · preview · save</text>
+<rect x="642" y="1396" width="486" height="28" rx="14" fill="#F0EBF0"/>
+<text x="885.0" y="1415" font-size="17" fill="#716775" font-weight="600" text-anchor="middle">Adapters ready · key needed</text>
+</g>
+<path d="M315 1438 V1464 H600 V1490" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M885 1438 V1464 H600" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="270" y="1490" width="660" height="68" rx="20" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
+<text x="600" y="1518" font-size="26" fill="#D72B77" font-weight="700" text-anchor="middle">Owner review</text>
+<text x="600" y="1545" font-size="21" fill="#716775" font-weight="400" text-anchor="middle">Confirm recipient, script, selected voice and sharing</text>
+<path d="M600 1558 V1594" fill="none" stroke="#D72B77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#pink)"/>
+<rect x="270" y="1594" width="660" height="124" rx="20" fill="#FCFAFB" stroke="#DDD5DE" stroke-width="2"/>
+<text x="600" y="1633" font-size="30" fill="#27232A" font-weight="700" text-anchor="middle">Speech Agent</text>
+<text x="600" y="1665" font-size="24" fill="#D72B77" font-weight="600" text-anchor="middle">Gradium TTS · default + approved voice_id</text>
+<text x="600" y="1697" font-size="24" fill="#716775" font-weight="400" text-anchor="middle">German audio · preview / download</text>
+<path d="M600 1718 V1750" fill="none" stroke="#A793A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="270" y="1750" width="660" height="68" rx="20" fill="#FBEAF2" stroke="#E9B7CF" stroke-width="2"/>
+<text x="600" y="1778" font-size="27" fill="#27232A" font-weight="700" text-anchor="middle">Care handoff</text>
+<text x="600" y="1804" font-size="22" fill="#716775" font-weight="400" text-anchor="middle">Summary · evidence checklist · reviewed audio</text>
+<text x="600" y="1853" font-size="22" fill="#716775" font-weight="400" text-anchor="middle">Future connectors: phone calls · appointments · calendar · taxi</text>
+<text x="600" y="1885" font-size="18" fill="#716775" font-weight="400" text-anchor="middle">Existing text routes still use Gemini 3 Flash Preview; model upgrades are proposed.</text>
+</g>
+</svg>

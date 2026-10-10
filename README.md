@@ -22,24 +22,26 @@ The initial experience is centred on Zurich, Switzerland. Pawse is built specifi
 
 ## System
 
-Pawse uses a bounded multi-agent workflow:
+Pawse uses a bounded care workflow, with a multimodal design that separates voice, visual observations and document evidence:
 
 **User Input → Intake & Safety → Care Guidance + Clinic Retrieval → Ranking → Case Coordination → Reviewed Script & Audio**
 
-Care guidance and clinic retrieval run concurrently. The coordinator combines available results, preserves missing information, and reports each agent's execution state. Policy evidence is available through a separate retrieval interface, currently limited to a fictional demo corpus.
+Care guidance and clinic retrieval run concurrently. The coordinator combines available results, preserves missing information, and reports each agent's execution state. Policy evidence is available through a separate retrieval interface, currently limited to a demo policy schedule and an English adaptation of real Swiss terms.
 
-Model-based understanding is separated from deterministic ranking, cost calculations and execution control. The current coordinator is implemented in Python; it does not add a second reasoning-model call. This structure supports observable results, explicit API boundaries and useful partial responses when a provider is unavailable.
+The next iteration assigns **Gemini 3.8 Live** to voice dialogue and tool routing, **Gemini 3.8 Flash** to photo/document understanding and grounded text, and **Gradium** to owner-consented German speech. Document extraction will feed a separate Policy Evidence Agent with page-linked sources. Uploads, private-document retrieval and video intake remain planned; the existing text routes retain their current model default. See the [multimodal design](docs/MULTIMODAL_ARCHITECTURE.md) and [model access checks](docs/MODEL_ALLOCATION.md).
+
+Ranking, cost calculations and execution control use deterministic tools. The coordinator does not require another planner-model call, and provider failures can return useful partial results.
 
 ---
 
 ## Key Capabilities
 
-- Real-time voice conversation through the Gemini Live API (`gemini-3.8-live`) with server-run tool calls: care guidance and nearby vets, cited policy evidence, German call scripts and a confirm-before-dialing gate. See [Gemini Live](docs/GEMINI_LIVE.md).
+- Gemini Live (`gemini-3.8-live`) session and server-run tool backend: care guidance, nearby vets, cited policy evidence, German scripts and a confirm-before-dialing gate. The server session has been checked; browser microphone capture and playback are still to do. See [Gemini Live](docs/GEMINI_LIVE.md).
 - Text, photo and recorded-audio intake, with English, Mandarin Chinese, German and Hindi input options.
 - Structured care guidance, warning-sign handling and questions to prepare for the vet.
 - Nearby veterinary search through configurable clinic-data providers.
 - Explainable clinic ranking using reported opening status, distance and rating.
-- Policy-clause retrieval with source references and document hashes, using synthetic demo evidence.
+- Policy-clause retrieval with source references and document hashes, scoped to the demo schedule and adapted terms.
 - German scripts with paired subtitles, own-voice recording, and Gradium cloning/localization adapters.
 - Agent execution traces, care-request SSE progress and partial-result handling.
 - A bridge to existing CatAgent chat and analysis capabilities, subject to their runtime dependencies.
@@ -71,11 +73,13 @@ The system consists of:
 - Gradium adapters for voice cloning, German localization and speech generation.
 - Clinic-provider adapters and a local, citation-bearing policy retrieval module.
 
-![Pawse multi-agent architecture: parallel care guidance and clinic retrieval, deterministic coordination, separate policy evidence and reviewed voice APIs.](docs/images/pawse-multi-agent-architecture.png)
+The diagram shows the **target multimodal architecture**. Each card labels its current integration status; model access does not mean the complete feature is implemented.
+
+![Pawse multimodal design: Voice, Vision and Document agents feed orchestration, care, clinic discovery and cited policy evidence; reviewed scripts and Gradium own-voice audio complete the handoff.](docs/images/pawse-multi-agent-architecture.png)
 
 [View full-size diagram](docs/images/pawse-multi-agent-architecture.png) · [Editable SVG](docs/images/pawse-multi-agent-architecture.svg) · [Diagram legend](docs/images/README.md)
 
-See [Architecture](docs/ARCHITECTURE.md) for execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
+See [Multimodal Design](docs/MULTIMODAL_ARCHITECTURE.md) for the new agent handoffs, [Architecture](docs/ARCHITECTURE.md) for current execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
 
 Integration agreements are split into [Controller–Frontend](docs/controller-frontend-contract.md), [Controller–Service](docs/controller-service-contract.md), [Care](docs/controller-care-contract.md), [Agents](docs/controller-agent-contract.md), [Voice](docs/controller-voice-contract.md) and [Knowledge/Data](docs/controller-knowledge-contract.md) contracts. The [docs index](docs/README.md) explains where to start.
 

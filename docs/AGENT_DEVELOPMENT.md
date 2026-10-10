@@ -1,6 +1,6 @@
 # Agent development
 
-Development follows the product modules: frontend experience, orchestration, voice communication and evidence retrieval. Each module has a feature branch, an API boundary and a validation target. The runtime workflow is described in [ARCHITECTURE.md](ARCHITECTURE.md).
+Development follows the product modules: frontend experience, orchestration, voice communication and evidence retrieval. Each module has a feature branch, an API boundary and a validation target. The current runtime is described in [ARCHITECTURE.md](ARCHITECTURE.md). The next [multimodal design](MULTIMODAL_ARCHITECTURE.md#module-handoffs-and-build-order) assigns Voice, Vision, Document and evidence handoffs to these same modules.
 
 Start integration work with [Controller–Frontend](controller-frontend-contract.md) and [Controller–Service](controller-service-contract.md). Detailed contracts are grouped by [Care](controller-care-contract.md), [Agents](controller-agent-contract.md), [Voice](controller-voice-contract.md) and [Knowledge/Data](controller-knowledge-contract.md). The [docs index](README.md) links the supporting provider and data references.
 
@@ -19,7 +19,9 @@ Shared integration files include `pawse/app.py`, request/response models, `schem
 
 `pawse/providers.py` currently combines care guidance and clinic adapters. Coordinate function-level edits until it is split: orchestration covers `assess` and `rank_clinics`; retrieval covers `google_clinics`, `mapify_clinics`, `normalize_mapify` and `discover`. Make the module split a separate agreed change, not parallel refactoring. Keep the imported legacy `backend/` stable unless an integration specifically needs it.
 
-## Models that this project can access
+## Baseline model checks
+
+The table below preserves the earlier baseline. The updated [model allocation](MODEL_ALLOCATION.md) selects Gemini 3.8 Live for dialogue/tool routing, Gemini 3.8 Flash for understanding and grounded text, and Gradium for own-voice speech. New 3.8 Flash text, PNG and PDF checks passed; Live server-session verification is recorded separately. These checks do not change the configured text defaults or add document ingestion.
 
 The checks below ran on **2026-10-10** with synthetic inputs and this development project's credential. Full sanitized results are in [model-access-check.json](model-access-check.json). A successful request proves access to that API operation; it does not establish clinical reliability, speech recognition quality, latency under load or production suitability.
 

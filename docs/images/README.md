@@ -1,35 +1,38 @@
-# Pawse architecture diagram
+# Pawse multimodal architecture diagram
 
-![Pawse multi-agent architecture](pawse-multi-agent-architecture.png)
+![Pawse multimodal agents](pawse-multi-agent-architecture.png)
 
-[Download PNG](pawse-multi-agent-architecture.png) · [Editable SVG](pawse-multi-agent-architecture.svg) · [Architecture reference](../ARCHITECTURE.md)
+[Full-size PNG](pawse-multi-agent-architecture.png) · [Editable SVG](pawse-multi-agent-architecture.svg) · [Target design](../MULTIMODAL_ARCHITECTURE.md) · [Current runtime](../ARCHITECTURE.md)
 
 ## Reading the diagram
 
-- Read from top to bottom: owner input → intake → parallel care guidance and vet discovery → ranking and coordination → care summary.
-- Solid arrows show the bounded care workflow. Vet discovery feeds ranking; care guidance and ranked clinics feed the orchestrator.
-- The dashed pink arrow is an owner-reviewed follow-up through separate communication APIs. The agent run does not automatically call voice endpoints.
-- The separate policy tool returns cited demo clauses. It has no edge into the live care run because that integration is not implemented.
-- The footer lists future actions. Telephone, appointment, calendar and taxi execution are not connected.
+This is the **target multimodal design**, dated 10 October 2026. Card badges describe existing integration, not model quality or completion of the entire path.
 
-Numbers identify roles in this diagram, not execution order or developer headcount. Care guidance and nearby-vet retrieval run concurrently.
+- Voice, Vision and Document are separate input responsibilities. Only the applicable inputs are required; the owner need not supply all three.
+- Gray arrows show the proposed task/result flow. Gemini Live routes tools; bounded backend execution retains partial results and enforces consent.
+- The dashed pink arrow carries page-linked document evidence to retrieval. It is a proposed handoff, not a private-policy feature already exposed by the API.
+- Care guidance, clinic discovery/ranking and policy evidence return results to the case summary. Urgent guidance should not wait for an unavailable policy or voice setup.
+- Own-voice enrollment is performed separately, ideally before the demo. Script drafting and the saved voice meet at owner review, followed by Gradium speech.
+- Audio generation does not place a phone call. The footer lists unconnected action integrations.
 
-| Number | Runtime ID | Implementation |
+The selected text/vision/document model is Gemini 3.8 Flash; the current text routes still default to Gemini 3 Flash Preview. A synthetic PDF probe verifies model access, not an implemented upload screen. Live has token and server tool endpoints, but its browser microphone/playback remains unfinished. Gradium adapters require a separate credential and consented live validation. See [Model allocation](../MODEL_ALLOCATION.md).
+
+## Relationship to the runtime graph
+
+Design roles are not new runtime IDs. The existing `/api/v1/agents/graph` continues to expose these seven roles:
+
+| Runtime ID | Current responsibility | Relationship to the target design |
 | --- | --- | --- |
-| 1 | `intake` | Validated input, consent and deterministic warning-sign handling |
-| 2 | `care_guidance` | Gemini text/photo care navigation |
-| 3 | `nearby_vets` | Clinic discovery adapters |
-| 4 | `ranking` | Deterministic opening-status, distance and rating rules |
-| 5 | `orchestrator` | Bounded Python coordination, partial results, trace and action gates |
-| 6 | `policy_evidence` | Separate local lexical retrieval over the synthetic demo corpus |
-| 7 | `communication` | Separate Gemini transcription/script and Gradium voice APIs |
+| `intake` | Validation, consent, reported warning signs | Shared input boundary |
+| `care_guidance` | Gemini text/photo care navigation | Care Guidance; proposed separate Vision handoff |
+| `nearby_vets` | Clinic provider adapters | Vet Discovery |
+| `ranking` | Deterministic clinic ordering | Included inside the Vet Discovery card |
+| `orchestrator` | Bounded coordination, trace, partial results and action gates | Execution layer used by the conversational orchestrator |
+| `policy_evidence` | Separate lexical search under `synthetic_demo` | Existing foundation for proposed private-document retrieval and synthesis |
+| `communication` | Gemini scripts/transcription and Gradium voice adapters | Split visually into communication, enrollment and speech responsibilities |
 
-## Scope and maintenance
+Live token/tool endpoints are a separate controller in `pawse/live.py`. Document extraction has no callable endpoint yet. Demo evidence includes a fictional schedule and an English adaptation of real Swiss terms; it never establishes an owner's actual coverage.
 
-This English diagram reflects the current [agent controller](../controller-agent-contract.md), [care controller](../controller-care-contract.md), [voice controller](../controller-voice-contract.md) and [knowledge controller](../controller-knowledge-contract.md). It uses the app's pink and gray palette and is original project artwork.
+## Editing
 
-The overview deliberately leaves API paths, timeout values and provider configuration in the controller contracts. Provider adapters require configuration and live validation. Policy snippets are synthetic and do not establish real coverage.
-
-The communication node summarizes script and audio generation; the voice contract defines recording, cloning, localization and review. Recorded speech is transcribed through a separate endpoint before entering the care request.
-
-The SVG is the editable source. The PNG is a 2160 × 2900 raster export. The narrow layout and larger labels are designed to remain readable at GitHub README width. When roles or boundaries change, edit the SVG text/connectors and regenerate the PNG from it; keep both files and the contract references aligned. The Mermaid flow in the architecture reference is an additional text-based overview, not the source used to render this image.
+The SVG is original editable project artwork in Pawse's pink and gray palette, with accessible title/description text. Its viewBox is 1200 × 1910; the PNG export is 2400 × 3820. Regenerate the PNG after SVG edits and inspect it at README width. Keep labels, model decisions, implementation badges and this legend aligned. The Mermaid diagram in the runtime reference describes current implementation separately.
