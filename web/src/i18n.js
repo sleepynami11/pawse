@@ -11,6 +11,10 @@ export const strings = {
 
     connecting: '接通中…',
     listening: '在听…',
+    recording: '正在录音，请说话',
+    hearing: '正在听你说',
+    transcribing: '正在转成文字…',
+    tapMic: '点麦克风开始说话',
     aiSpeaking: '正在说话',
     you: '你',
     typePlaceholder: '也可以打字…',
@@ -131,6 +135,10 @@ export const strings = {
 
     connecting: 'Connecting…',
     listening: 'Listening…',
+    recording: 'Recording, go ahead',
+    hearing: 'Hearing you',
+    transcribing: 'Writing down what you said…',
+    tapMic: 'Tap the mic to talk',
     aiSpeaking: 'Speaking',
     you: 'You',
     typePlaceholder: 'Or type here…',

@@ -18,7 +18,9 @@
  *   wantsAudio: boolean            if true the page opens the microphone
  *
  * Events:
- *   {type:'transcript', role:'user'|'ai', text, simulated?}   live captions
+ *   {type:'transcript', role:'user'|'ai', text, simulated?, partial?}   live captions;
+ *                                                  partial:true = the owner's words still streaming in
+ *   {type:'transcribing', on:boolean}              a recorded turn is being turned into text
  *   {type:'speaking', who:'user'|'ai'|'none'}                  drives the avatar
  *   {type:'listening', on:boolean}
  *   {type:'suggestions', items:string[]}                       keyword chips ([] hides them)

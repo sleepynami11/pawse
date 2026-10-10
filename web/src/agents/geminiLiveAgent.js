@@ -10,7 +10,9 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
   const listeners=new Set(), pending=new Set(), toolIds=new Set(), cancelledTools=new Set();
   let started=false, ended=false, session=null, audio=null, media=null, muted=true, outputMuted=false, timer=null;
   let audioEpoch=0;
-  let inputText='',outputText='', playback=Promise.resolve();
+  let inputText='',outputText='', userOpen=false, playback=Promise.resolve();
+  // The owner's words stream in as a partial caption; the first sign of Pawse answering seals them.
+  const sealUser=()=>{if(userOpen){userOpen=false;emit({type:'transcript',role:'user',text:inputText,partial:false});}};
   const emit=e=>{if(!ended||e.type==='ended') for(const fn of listeners){try{fn(e);}catch{}}};
   const error=message=>emit({type:'error',message});
   async function post(path,body){
@@ -54,9 +56,9 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
     try{
       for(const id of msg.toolCallCancellation?.ids||[])cancelledTools.add(id);
       const c=msg.serverContent;
-      if(c?.interrupted){audioEpoch++;audio.flush();inputText='';outputText='';}
-      if(c?.inputTranscription?.text){inputText+=c.inputTranscription.text;emit({type:'transcript',role:'user',text:inputText});}
-      if(c?.outputTranscription?.text){outputText+=c.outputTranscription.text;emit({type:'transcript',role:'ai',text:outputText});}
+      if(c?.interrupted){audioEpoch++;audio.flush();sealUser();inputText='';outputText='';}
+      if(c?.inputTranscription?.text){inputText+=c.inputTranscription.text;userOpen=true;emit({type:'transcript',role:'user',text:inputText,partial:true});}
+      if(c?.outputTranscription?.text){sealUser();outputText+=c.outputTranscription.text;emit({type:'transcript',role:'ai',text:outputText});}
       for(const part of c?.modelTurn?.parts||[]){
         const data=part.inlineData;
         if(data?.data&&data.mimeType?.startsWith('audio/pcm')){
@@ -65,7 +67,8 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
           playback=playback.then(()=>{if(!ended && epoch===audioEpoch)return audio.play(data.data,rate);}).catch(()=>{error('Native audio playback failed. Restart the session.');end();});
         }
       }
-      if(c?.turnComplete){inputText='';outputText='';emit({type:'listening',on:!muted});}
+      if(c?.turnComplete){sealUser();inputText='';outputText='';emit({type:'listening',on:!muted});}
+      if(msg.toolCall)sealUser();
       for(const call of msg.toolCall?.functionCalls||[]) void tool(call).catch(()=>error('Tool response could not be delivered.'));
       if(msg.goAway){error('Live session is ending. Start a new conversation.');end();}
     }catch{error('Live response could not be processed.');end();}
@@ -90,7 +93,7 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
       }catch(e){if(!ended){error(e.message?.includes('key')?'Live audio could not start. Check server configuration.':e.message||'Live audio could not start.');end();}}
     },
     end,
-    sendText(text){if(!session){error('Wait for the Live connection, then try again.');return;}const s=String(text||'').trim();if(!s||s.length>4000)return;audio.flush();inputText='';outputText='';send({text:s});emit({type:'transcript',role:'user',text:s});},
+    sendText(text){if(!session){error('Wait for the Live connection, then try again.');return;}const s=String(text||'').trim();if(!s||s.length>4000)return;audio.flush();userOpen=false;inputText='';outputText='';send({text:s});emit({type:'transcript',role:'user',text:s});},
     async sendImage(file){
       if(!session||ended)return;
       if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>3000000){error('Use JPEG, PNG or WebP up to 3 MB.');return;}

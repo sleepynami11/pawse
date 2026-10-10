@@ -3,6 +3,7 @@ import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
 import PlanPanel from '../components/PlanPanel.jsx';
 import useUserMedia from '../hooks/useUserMedia.js';
+import useMicLevel from '../hooks/useMicLevel.js';
 import ProviderChips from '../components/ProviderChips.jsx';
 import { createVoiceAgent, VOICE_WANTS_AUDIO, IS_LIVE_VOICE, VOICE_PATH } from '../agents/index.js';
 import { isSpeechMuted, setSpeechMuted, resolveVoiceName, onVoicesChanged } from '../agents/speech.js';
@@ -25,6 +26,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   const [soundOn, setSoundOn] = useState(!isSpeechMuted());
   const [aiLine, setAiLine] = useState('');
   const [userLine, setUserLine] = useState('');
+  const [userPartial, setUserPartial] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const [speaking, setSpeaking] = useState('none');
   const [listening, setListening] = useState(false);
   const [chips, setChips] = useState([]);
@@ -45,6 +48,10 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
 
   const mic = useUserMedia({ enabled: VOICE_WANTS_AUDIO && consent && micOn, audio: true });
   const cam = useUserMedia({ enabled: camOn, video: true, facing });
+  // Recording = the mic is open and the agent is taking it in. The meter shows the owner it hears them.
+  const recording = VOICE_WANTS_AUDIO && micOn && !!mic.stream && listening;
+  const level = useMicLevel(recording ? mic.stream : null);
+  const hearing = recording && level >= 0.15;
 
   // ---- the conversation with Pawse
   useEffect(() => {
@@ -55,7 +62,13 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       switch (e.type) {
         case 'transcript':
           if (e.role === 'ai') setAiLine(e.text);
-          else setUserLine(e.text);
+          else {
+            setUserLine(e.text);
+            setUserPartial(!!e.partial);
+          }
+          break;
+        case 'transcribing':
+          setTranscribing(e.on);
           break;
         case 'speaking':
           setSpeaking(e.who);
@@ -178,6 +191,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   };
 
   const status = listening ? null : speaking === 'ai' ? t.aiSpeaking : aiLine ? '' : t.connecting;
+  const needsMic = VOICE_WANTS_AUDIO && consent && !micOn && !mic.error;
+  const bars = [0.55, 0.85, 1, 0.85, 0.55];
   const sheetVisible = triage && sheetOpen;
   const lastPhoto = photos[photos.length - 1];
 
@@ -197,7 +212,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       {trace.length > 0 && <details className="card"><summary>Agent results</summary>{trace.map(x => <p key={x.agent_id}>{x.agent_id}: {x.state} — {x.detail}</p>)}</details>}
       <div className="vcall-top">
         <span className="timer-pill">
-          <span className="rec-dot" aria-hidden="true" /> {fmt(secs)}
+          <span className={recording ? 'rec-dot' : 'rec-dot idle'} aria-hidden="true" /> {fmt(secs)}
         </span>
         {triage && <span className={`top-level level-${triage.level}`}>{triage.headline || t.levels[triage.level]}</span>}
         <button type="button" className="round-btn" onClick={toggleSound} aria-pressed={!soundOn} aria-label={t.sound} title={t.sound}>
@@ -229,7 +244,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
             </div>
           </div>
         ) : (
-          <div className={`avatar-stage ${speaking === 'ai' ? 'talking' : ''} ${listening ? 'listening' : ''}`}>
+          <div className={`avatar-stage ${speaking === 'ai' ? 'talking' : ''} ${listening ? 'listening' : ''} ${hearing ? 'hearing' : ''}`}>
+            {recording && <span className="mic-ring" style={{ transform: `scale(${0.88 + level * 0.17})`, opacity: 0.35 + level * 0.65 }} aria-hidden="true" />}
             <span className="halo h1" aria-hidden="true" />
             <span className="halo h2" aria-hidden="true" />
             <Avatar size={168} speaking={speaking === 'ai'} listening={listening} />
@@ -238,7 +254,28 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
         <p className="stage-name">Pawse</p>
         <ProviderChips t={t} items={voiceCallProviders({ path: VOICE_PATH, caps, browser, muted: !soundOn })} />
         <p className="stage-status" aria-live="polite">
-          {listening ? (
+          {transcribing ? (
+            <span className="listening-label">
+              <span className="dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              {t.transcribing}
+            </span>
+          ) : recording ? (
+            <span className={`rec-label ${hearing ? 'hot' : ''}`}>
+              <span className="rec-dot" aria-hidden="true" />
+              {hearing ? t.hearing : t.recording}
+              <span className="level-bars" aria-hidden="true">
+                {bars.map((w, i) => (
+                  <i key={i} style={{ transform: `scaleY(${0.15 + Math.min(1, level * w * 1.3) * 0.85})` }} />
+                ))}
+              </span>
+            </span>
+          ) : needsMic ? (
+            <span className="listening-label">{t.tapMic}</span>
+          ) : listening ? (
             <span className="listening-label">
               <span className="dots" aria-hidden="true">
                 <i />
@@ -256,7 +293,21 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       {!sheetVisible && (
         <div className="vcall-bottom">
           <div className="captions" aria-live="polite">
-            {userLine && <p className="cap-user">{userLine}</p>}
+            {userLine && <p className={userPartial ? 'cap-user partial' : 'cap-user'}>{userLine}</p>}
+            {transcribing ? (
+              <p className="cap-user partial">{t.transcribing}</p>
+            ) : (
+              hearing &&
+              !userPartial && (
+                <p className="cap-user partial waiting" aria-label={t.hearing}>
+                  <span className="dots light" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </p>
+              )
+            )}
             {lastPhoto && (
               <div className="cap-photo">
                 <img src={lastPhoto.url} alt={t.photoSent} />
@@ -304,7 +355,14 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
           <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={onPhoto} />
 
           <nav className="call-controls" aria-label="Call controls">
-            <button type="button" className={micOn ? 'ctl' : 'ctl off'} onClick={toggleMic} aria-pressed={!micOn} aria-label={t.mic}>
+            <button
+              type="button"
+              className={`ctl ${!micOn ? 'off' : ''} ${recording ? 'rec' : ''} ${needsMic ? 'nudge' : ''}`}
+              style={recording ? { '--level': level } : undefined}
+              onClick={toggleMic}
+              aria-pressed={!micOn}
+              aria-label={t.mic}
+            >
               <Icon name={micOn ? 'mic' : 'micOff'} size={26} />
             </button>
             <button type="button" className="ctl hang" onClick={onEnd} aria-label={t.hangup}>

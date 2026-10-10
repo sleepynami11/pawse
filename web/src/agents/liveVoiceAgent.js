@@ -215,6 +215,15 @@ export function createLiveVoiceAgent({ lang = 'en', shareWithGemini = false } = 
   }
 
   async function transcribe(blob) {
+    emit({ type: 'transcribing', on: true });
+    try {
+      await transcribeTurn(blob);
+    } finally {
+      emit({ type: 'transcribing', on: false });
+    }
+  }
+
+  async function transcribeTurn(blob) {
     let wav;
     try {
       wav = await blobToWavBase64(blob);
@@ -233,6 +242,7 @@ export function createLiveVoiceAgent({ lang = 'en', shareWithGemini = false } = 
     if (ended) return;
     const text = String((out && out.text) || '').trim();
     if (!text) { fail(t.noSpeech); return; }
+    emit({ type: 'transcribing', on: false });
     await takeUserText(text);
   }
 

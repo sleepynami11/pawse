@@ -154,6 +154,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
   background: rgba(255, 255, 255, 0.75); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
 }
 .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff5a7a; animation: pulse-dot 1.4s infinite; }
+.rec-dot.idle { background: var(--petal); animation: none; }
 @keyframes pulse-dot { 50% { opacity: 0.3; } }
 .top-level { font-size: 13px; font-weight: 800; padding: 5px 12px; border-radius: 999px; }
 .round-btn {
@@ -181,6 +182,17 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 .dots i:nth-child(2) { animation-delay: 0.15s; }
 .dots i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes dot { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-4px); opacity: 1; } }
+/* Recording feedback: a red label with a live level meter, a ring around Pawse that follows the voice. */
+.rec-label { display: inline-flex; align-items: center; gap: 8px; color: #c23455; font-weight: 700; }
+.rec-label.hot { color: #a8183b; }
+.level-bars { display: inline-flex; align-items: center; gap: 3px; height: 18px; }
+.level-bars i { width: 4px; height: 18px; border-radius: 2px; background: #ff5a7a; transform-origin: center; transition: transform 0.08s linear; }
+.mic-ring {
+  position: absolute; inset: 2%; border-radius: 50%; border: 4px solid #ff5a7a;
+  box-shadow: 0 0 24px rgba(255, 90, 122, 0.45); transition: transform 0.08s linear, opacity 0.08s linear;
+}
+.avatar-stage.hearing .pawse-avatar { filter: drop-shadow(0 0 18px rgba(255, 90, 122, 0.45)); }
+.dots.light i { background: #fff; }
 
 .cam-card {
   position: relative; width: 100%; max-width: 360px; aspect-ratio: 4 / 3; max-height: 34vh;
@@ -210,6 +222,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
   background: var(--brand); color: #fff; padding: 7px 13px; border-radius: 16px 16px 4px 16px;
   animation: rise 0.25s ease;
 }
+.cap-user.partial { opacity: 0.85; }
+.cap-user.partial::after { content: '▍'; margin-left: 2px; animation: pulse-dot 1s infinite; }
+.cap-user.waiting::after { content: none; }
 .cap-ai {
   font-size: 18px; line-height: 1.45; font-weight: 600;
   background: var(--surface); border: 1px solid var(--line); padding: 10px 14px; border-radius: 18px 18px 18px 4px;
@@ -254,6 +269,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 }
 .ctl.off { background: var(--ink); color: #fff; border-color: var(--ink); }
 .ctl.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+.ctl.rec {
+  background: #ff5a7a; color: #fff; border-color: #ff5a7a;
+  box-shadow: 0 0 0 calc(4px + var(--level, 0) * 12px) rgba(255, 90, 122, 0.25);
+  transition: box-shadow 0.08s linear;
+}
+.ctl.nudge { animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 122, 0.5); } 50% { box-shadow: 0 0 0 12px rgba(255, 90, 122, 0); } }
 .ctl.hang { width: 72px; height: 72px; border: 0; background: var(--red); color: #fff; box-shadow: 0 8px 20px rgba(212, 61, 74, 0.35); }
 
 .reopen {
@@ -523,6 +545,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 @media (prefers-reduced-motion: reduce) {
   .petal, .home-avatar, .pawse-avatar .eyes, .pawse-avatar.is-speaking .mouth, .rec-dot, .dots i,
   .pc-callee.ringing, .bridge-wire, .step, .step.now::before, .ask-card, .sheet, .line, .cap-ai, .cap-user, .kw-chip, .result-card, .halo, .clinic, .sk, .ctl.nudge, .cap-user.partial::after { animation: none; }
+  .mic-ring, .level-bars i, .ctl.rec { transition: none; }
 }
 
 .sim-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #fff3cd; color: #7a5b00; border: 1px solid #e6cf80; vertical-align: middle; }
