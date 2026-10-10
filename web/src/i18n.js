@@ -107,7 +107,7 @@ export const strings = {
     nearest: '最近',
     map: '地图',
     callThis: '让 Pawse 打',
-    noLocation: '没有用到你的位置，距离可能不准。',
+    noLocation: '没有获取到你的位置，显示的是苏黎世市中心附近的诊所。',
 
     planTitle: '都在这里了',
     summary: '病情摘要',
@@ -231,7 +231,7 @@ export const strings = {
     nearest: 'Nearest',
     map: 'Map',
     callThis: 'Pawse, call',
-    noLocation: "Your location wasn't used, so distances may be off.",
+    noLocation: "We couldn't get your location, so these clinics are around central Zurich.",
 
     planTitle: "Here's everything",
     summary: 'Case summary',

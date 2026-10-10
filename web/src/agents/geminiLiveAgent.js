@@ -3,13 +3,16 @@ import { VOICE_AGENT_URL } from '../config.js';
 import { mapCareResult } from './liveVoiceAgent.js';
 import { createNativeAudio } from './nativeAudio.js';
 import { loadInsuranceProfile, saveInsuranceProfile } from './insuranceProfile.js';
+import { getLocation } from './location.js';
 
 // Injectable transport/audio factories keep protocol tests offline and deterministic.
 export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
-  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio}={}) {
+  clientFactory=options=>new GoogleGenAI(options), audioFactory=createNativeAudio, locate=getLocation}={}) {
   const listeners=new Set(), pending=new Set(), toolIds=new Set(), cancelledTools=new Set();
   let started=false, ended=false, session=null, audio=null, media=null, muted=true, outputMuted=false, timer=null;
   let audioEpoch=0;
+  // Asked once at start; the server searches around central Zurich when this resolves null.
+  let located=Promise.resolve(null);
   let inputText='',outputText='', userOpen=false, playback=Promise.resolve();
   // The owner's words stream in as a partial caption; the first sign of Pawse answering seals them.
   const sealUser=()=>{if(userOpen){userOpen=false;emit({type:'transcript',role:'user',text:inputText,partial:false});}};
@@ -38,7 +41,8 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
     emit({type:'tool_status',name:call.name,state:'running'});
     let response;
     try{
-      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:false,insurance:loadInsuranceProfile()}});
+      const location=call.name==='assess_and_find_vets'?await located:null;
+      const result=await post('tool-calls',{id:call.id,name:call.name,args:call.args||{},share_with_gemini:true,context:{language:lang,share_location:!!location,...(location?{location}:{}),insurance:loadInsuranceProfile()}});
       response=result.response;
       if(ended||cancelledTools.has(call.id))return;
       const ui=result.ui;
@@ -79,6 +83,7 @@ export function createGeminiLiveAgent({lang='en',shareWithGemini=false,
       if(started||ended)return;
       if(!shareWithGemini){error('Confirm sharing with Gemini before starting.');return;}
       started=true;
+      located=Promise.resolve(locate()).catch(()=>null);
       try{
         audio=audioFactory(frame=>{if(!muted&&session&&!ended)send({audio:{data:frame,mimeType:'audio/pcm;rate=16000'}});}, speaking=>emit({type:'speaking',who:speaking?'ai':'none'}));
         audio.setMuted(outputMuted);

@@ -88,13 +88,15 @@ def test_invalid_arguments_go_back_to_the_model():
     assert r.status_code == 200 and r.json()['response'] == {'error': 'invalid_arguments'}
 
 
-def test_assess_keeps_warning_signs_and_explains_missing_clinic_search():
+def test_assess_keeps_warning_signs_and_explains_failed_clinic_search():
     # No Gemini key: deterministic warning-sign guidance still answers.
     with TestClient(app) as c:
         r = call(c, 'assess_and_find_vets', {'concern': 'She is not breathing well', 'warning_signs': ['breathing_difficulty']})
     response = r.json()['response']
     assert response['urgency'] == 'emergency' and response['clinics'] == []
-    assert response['clinic_search'] != 'complete' and 'location' in response['clinic_search_detail']
+    # No clinic provider configured: the Zurich fallback search runs, finds nothing, and says so.
+    assert response['clinic_search'] != 'complete' and response['clinic_search_detail']
+    assert response['location_source'] == 'zurich_default'
 
 
 def test_open_clinic_call_needs_a_clinic_from_this_session_and_app_confirmation():
@@ -143,3 +145,23 @@ def test_policy_requires_owner_profile_and_does_not_match_partial_demo_name():
         for company in ['Pet', 'Demo insurer unrelated']:
             result = call(c, 'search_policy', {'question': 'deductible'}, context={'insurance': {'company': company}})
             assert result.json()['response']['matches_owner_policy'] is False
+
+
+@pytest.mark.parametrize('context, source', [
+    ({}, 'zurich_default'),
+    ({'share_location': True, 'location': {'lat': 47.5, 'lng': 8.7}}, 'owner_shared'),
+])
+def test_assess_searches_clinics_near_the_owner_or_falls_back_to_zurich(monkeypatch, context, source):
+    seen = {}
+    real = live.run_workflow
+    async def spy(req):
+        seen['req'] = req
+        return await real(req)
+    monkeypatch.setattr(live, 'run_workflow', spy)
+    with TestClient(app) as c:
+        r = call(c, 'assess_and_find_vets', {'concern': 'She is limping'}, context=context)
+    req = seen['req']
+    assert req.share_location is True
+    expected = context.get('location') or live.ZURICH.model_dump()
+    assert req.location.model_dump() == expected
+    assert r.json()['response']['location_source'] == source

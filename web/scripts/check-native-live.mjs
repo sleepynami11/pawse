@@ -57,6 +57,11 @@ await new Promise(r=>setTimeout(r,0));assert.equal(tools.length,1);assert.equal(
 assert.equal(requests.at(-1).body.context.share_location,false);
 agent.end();agent.end();assert.equal(closed,1);assert.equal(audioClosed,1);assert.equal(events.filter(e=>e.type==='ended').length,1);
 const requestCount=requests.length;callbacks.onmessage({toolCall:{functionCalls:[{...call,id:'late'}]}});assert.equal(requests.length,requestCount);
+// A location the browser grants goes with the clinic search; without one the server uses central Zurich.
+const located=createGeminiLiveAgent({...options,locate:async()=>({lat:47.5,lng:8.7})});await located.start();
+callbacks.onmessage({toolCall:{functionCalls:[{...call,id:'call-loc'}]}});await new Promise(r=>setTimeout(r,0));
+assert.equal(requests.at(-1).body.context.share_location,true);assert.deepEqual(requests.at(-1).body.context.location,{lat:47.5,lng:8.7});
+located.end();
 globalThis.fetch=async()=>({ok:false,status:503,json:async()=>({detail:'Live unavailable'})});
 const fail=createGeminiLiveAgent(options), errors=[];fail.on(e=>errors.push(e));await fail.start();assert.ok(errors.some(e=>e.type==='error'));assert.equal(errors.filter(e=>e.type==='ended').length,1);
 console.log('check-native-live: consent, PCM/resampling, all audio parts, transcripts, interruption, tool round trip, mute/end and token errors OK');
