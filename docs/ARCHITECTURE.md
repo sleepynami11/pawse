@@ -25,6 +25,10 @@ flowchart TD
     Review --> Voice[Communication agent\nGemini German script and subtitles\nGradium owner-consented voice]
     Voice --> Audio[Preview or download German audio]
     Voice -. separate integration needed .-> Phone[Telephone transport: not connected]
+    Live[Gemini Live voice session\nLocked ephemeral token; tools run server-side] --> Care
+    Live --> Places
+    Live --> Policy
+    Live --> Voice
     Coordinator --> Summary[Case handoff and checklist]
     Summary -. synthetic rehearsal .-> Demo[Mimi story: simulated calls, slots and costs]
 ```

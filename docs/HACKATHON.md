@@ -10,7 +10,7 @@ The exact event edition, location, dates, submission URL, and judging criteria h
 
 ## Technology and prior work
 
-The new unified app uses Gemini for structured text/photo care navigation. It includes independent MapifyAI and Google Places adapters, and a bridge to the team's pre-existing CatAgent. Real Gemini text connectivity has been verified. Live clinic discovery requires provider configuration; continuous Gemini Live voice remains planned.
+The new unified app uses Gemini for structured text/photo care navigation. It includes independent MapifyAI and Google Places adapters, and a bridge to the team's pre-existing CatAgent. Real Gemini text connectivity has been verified. Live clinic discovery requires provider configuration. Gemini Live (`gemini-3.8-live`) runs end to end on the backend: locked ephemeral tokens, a live session and server-run tool calls, verified against the real API; the browser audio client is in progress. See [Gemini Live](GEMINI_LIVE.md).
 
 The existing backend predates this event and must be disclosed as prior work. Identify the new `pawse/` interface and integration work separately in the submission. See [source import review](IMPORT_REVIEW.md).
 

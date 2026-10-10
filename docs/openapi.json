@@ -554,6 +554,88 @@
         }
       }
     },
+    "/api/v1/live/tokens": {
+      "post": {
+        "tags": [
+          "Gemini Live"
+        ],
+        "summary": "Create Token",
+        "operationId": "create_token_api_v1_live_tokens_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/tool-calls": {
+      "post": {
+        "tags": [
+          "Gemini Live"
+        ],
+        "summary": "Run Tool",
+        "operationId": "run_tool_api_v1_live_tool_calls_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolCall"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/demo/mimi": {
       "get": {
         "tags": [
@@ -1950,6 +2032,204 @@
           "text"
         ],
         "title": "SpeechRequest"
+      },
+      "TokenRequest": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh",
+              "de",
+              "hi"
+            ],
+            "title": "Language",
+            "default": "en"
+          },
+          "share_with_gemini": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gemini"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "share_with_gemini"
+        ],
+        "title": "TokenRequest"
+      },
+      "TokenResult": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "api_version": {
+            "type": "string",
+            "const": "v1alpha",
+            "title": "Api Version",
+            "default": "v1alpha"
+          },
+          "expires_at": {
+            "type": "string",
+            "title": "Expires At"
+          },
+          "new_session_expires_at": {
+            "type": "string",
+            "title": "New Session Expires At"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "model",
+          "expires_at",
+          "new_session_expires_at",
+          "tools"
+        ],
+        "title": "TokenResult"
+      },
+      "ToolCall": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "enum": [
+              "assess_and_find_vets",
+              "search_policy",
+              "draft_vet_call_script",
+              "open_clinic_call"
+            ],
+            "title": "Name"
+          },
+          "args": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Args"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ToolContext"
+          },
+          "share_with_gemini": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gemini"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "share_with_gemini"
+        ],
+        "title": "ToolCall"
+      },
+      "ToolContext": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh",
+              "de",
+              "hi"
+            ],
+            "title": "Language",
+            "default": "en"
+          },
+          "cat_name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Cat Name",
+            "default": "My cat"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "share_location": {
+            "type": "boolean",
+            "title": "Share Location",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ToolContext"
+      },
+      "ToolResult": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "response": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Response"
+          },
+          "ui": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ui"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "response"
+        ],
+        "title": "ToolResult"
       },
       "Transcript": {
         "properties": {

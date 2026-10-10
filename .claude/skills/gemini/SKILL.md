@@ -21,8 +21,7 @@ Pawse is a FastAPI app (`pawse/`, static frontend in `pawse/static/`). Gemini te
 - `GEMINI_API_KEY`: server-side only, in the root `.env` (git-ignored, loaded by `pawse/app.py`).
 - `GEMINI_MODEL=gemini-3-flash-preview` is the team's verified text/vision default (overrides:
   `GEMINI_CARE_MODEL`, `GEMINI_VOICE_MODEL`). Don't switch to an ID the probe has not called successfully.
-- `GEMINI_LIVE_MODEL=gemini-3.8-live` for the future Live session: listed for the team key with
-  `bidiGenerateContent`, not yet exercised end to end.
+- `GEMINI_LIVE_MODEL=gemini-3.8-live`: verified end to end 2026-10-10 (token, session, tool call, audio reply).
 - SDKs: `@google/genai` (JS) or `google-genai` (Python). The legacy `@google/generative-ai` and
   `google-generativeai` are deprecated: never use them.
 
@@ -44,8 +43,11 @@ results back.
 
 - Ephemeral tokens: https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens. Lock the token to the
   model and config server side, keep it short-lived, never ship `GEMINI_API_KEY` to the browser.
-- In Pawse: a FastAPI route mints the token with `google-genai` (`client.auth_tokens.create`), and
-  `pawse/static/voice.js` opens the session with `ai.live.connect` from `@google/genai` (see gemini-live-api-dev).
+- In Pawse: `pawse/live.py` mints the token with raw REST (`POST v1alpha/auth_tokens`, body `uses`, `expireTime`,
+  `newSessionExpireTime`, `bidiGenerateContentSetup` = the locked setup; token in `name`) and runs tool calls at
+  `POST /api/v1/live/tool-calls`. The browser connects with `@google/genai` (`apiKey: token`, `apiVersion: v1alpha`).
+  Raw WebSocket: `.../ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=`.
+  Contract and browser to-do: [docs/GEMINI_LIVE.md](../../../docs/GEMINI_LIVE.md).
 - `gemini-3.8-live` calls functions asynchronously by default (`behavior: NON_BLOCKING`): the cat keeps
   talking while a tool runs. Send results back with `sendToolResponse` (JS) / `send_tool_response` (Python); show task status in the UI meanwhile.
 - Ask before anything that cannot be undone (purchase, send, post, delete): the app confirms with the user

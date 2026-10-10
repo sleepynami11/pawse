@@ -34,6 +34,7 @@ Model-based understanding is separated from deterministic ranking, cost calculat
 
 ## Key Capabilities
 
+- Real-time voice conversation through the Gemini Live API (`gemini-3.8-live`) with server-run tool calls: care guidance and nearby vets, cited policy evidence, German call scripts and a confirm-before-dialing gate. See [Gemini Live](docs/GEMINI_LIVE.md).
 - Text, photo and recorded-audio intake, with English, Mandarin Chinese, German and Hindi input options.
 - Structured care guidance, warning-sign handling and questions to prepare for the vet.
 - Nearby veterinary search through configurable clinic-data providers.
@@ -65,6 +66,7 @@ The system consists of:
 
 - A responsive web interface with Pawse's pink and gray styling.
 - A FastAPI backend with bounded asynchronous agent coordination.
+- A Gemini Live session: the backend mints locked ephemeral tokens and runs the tools Gemini calls.
 - Gemini adapters for care guidance, audio understanding and translation.
 - Gradium adapters for voice cloning, German localization and speech generation.
 - Clinic-provider adapters and a local, citation-bearing policy retrieval module.
@@ -97,7 +99,8 @@ App: [localhost:8765](http://127.0.0.1:8765) · Swagger UI: [localhost:8765/docs
 
 | Setting | Purpose |
 | --- | --- |
-| `GEMINI_API_KEY` | Care guidance, transcription and translation |
+| `GEMINI_API_KEY` | Care guidance, transcription, translation and Gemini Live tokens |
+| `GEMINI_LIVE_MODEL` | Live voice model, default `gemini-3.8-live` |
 | `GEMINI_MODEL` | Default model: `gemini-3-flash-preview`; optional care/voice overrides are documented in `.env.example` |
 | `GRADIUM_API_KEY` | Voice cloning, localization and German audio |
 | `GRADIUM_VOICE_ID_DE` | Optional approved German voice to reuse across restarts |
@@ -114,6 +117,7 @@ Run the automated checks with `pip install -r requirements-dev.txt` followed by 
 
 This is a local hackathon prototype:
 
+- The Gemini Live backend (tokens and tools) is verified against the real API; the browser microphone and playback client is in progress.
 - Live clinic results require a configured provider. Unknown opening hours, services and insurance coverage remain unknown.
 - Gradium adapters are contract-tested; real cloning and voice quality still need a configured key and an owner sample. Chinese and Hindi input use Gemini; Gradium output in this app is German.
 - Telephone transport, calendar access, actual appointments, taxi bookings and claim submission are not connected. Dial links open a device dialer; generated audio is not injected into a phone call.

@@ -31,6 +31,7 @@ These are documentation boundaries. Care and legacy routes currently live in `pa
 ## Provider and data references
 
 - [Voice concierge](VOICE_CONCIERGE.md): provider lifecycle, recording and verification.
+- [Gemini Live](GEMINI_LIVE.md): live voice session, token and tool-call contract, browser client to-do.
 - [RAG evidence contract](RAG_CONTRACT.md): citation semantics and retrieval acceptance cases.
 - [Mapify adapter](MAPIFY_ADAPTER.md): actual upstream differences and clinic normalization.
 - [Data sources](DATA_SOURCES.md): open data, licensed providers and private documents.

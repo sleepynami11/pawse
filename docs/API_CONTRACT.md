@@ -23,6 +23,8 @@ Mutation request bodies are bounded at 4.5 MB by both declared Content-Length an
 | GET | `/agents/graph` | Seven runtime roles, model/tool types, owners, dependencies and configuration state |
 | POST | `/agents/runs` | HTTP 201; nested `care` request → care result, agent trace and action gates |
 | POST | `/knowledge/search` | Cited lexical search of the fixed synthetic insurance corpus |
+| POST | `/live/tokens` | HTTP 201; consented → single-use Gemini Live token locked to model, prompt and tools ([Gemini Live](GEMINI_LIVE.md)) |
+| POST | `/live/tool-calls` | Run a Gemini Live tool call server-side → `response` for Gemini plus `ui` data |
 | GET | `/voice/status` | Current session's voice readiness and configuration booleans |
 | POST | `/voice/transcriptions` | Consented WAV → Gemini transcript |
 | POST | `/voice/scripts` | Consented message → German script and paired subtitles |
