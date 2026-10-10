@@ -37,3 +37,9 @@ The existing localhost rehearsal was also walked through all six clinic-path sce
 - Imported device/report services, live video ingestion, full desktop-width QA beyond the rehearsal and public multi-user deployment have not been validated in this iteration.
 
 `gemini-2.5-flash` appeared in the model listing but returned HTTP 404 for generation in this project. Credentials and recordings are not included in test fixtures or publication artifacts.
+
+## React backend handoff (10 October 2026)
+
+The merged teammate React frontend was integrated on top of `dd99088`. After rebasing onto the teammate’s Gradium whole-call update (#42), the local check passed 86 backend tests plus all six frontend check scripts; production compilation passed. New checks cover handoff consent, four language codes, binary audio/error propagation, backend ranking preservation and service-worker exclusion of private API responses. Real local HTTP checks exercised workflow traces, demo policy citations and missing-provider/voice-profile errors without paid provider calls. Browser verification at `/app/?live=1` covered the consent gate, typed concern, care result, insurer preparation and rendered policy excerpts with source IDs/hashes and `insurance_approval: not_obtained`; console error list was empty.
+
+This is not a claim that PR #29's unmerged browser suite passes. No real microphone recording, EN/ZH/DE/HI speech accuracy benchmark, Gradium cloning or telephone transport was verified. React dialogue remains turn-based REST, not Gemini Live streaming. OSM remains an offline staging dataset. See [integration and evaluation boundaries](WEB_AGENT_INTEGRATION.md).

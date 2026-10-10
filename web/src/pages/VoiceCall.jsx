@@ -3,7 +3,7 @@ import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
 import PlanPanel from '../components/PlanPanel.jsx';
 import useUserMedia from '../hooks/useUserMedia.js';
-import { createVoiceAgent, VOICE_WANTS_AUDIO } from '../agents/index.js';
+import { createVoiceAgent, VOICE_WANTS_AUDIO, IS_LIVE_VOICE } from '../agents/index.js';
 import { isSpeechMuted, setSpeechMuted } from '../agents/speech.js';
 import { validateTriage } from '../contracts.js';
 
@@ -13,9 +13,11 @@ function fmt(sec) {
 
 // Voice first. The camera and photos are optional extras the user can add any time.
 export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, onCall, onEnd }) {
+  const [consent, setConsent] = useState(false);
+  const [trace, setTrace] = useState([]);
   const [camOn, setCamOn] = useState(false);
   const [facing, setFacing] = useState('environment');
-  const [micOn, setMicOn] = useState(true);
+  const [micOn, setMicOn] = useState(!IS_LIVE_VOICE);
   const [soundOn, setSoundOn] = useState(!isSpeechMuted());
   const [aiLine, setAiLine] = useState('');
   const [userLine, setUserLine] = useState('');
@@ -35,12 +37,13 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   const onTriageRef = useRef(onTriage);
   onTriageRef.current = onTriage;
 
-  const mic = useUserMedia({ enabled: VOICE_WANTS_AUDIO, audio: true });
+  const mic = useUserMedia({ enabled: VOICE_WANTS_AUDIO && consent && micOn, audio: true });
   const cam = useUserMedia({ enabled: camOn, video: true, facing });
 
   // ---- the conversation with Pawse
   useEffect(() => {
-    const agent = createVoiceAgent({ lang });
+    if (IS_LIVE_VOICE && !consent) return;
+    const agent = createVoiceAgent({ lang, shareWithGemini: consent });
     agentRef.current = agent;
     const off = agent.on((e) => {
       switch (e.type) {
@@ -60,6 +63,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
         case 'image_received':
           setPhotos((p) => p.map((x, i) => (i === p.length - 1 ? { ...x, received: true } : x)));
           break;
+        case 'agents': setTrace(e.trace); break;
         case 'triage': {
           const problems = validateTriage(e);
           if (problems.length) console.warn('[Pawse] triage violates the contract:', problems, e);
@@ -74,12 +78,13 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
           break;
       }
     });
+    agent.setMicMuted(!micOn);
     agent.start();
     return () => {
       off();
       agent.end();
     };
-  }, [lang]);
+  }, [lang, consent]);
 
   // ---- media → <video> and → agent
   useEffect(() => {
@@ -156,6 +161,12 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
 
   return (
     <main className="vcall">
+      {IS_LIVE_VOICE && !consent && <section className="card">
+        <p>Share your messages, selected photos and recorded speech with Gemini for care guidance. Camera video is a local preview only.</p>
+        <button className="btn primary" onClick={() => setConsent(true)}>Agree and start</button>
+        <button className="btn ghost" onClick={onEnd}>Back</button>
+      </section>}
+      {trace.length > 0 && <details className="card"><summary>Agent results</summary>{trace.map(x => <p key={x.agent_id}>{x.agent_id}: {x.state} — {x.detail}</p>)}</details>}
       <div className="vcall-top">
         <span className="timer-pill">
           <span className="rec-dot" aria-hidden="true" /> {fmt(secs)}
@@ -249,6 +260,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
               <Icon name="camera" size={20} />
             </button>
             <input
+              disabled={IS_LIVE_VOICE && !consent}
+              maxLength={4000}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={t.typePlaceholder}

@@ -26,7 +26,7 @@ export default function Home({ t, lang, setLang, onStart }) {
       <header className="topbar">
         <span className="brand">{t.appName}</span>
         <div className="lang-switch" role="group" aria-label="Language">
-          {['zh', 'en'].map((l) => (
+          {['en', 'zh', 'de', 'hi'].map((l) => (
             <button
               key={l}
               type="button"
@@ -34,7 +34,7 @@ export default function Home({ t, lang, setLang, onStart }) {
               aria-pressed={l === lang}
               onClick={() => setLang(l)}
             >
-              {l === 'zh' ? '中文' : 'EN'}
+              {({zh:'中文',en:'EN',de:'DE',hi:'हिन्दी'})[l]}
             </button>
           ))}
         </div>
@@ -54,6 +54,7 @@ export default function Home({ t, lang, setLang, onStart }) {
           {t.startCall}
         </button>
         <p className="muted">{t.startHint}</p>
+        <p><a href="?live=1">Use backend agents</a> · <a href="?demo=1">Simulated rehearsal</a></p>
         {IS_MOCK && <span className="badge">{t.mockBadge}</span>}
       </section>
 

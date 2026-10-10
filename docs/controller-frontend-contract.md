@@ -140,3 +140,7 @@ Keep the section 8 palette and English product shell. EN/ZH/DE/HI controls apply
 [PR #29](https://github.com/yyyuanfish/pawse/pull/29) defines a tests-first frontend contract, not a completed browser implementation. Its proposed `data-testid` hooks include `language`, `consent-gemini`, `record`, `audio-upload`, `audio-preview`, `transcribe`, `voice-status`, `message-input`, `talk`, `end-talk`, `cat`, `transcript`, `tool-chip`, `confirm-call`, `results`, `demo` and `simulated-label`. Read its full [pinned contract](https://github.com/yyyuanfish/pawse/blob/f08c1c40e3e4588ca32a70edfc930166e56bf11b/tests/e2e/README.md) when implementing the new UI; do not add hooks to unrelated existing elements merely to claim compliance.
 
 Acceptance requires actual mic cleanup, mono PCM16 WAV conversion, safe transcript rendering, interrupted Live playback and confirmed dialer handoff. The proposed layout checks use 1280, 1440, 1920 and 390 px. Real-speech WER/CER thresholds in that PR are evaluation targets, not measured recognition accuracy. Browser tests are opt-in and must be run explicitly after integration; a green default backend suite does not prove them green.
+
+## React client
+
+The additional `web/` client is served at `/app/` after building. Its backend mode, endpoint mapping, consent gates and evaluation scope are described in [React agent integration](WEB_AGENT_INTEGRATION.md). The original root interface remains available for voice enrollment.

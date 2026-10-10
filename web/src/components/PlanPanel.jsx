@@ -1,3 +1,4 @@
+import { IS_LIVE_PHONE } from '../agents/index.js';
 // Pawse's advice + the two "let Pawse call for you" actions.
 // Used as the bottom sheet on the video call and at the top of the plan page.
 
@@ -44,26 +45,26 @@ export default function PlanPanel({ t, triage, vet, insurance, onCall }) {
       </section>
 
       <section>
-        <h3>{t.transferTitle}</h3>
+        <h3>{IS_LIVE_PHONE ? 'Prepare your next conversation' : t.transferTitle}</h3>
         <div className="actions">
           <ActionRow
             icon={t.callees.vet.icon}
-            title={t.callVet}
-            sub={t.callVetSub}
+            title={IS_LIVE_PHONE ? 'Prepare vet conversation' : t.callVet}
+            sub={IS_LIVE_PHONE ? 'Review a German script and audio; no automatic call' : t.callVetSub}
             doneText={vetDone}
-            button={vet ? t.callAgain : t.call}
+            button={IS_LIVE_PHONE ? 'Prepare' : vet ? t.callAgain : t.call}
             onClick={() => onCall('vet')}
           />
           <ActionRow
             icon={t.callees.insurance.icon}
-            title={t.callIns}
-            sub={t.callInsSub}
+            title={IS_LIVE_PHONE ? 'Prepare insurer conversation' : t.callIns}
+            sub={IS_LIVE_PHONE ? 'Demo policy evidence and a script; coverage unconfirmed' : t.callInsSub}
             doneText={insDone}
-            button={insurance ? t.callAgain : t.call}
+            button={IS_LIVE_PHONE ? 'Prepare' : insurance ? t.callAgain : t.call}
             onClick={() => onCall('insurance')}
           />
         </div>
-        <p className="ai-note">{t.aiNote}</p>
+        <p className="ai-note">{IS_LIVE_PHONE ? 'Review the script before sharing. Audio playback does not place a call.' : t.aiNote}</p>
       </section>
     </div>
   );

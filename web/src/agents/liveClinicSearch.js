@@ -37,6 +37,10 @@ export function mapClinic(c, location) {
   if (typeof c.rating === 'number') out.rating = c.rating;
   if (c.maps_url) out.mapsUrl = c.maps_url;
   if (c.phone) out.phone = c.phone;
+  if (/^tel:\+[1-9]\d{6,14}$/.test(c.call_url || '')) out.callUrl = c.call_url;
+  out.source = c.source; out.retrievedAt = c.retrieved_at;
+  out.reasons = c.reasons || [];
+  out.website = c.website;
   return out;
 }
 
@@ -54,7 +58,10 @@ export async function liveSearchClinics({ lang = 'en', location = null, triage =
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Clinic search failed (${res.status})`);
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(typeof error.detail === 'string' ? error.detail : `Clinic search failed (${res.status})`);
+  }
   const data = await res.json();
   const raw = Array.isArray(data && data.clinics) ? data.clinics : [];
   if (!raw.length) {
@@ -62,7 +69,6 @@ export async function liveSearchClinics({ lang = 'en', location = null, triage =
     throw new Error(`No clinics returned by the backend (clinic provider not configured or unavailable: ${why}).`);
   }
   const clinics = raw.map((c) => mapClinic(c, location));
-  // Nearest first; unknown distances last. Stable otherwise.
-  clinics.sort((a, b) => (Number.isNaN(a.distanceKm) - Number.isNaN(b.distanceKm)) || (a.distanceKm - b.distanceKm) || 0);
+  // Preserve server ranking (opening status, distance, rating).
   return { clinics };
 }

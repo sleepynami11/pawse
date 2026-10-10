@@ -57,3 +57,5 @@ Check implementation and [OpenAPI](openapi.json) together: streaming events, dyn
 When changing an interface, update its controller contract and consumers, then run `python scripts/export_contract.py` to regenerate OpenAPI. Keep example payloads synthetic and valid. Coordinate shared schemas and route changes through the integration module described in [Agent development](AGENT_DEVELOPMENT.md).
 
 Current paths, schemas and behavior are derived from Pawse's code. Proposed interfaces are implementation agreements to review and test before enabling their UI.
+
+- [React agent integration and evaluation](WEB_AGENT_INTEGRATION.md) — actual routes, consent, evidence and verification boundaries.

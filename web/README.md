@@ -1,3 +1,7 @@
+# Backend integration update
+
+Open `/app/?live=1` for the current backend workflow and `/app/?demo=1` for rehearsal. See [the integration contract](../docs/WEB_AGENT_INTEGRATION.md) for current routing and evaluation. Live communication prepares a reviewed draft and audio; it does not play the scripted calls described in the original handoff notes below. EN/ZH/DE/HI input codes are supported; DE/HI UI labels currently fall back to English.
+
 # Pawse Web（前端）
 
 宠物不舒服时，**打给 Pawse 说说**。以语音为主，需要时再开摄像头或发照片。

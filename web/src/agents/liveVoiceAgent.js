@@ -113,9 +113,9 @@ function fileToBase64(file) {
   });
 }
 
-export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
+export function createLiveVoiceAgent({ lang = 'en', shareWithGemini = false } = {}) {
   const t = T[lang] || T.en;
-  const apiLang = lang === 'zh' ? 'zh' : 'en';
+  const apiLang = ['en', 'zh', 'de', 'hi'].includes(lang) ? lang : 'en';
   const base = (VOICE_AGENT_URL || '').replace(/\/$/, '');
   const listeners = new Set();
   const userTurns = [];
@@ -143,6 +143,7 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
   const fail = (message) => emit({ type: 'error', message });
 
   async function api(path, body) {
+    if (ended || !shareWithGemini) throw new Error('Confirm sharing with Gemini before continuing.');
     const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timer = ctl && setTimeout(() => ctl.abort(), 60000);
     try {
@@ -166,6 +167,7 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
   async function say(text) {
     if (ended) return;
     aiSpeaking = true;
+    finishTurn(false);
     emit({ type: 'listening', on: false });
     emit({ type: 'speaking', who: 'ai' });
     emit({ type: 'transcript', role: 'ai', text });
@@ -179,11 +181,14 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
 
   async function advise() {
     const query = userTurns.join('\n');
+    if (query.length > 4000) { fail('Conversation exceeds 4,000 characters. Start a new summary.'); return; }
     const body = { query, language: apiLang, share_with_ai: true };
     if (photo) body.photo = photo;
     let res;
     try {
-      res = await api('/api/v1/care/requests', body);
+      const run = await api('/api/v1/agents/runs', { care: body });
+      res = run.care;
+      emit({ type: 'agents', trace: run.trace || [], actions: run.actions || [] });
     } catch (err) {
       fail(`${t.errCare} (${err.message})`);
       emit({ type: 'listening', on: !muted });
@@ -225,6 +230,7 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
       fail(`${t.errTranscribe} (${err.message})`);
       return;
     }
+    if (ended) return;
     const text = String((out && out.text) || '').trim();
     if (!text) { fail(t.noSpeech); return; }
     await takeUserText(text);
@@ -233,11 +239,11 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
   // --- recording with silence detection -----------------------------------------------------
   function resetTurn() {
     heardMs = 0; silentMs = 0; turnMs = 0;
-    if (recorder && recorder.state === 'inactive') startRecorder();
+    if (!recorder || recorder.state === 'inactive') startRecorder();
   }
 
   function startRecorder() {
-    if (!stream || ended) return;
+    if (!stream || ended || muted || aiSpeaking) return;
     chunks = [];
     heardMs = 0; silentMs = 0; turnMs = 0;
     try {
@@ -307,6 +313,7 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
     },
     start() {
       if (started || ended) return;
+      if (!shareWithGemini) { fail('Confirm sharing with Gemini before continuing.'); return; }
       started = true;
       enqueue(async () => {
         emit({ type: 'suggestions', items: t.chips });
@@ -325,13 +332,14 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
     },
     sendText(text) {
       const s = String(text || '').trim();
-      if (!s || ended) return;
+      if (!s || ended || !shareWithGemini) return;
       stopSpeech();
       aiSpeaking = false;
       enqueue(() => takeUserText(s));
     },
     async sendImage(file) {
-      if (ended || !file) return;
+      if (ended || !file || !shareWithGemini) return;
+      if (file.size > 3000000) { fail('Use an image up to 3 MB.'); return; }
       const mime = file.type;
       if (!PHOTO_TYPES.includes(mime)) { fail(t.errPhoto); return; }
       try {
@@ -343,7 +351,8 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
       emit({ type: 'image_received' });
     },
     attachMedia({ audio } = {}) {
-      if (ended || !audio || audio === stream) return;
+      if (!audio) { stopRecording(); stream = null; return; }
+      if (ended || !shareWithGemini || audio === stream) return;
       stopRecording();
       stream = audio;
       const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
@@ -364,7 +373,8 @@ export function createLiveVoiceAgent({ lang = 'zh' } = {}) {
       muted = !!m;
       if (!started || ended) return;
       emit({ type: 'listening', on: !muted && !aiSpeaking });
-      if (muted && heardMs > 0) finishTurn(false);
+      if (muted) finishTurn(false);
+      else resetTurn();
     },
   };
 }

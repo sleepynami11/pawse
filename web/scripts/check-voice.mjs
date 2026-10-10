@@ -15,8 +15,8 @@ globalThis.fetch = async (url, init) => {
     ok: true,
     status: 201,
     json: async () => ({
-      assessment: { urgency: 'contact_vet', summary: 'Please see a vet today.', questions: ['Did she fall?'], services_to_ask_about: ['X-ray'] },
-      handoff: 'h',
+      care: { assessment: { urgency: 'contact_vet', summary: 'Please see a vet today.', questions: ['Did she fall?'], services_to_ask_about: ['X-ray'] },
+      handoff: 'h' }, trace: [], actions: [],
     }),
   };
 };
@@ -24,7 +24,7 @@ globalThis.fetch = async (url, init) => {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const until = async (pred, ms = 8000) => { const t0 = Date.now(); while (!pred()) { if (Date.now() - t0 > ms) throw new Error('timeout'); await wait(20); } };
 
-const a = createLiveVoiceAgent({ lang: 'en' });
+const a = createLiveVoiceAgent({ lang: 'en', shareWithGemini: true });
 const ev = [];
 a.on((e) => ev.push(e));
 assert.equal(a.wantsAudio, true);
@@ -42,9 +42,9 @@ const it = ev.findIndex((e) => e.type === 'triage');
 assert.ok(iu > 0 && iu < it);
 assert.deepEqual(validateTriage(ev[it]), []);
 assert.equal(ev[it].level, 'yellow');
-assert.equal(calls[0].url, '/api/v1/care/requests');
-assert.equal(calls[0].body.query, 'My cat is limping');
-assert.equal(calls[0].body.share_with_ai, true);
+assert.equal(calls[0].url, '/api/v1/agents/runs');
+assert.equal(calls[0].body.care.query, 'My cat is limping');
+assert.equal(calls[0].body.care.share_with_ai, true);
 ok('sendText -> user transcript -> valid triage via /api/v1/care/requests');
 
 assert.equal(mapCareResult({ assessment: { urgency: 'emergency', summary: 's' } }).level, 'red');
@@ -60,7 +60,7 @@ a.sendText('She is also hiding');
 await until(() => ev.slice(before).some((e) => e.type === 'error'));
 assert.ok(ev.slice(before).some((e) => e.type === 'transcript' && e.role === 'user'));
 assert.ok(!ev.some((e) => e.type === 'ended'));
-assert.match(calls.at(-1).body.query, /limping\nShe is also hiding/);
+assert.match(calls.at(-1).body.care.query, /limping\nShe is also hiding/);
 ok('backend error -> error event, call continues, history accumulates');
 
 mode = 'ok';
@@ -75,5 +75,11 @@ a.sendText('ignored');
 await wait(50);
 assert.equal(ev.filter((e) => e.type === 'ended').length, 1);
 ok('end() idempotent, exactly one ended');
+const denied = createLiveVoiceAgent({ lang: 'hi' });
+const count = calls.length;
+denied.sendText('Do not send without consent');
+await wait(50);
+assert.equal(calls.length, count, 'missing consent makes no request');
+denied.end();
 console.log(`\n${n} checks passed`);
 process.exit(0);

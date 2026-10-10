@@ -1,3 +1,4 @@
+import { IS_LIVE_PHONE } from '../agents/index.js';
 import { useState } from 'react';
 import Avatar from '../components/Avatar.jsx';
 import PlanPanel from '../components/PlanPanel.jsx';
@@ -41,7 +42,7 @@ export default function Plan({ t, lang, triage, vet, insurance, onCall, onRestar
       <section className="card">
         <h2>{t.checklistTitle}</h2>
         <ul className="cov">
-          {t.checklist.map((c, i) => (
+          {(IS_LIVE_PHONE ? ['Keep relevant photos and records', 'Request an itemised invoice', 'Check the actual policy and submission deadline with your insurer'] : t.checklist).map((c, i) => (
             <li key={i} className="ok">
               <span className="cov-icon" aria-hidden="true">✓</span>
               <span>{c}</span>

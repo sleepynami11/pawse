@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
-import { searchClinics } from '../agents/index.js';
+import { searchClinics, IS_LIVE_CLINICS } from '../agents/index.js';
 import { validateClinics } from '../contracts.js';
 
 /** Best-effort location; resolves null if refused, unavailable or slow. */
@@ -28,7 +28,7 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
       setState({ status: 'ok', clinics: (res && res.clinics) || [], located: !!location });
     } catch (e) {
       console.warn('[Pawse] clinic search failed:', e);
-      setState({ status: 'error', clinics: [], located: !!location });
+      setState({ status: 'error', clinics: [], located: !!location, error: e.message });
     }
   }, [lang, triage]);
 
@@ -65,7 +65,7 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
 
       {state.status === 'error' && (
         <div className="clinic-empty">
-          <p>{t.clinicsError}</p>
+          <p>{state.error || t.clinicsError}</p>
           <button type="button" className="btn primary" onClick={load}>
             {t.retry}
           </button>
@@ -77,7 +77,7 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
           {!state.located && <p className="note">{t.noLocation}</p>}
           {state.clinics.length === 0 && (
             <div className="clinic-empty">
-              <p>{t.clinicsError}</p>
+              <p>{state.error || t.clinicsError}</p>
               <button type="button" className="btn primary" onClick={load}>
                 {t.retry}
               </button>
@@ -95,11 +95,12 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
                 ) : (
                   <span className={c.openNow ? 'tag open' : 'tag shut'}>{c.openNow ? t.openNow : t.closed}</span>
                 )}
-                {c.emergency && <span className="tag emer">{t.emergency24}</span>}
-                {firstOpen && firstOpen.id === c.id && <span className="tag near">{t.nearest}</span>}
+                {c.emergency && <span className="tag emer">{IS_LIVE_CLINICS ? 'Emergency service reported — confirm hours' : t.emergency24}</span>}
+                {!IS_LIVE_CLINICS && firstOpen && firstOpen.id === c.id && <span className="tag near">{t.nearest}</span>}
                 {typeof c.rating === 'number' && <span className="tag plain">★ {c.rating.toFixed(1)}</span>}
               </div>
               {c.hoursText && !c.openUnknown && <p className="muted small">{c.hoursText}</p>}
+              <p className="muted small">{c.source} {c.retrievedAt}</p>
               <p className="clinic-addr small">{c.address}</p>
               <div className="clinic-actions">
                 {c.mapsUrl && (
@@ -108,7 +109,7 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
                   </a>
                 )}
                 <button type="button" className="btn primary small" disabled={!c.openNow && !c.openUnknown} onClick={() => onPick(c)}>
-                  <Icon name="phone" size={16} /> {t.callThis}
+                  <Icon name="phone" size={16} /> {IS_LIVE_CLINICS ? 'Prepare conversation' : t.callThis}
                 </button>
               </div>
             </article>

@@ -1,4 +1,4 @@
-export const LANGS = ['zh', 'en'];
+export const LANGS = ['zh', 'en', 'de', 'hi'];
 
 export const strings = {
   zh: {

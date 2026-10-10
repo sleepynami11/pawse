@@ -459,3 +459,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 }
 
 .sim-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #fff3cd; color: #7a5b00; border: 1px solid #e6cf80; vertical-align: middle; }
+
+/* Reviewed backend handoff shares existing app colours and spacing. */
+.handoff label { display: block; margin: 12px 0; }
+.handoff textarea, .handoff input[type="text"], .handoff input:not([type]), .handoff select { width: 100%; padding: 12px; border: 1px solid var(--line, #ddd); border-radius: 12px; font: inherit; box-sizing: border-box; }
+.handoff textarea { min-height: 130px; resize: vertical; }
+.handoff article { margin-top: 18px; overflow-wrap: anywhere; }
+.handoff audio { width: 100%; margin-top: 12px; }

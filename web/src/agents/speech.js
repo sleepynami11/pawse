@@ -29,7 +29,7 @@ export function estimateMs(text, lang) {
   return Math.max(1200, String(text).length * per);
 }
 
-const TAGS = { zh: 'zh-CN', en: 'en-US', de: 'de-DE' };
+const TAGS = { zh: 'zh-CN', en: 'en-US', de: 'de-DE', hi: 'hi-IN' };
 
 function pickVoice(tag) {
   const voices = window.speechSynthesis.getVoices();

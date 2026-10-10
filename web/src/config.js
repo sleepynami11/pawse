@@ -11,10 +11,11 @@ const param = (k) => {
 };
 
 /** 'mock' = scripted demo (default). 'live' = the Pawse backend. "?live=1" in the URL switches all three at runtime. */
-const LIVE_ALL = param('live') === '1';
-export const VOICE_AGENT = LIVE_ALL ? 'live' : env.VITE_VOICE_AGENT || 'mock';
-export const CLINIC_SEARCH = LIVE_ALL ? 'live' : env.VITE_CLINIC_SEARCH || 'mock';
-export const PHONE_AGENT = LIVE_ALL ? 'live' : env.VITE_PHONE_AGENT || 'mock';
+const DEMO_ALL = param('demo') === '1';
+const LIVE_ALL = !DEMO_ALL && param('live') === '1';
+export const VOICE_AGENT = DEMO_ALL ? 'mock' : LIVE_ALL ? 'live' : env.VITE_VOICE_AGENT || 'mock';
+export const CLINIC_SEARCH = DEMO_ALL ? 'mock' : LIVE_ALL ? 'live' : env.VITE_CLINIC_SEARCH || 'mock';
+export const PHONE_AGENT = DEMO_ALL ? 'mock' : LIVE_ALL ? 'live' : env.VITE_PHONE_AGENT || 'mock';
 
 export const VOICE_AGENT_URL = env.VITE_VOICE_AGENT_URL || '';
 export const CLINIC_SEARCH_URL = env.VITE_CLINIC_SEARCH_URL || '';
