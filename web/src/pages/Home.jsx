@@ -10,7 +10,7 @@ const PETALS = [
   { left: '84%', delay: '4.5s', dur: '10s', size: 13 },
 ];
 
-export default function Home({ t, lang, setLang, onStart }) {
+export default function Home({ t, lang, setLang, onStart, onOwnVoice }) {
   return (
     <main className="home">
       <div className="petals" aria-hidden="true">
@@ -54,6 +54,7 @@ export default function Home({ t, lang, setLang, onStart }) {
           {t.startCall}
         </button>
         <p className="muted">{t.startHint}</p>
+        <button className="btn soft" onClick={onOwnVoice}>Record my voice · emergency rehearsal</button>
         <p><a href="?live=1">Use backend agents</a> · <a href="?demo=1">Simulated rehearsal</a></p>
         {IS_MOCK && <span className="badge">{t.mockBadge}</span>}
       </section>

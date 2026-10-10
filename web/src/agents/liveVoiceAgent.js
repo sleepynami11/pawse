@@ -84,7 +84,7 @@ function toBase64(bytes) {
 }
 
 /** Recorded Blob (webm/mp4/...) -> base64 mono 16 kHz 16-bit WAV. Returns null if under 0.5 s. */
-async function blobToWavBase64(blob) {
+export async function blobToWavBase64(blob) {
   const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
   const ctx = new AC();
   try {

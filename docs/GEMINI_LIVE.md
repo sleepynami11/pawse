@@ -60,14 +60,17 @@ Errors: 422 for an unknown tool or missing consent. 429 when 3 tool calls are al
 
 `GET /api/v1/voice/status` also reports `live_configured` and `live_model`.
 
-## Frontend: to do (Nami, #6)
+## React frontend (implemented)
 
-1. Load `@google/genai` as an ES module from a pinned CDN version (`cdn.jsdelivr.net/npm/@google/genai@<exact version>/+esm`), and connect with `new GoogleGenAI({ apiKey: token, httpOptions: { apiVersion: "v1alpha" } })` and `ai.live.connect({ model, config: { responseModalities: ["AUDIO"] }, callbacks })`.
-2. Mic: `getUserMedia` with an AudioWorklet that downsamples to **16 kHz mono PCM16**, then `session.sendRealtimeInput({ audio: { data: base64, mimeType: "audio/pcm;rate=16000" } })`.
-3. Playback: model audio is base64 **24 kHz mono PCM16** in `serverContent.modelTurn.parts[].inlineData`. Queue it gaplessly on an `AudioContext`. When `serverContent.interrupted` arrives, flush the queue so the owner can talk over Pawse.
-4. Process every part of every message: `inputTranscription` and `outputTranscription` fill the transcript panel, and `toolCall` shows a status chip per tool. Tools are non-blocking, so Pawse keeps talking while they run.
-5. Explicit Gemini consent before starting. Clear messages when minting fails, the socket closes or the mic is denied, with a fallback to the existing recording and typed flow. End the session cleanly before the token expires (a demo is 2 minutes, so there's no resumption).
+`web/src/agents/geminiLiveAgent.js` uses the pinned npm `@google/genai` package and the model/API version returned by the token endpoint. `/app/?live=1` selects native Live audio; `&voice=rest` explicitly selects the older REST/browser-speech fallback.
+
+- Explicit sharing consent before token creation; microphone remains off until enabled.
+- AudioWorklet resamples input to 16 kHz mono PCM16. Playback queues all returned PCM parts at the advertised rate (normally 24 kHz).
+- Interruptions flush playback; input/output transcripts render as text. Tools execute through the session-bound backend and return their original response to Gemini.
+- End closes the socket, audio contexts, media tracks and pending HTTP requests. Sessions stop after eight minutes; resumption is not implemented.
+- Camera preview stays local; selected photos are sent explicitly. Location stays off in the conversation tool context; use the separate clinic search consent flow.
+- Own-voice setup is separate: Gradium enrollment and German rehearsal are available from the React home page. Gemini native voices are not owner clones.
 
 ## Verified (2026-10-10)
 
-Against the event key with `gemini-3.8-live`: a token was minted through REST, a session opened on the constrained v1alpha endpoint, and a text turn ("My cat Mimi is limping after jumping off a wardrobe") made Gemini call `assess_and_find_vets`. `/live/tool-calls` ran the workflow, the result was sent back, and Gemini answered in audio with transcripts, using the tool result. Browser microphone capture and playback are not built yet (see above).
+Against the event key with `gemini-3.8-live`: a token was minted through REST, a session opened on the constrained v1alpha endpoint, and a text turn ("My cat Mimi is limping after jumping off a wardrobe") made Gemini call `assess_and_find_vets`. `/live/tool-calls` ran the workflow, the result was sent back, and Gemini answered in audio with transcripts, using the tool result. The React capture/playback implementation is now present. Browser testing exercised a synthetic typed Live turn and a rendered care-tool result without console errors. Human microphone capture, listening quality and multilingual accuracy remain manual tests.

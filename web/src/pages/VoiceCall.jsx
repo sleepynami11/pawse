@@ -14,6 +14,7 @@ function fmt(sec) {
 // Voice first. The camera and photos are optional extras the user can add any time.
 export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, onCall, onEnd }) {
   const [consent, setConsent] = useState(false);
+  const [toolResults, setToolResults] = useState([]);
   const [trace, setTrace] = useState([]);
   const [camOn, setCamOn] = useState(false);
   const [facing, setFacing] = useState('environment');
@@ -63,6 +64,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
         case 'image_received':
           setPhotos((p) => p.map((x, i) => (i === p.length - 1 ? { ...x, received: true } : x)));
           break;
+        case 'tool_result': setToolResults(p => [...p.slice(-4), e]); break;
         case 'agents': setTrace(e.trace); break;
         case 'triage': {
           const problems = validateTriage(e);
@@ -79,6 +81,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       }
     });
     agent.setMicMuted(!micOn);
+    agent.setOutputMuted?.(!soundOn);
     agent.start();
     return () => {
       off();
@@ -153,6 +156,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
     const next = !soundOn;
     setSoundOn(next);
     setSpeechMuted(!next);
+    agentRef.current?.setOutputMuted?.(!next);
   };
 
   const status = listening ? null : speaking === 'ai' ? t.aiSpeaking : aiLine ? '' : t.connecting;
@@ -162,10 +166,15 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   return (
     <main className="vcall">
       {IS_LIVE_VOICE && !consent && <section className="card">
-        <p>Share your messages, selected photos and recorded speech with Gemini for care guidance. Camera video is a local preview only.</p>
+        <p>Share your messages, selected photos and recorded speech with Gemini for care guidance. Gemini Live returns native audio. Camera video is a local preview only. Enable your microphone after starting; headphones help prevent echo.</p>
         <button className="btn primary" onClick={() => setConsent(true)}>Agree and start</button>
         <button className="btn ghost" onClick={onEnd}>Back</button>
       </section>}
+      {toolResults.map((result,i) => <details className="card" key={i}><summary>{result.name}</summary>
+        {result.ui.lines?.map((line,j)=><p key={j}>{line.german}<br/>{line.subtitle}</p>)}
+        {result.ui.evidence?.map(e=><p key={e.evidence_id}>Demo policy · {e.title} · {e.section}: {e.snippet}</p>)}
+        {result.ui.action === 'confirm_call' && /^tel:\+[1-9]\d{6,14}$/.test(result.ui.call_url || '') && <p>No call placed. <a href={result.ui.call_url}>Open device dialer for {result.ui.clinic_name}</a></p>}
+      </details>)}
       {trace.length > 0 && <details className="card"><summary>Agent results</summary>{trace.map(x => <p key={x.agent_id}>{x.agent_id}: {x.state} — {x.detail}</p>)}</details>}
       <div className="vcall-top">
         <span className="timer-pill">

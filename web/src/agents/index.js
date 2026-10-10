@@ -1,5 +1,6 @@
 import { VOICE_AGENT, CLINIC_SEARCH, PHONE_AGENT, MOCK_SPEED } from '../config.js';
 import { createMockVoiceAgent } from './mockVoiceAgent.js';
+import { createGeminiLiveAgent } from './geminiLiveAgent.js';
 import { createLiveVoiceAgent } from './liveVoiceAgent.js';
 import { mockSearchClinics } from './mockClinicSearch.js';
 import { liveSearchClinics } from './liveClinicSearch.js';
@@ -16,7 +17,7 @@ export const VOICE_WANTS_AUDIO = IS_LIVE_VOICE;
 
 /** 1. Voice conversation with Pawse. */
 export function createVoiceAgent(opts) {
-  return IS_LIVE_VOICE ? createLiveVoiceAgent(opts) : createMockVoiceAgent({ speed: MOCK_SPEED, ...opts });
+  return IS_LIVE_VOICE ? (new URLSearchParams(globalThis.location?.search || '').get('voice') === 'rest' ? createLiveVoiceAgent(opts) : createGeminiLiveAgent(opts)) : createMockVoiceAgent({ speed: MOCK_SPEED, ...opts });
 }
 
 /** 2. Nearby vet clinics. */

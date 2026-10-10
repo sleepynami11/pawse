@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import OwnVoice from './pages/OwnVoice.jsx';
 import Home from './pages/Home.jsx';
 import VoiceCall from './pages/VoiceCall.jsx';
 import ClinicList from './pages/ClinicList.jsx';
@@ -107,6 +108,7 @@ export default function App() {
     setView(triage ? 'plan' : 'home');
   };
 
+  if (view === 'ownvoice') return <OwnVoice onBack={() => setView('home')} />;
   if (view === 'voice') {
     return (
       <VoiceCall
@@ -159,5 +161,5 @@ export default function App() {
       />
     );
   }
-  return <Home t={t} lang={lang} setLang={setLang} onStart={startCall} />;
+  return <Home t={t} lang={lang} setLang={setLang} onStart={startCall} onOwnVoice={() => setView('ownvoice')} />;
 }
