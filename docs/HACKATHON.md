@@ -26,6 +26,12 @@ Following the [organizer-provided account guide](https://goo.gle/hackathon-accou
 
 The guide says temporary accounts may be deleted as soon as the day after the event. Export code and generated assets before the event ends, and move any continuing deployment to your own project. Higher quotas are not unlimited usage.
 
+Gotchas:
+
+- A key pushed to GitHub gets every key in the project revoked. If one leaks, delete it in AI Studio and create a new one.
+- Rate limits apply per project, not per key: teammates share them. Don't hammer the live key in loops; abuse can disqualify.
+- Model choice, rate limits, and Live API notes: the [gemini skill](../.claude/skills/gemini/SKILL.md).
+
 ## Submission checklist
 
 - [ ] Record official event details and submission requirements.

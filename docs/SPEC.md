@@ -24,7 +24,7 @@ AI organizes information and questions; current clinic ranking is deterministic.
 1. Configure a real Mapify backend or Google Places project and validate Zurich results and phone data.
 2. Bring up the pre-existing agent with the required storage/device/model services; test each intended demo feature.
 3. Replace excluded knowledge collections with permitted, reviewed sources.
-4. Connect Gemini Live for continuous voice; browser dictation/read-aloud are only optional conveniences.
+4. Connect Gemini Live (`GEMINI_LIVE_MODEL=gemini-3.8-live`, listed for the team key) for continuous voice; browser dictation/read-aloud are only optional conveniences.
 5. Add authenticated users, cat ownership and persistent care profiles before public deployment.
 6. Validate clinic/insurer service information with authoritative data partners.
 
