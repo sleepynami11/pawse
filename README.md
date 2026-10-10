@@ -51,11 +51,11 @@ Run the app locally and open [Pawse](http://127.0.0.1:8765) to try **Mimi's two-
 
 1. Mimi is limping after jumping from a wardrobe.
 2. Pawse prepares a German vet conversation with English subtitles.
-3. The fictional policy explains the deductible and excluded services.
+3. The insurer explains the deductible and the services the policy does not cover.
 4. The owner compares a clinic visit at an estimated **CHF 385** with a home visit at **CHF 510**.
 5. The rehearsal ends with a taxi request and a case/claim checklist.
 
-Calls, replies, calendar slots, coverage and prices in this story are simulated. The estimates use the [fictional demo policy](research/pet-insurance/README.md). The live interface currently accepts photos and recorded audio; the story's video intake is not connected.
+Calls, replies, calendar slots, coverage and prices in this story are simulated. The estimates use a [demo policy](research/pet-insurance/README.md) on real Swiss pet-insurance terms (AVB, December 2025); the policyholder and schedule are synthetic. The live interface currently accepts photos and recorded audio; the story's video intake is not connected.
 
 ---
 
@@ -117,7 +117,7 @@ This is a local hackathon prototype:
 - Live clinic results require a configured provider. Unknown opening hours, services and insurance coverage remain unknown.
 - Gradium adapters are contract-tested; real cloning and voice quality still need a configured key and an owner sample. Chinese and Hindi input use Gemini; Gradium output in this app is German.
 - Telephone transport, calendar access, actual appointments, taxi bookings and claim submission are not connected. Dial links open a device dialer; generated audio is not injected into a phone call.
-- Retrieval currently uses lexical search over fictional policy documents. Real-policy ingestion and vector indexing are future work.
+- Retrieval currently uses lexical search over the demo policy and an English adaptation of its terms. Real-policy ingestion and vector indexing are future work.
 - Legacy device, report and knowledge services require their own configuration. Public multi-user hosting needs authentication and durable ownership controls.
 
 Pawse provides care navigation, not a diagnosis or a guarantee of treatment, coverage or response time. AI, location and voice sharing are separate opt-ins. Photos and recordings are not written to disk; care summaries expire from the local cache after 15 minutes. Gradium-created voices remain in the provider account until deleted. See [voice lifecycle details](docs/VOICE_CONCIERGE.md).

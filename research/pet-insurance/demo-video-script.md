@@ -59,9 +59,11 @@ Roughly 230 spoken English words plus subtitled German, which fits 2 minutes whe
 
 - **Pre-record the calls.** The vet, insurer and taxi voices are actors or TTS reading the German lines above.
   Say so in the submission ("simulated calls"); the hackathon checklist asks to separate working features from future plans.
-- **Insurer name on screen.** The script says "your pet insurer" and the policy is the fictional *Pawse Demo Pet Insurance*,
-  with terms adapted from Calingo's. Don't show a real insurer's name or logo answering a call it never made in a
-  public video. If you want the Calingo name, use it only as "terms based on Calingo's AVB" in the credits.
+- **Insurer name on screen.** Say "your pet insurer"; show no insurer name or logo, since the call is simulated.
+  The coverage rules are real: every claim in the insurer call matches the real AVB (December 2025 edition) listed in
+  [`README.md`](README.md#sources), so a judge can check them: accidents from day one (§1.4 d, §3.2 a), house call only
+  from CHF 12'000 sum insured (§1.2 *Notfallbehandlung*), physio only with the complementary module (§1.2
+  *Komplementärmedizinische Behandlung*), claim within 30 days (§2.2). Only the policyholder and schedule are synthetic.
 - **Honest money.** Don't say the taxi is covered: transport is not in the AVB. The saving is that Pawse steered the
   user away from the CHF 150 home-visit fee, which the insurance would not have paid.
 - **Triage wording** is demo copy written by non-vets, not veterinary advice; keep the 🟡 card text conservative.

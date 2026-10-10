@@ -743,7 +743,7 @@
       steps.append(button);
     });
     root.replaceChildren(
-      make("span", `${step.time} · fictional scenario`, "badge simulation"),
+      make("span", `${step.time} · simulated scenario`, "badge simulation"),
       make("h3", step.title, "scene-heading"),
       make("p", step.description, "scene-description"),
     );

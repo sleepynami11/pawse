@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 POLICY_PATH = "research/pet-insurance/policy/policy.json"
 AVB_PATH = "research/pet-insurance/avb/avb-en.md"
 DISCLAIMER = (
-    "Fictional demo policy and adapted demo terms only. These excerpts do not "
+    "Demo policy schedule and an English adaptation of real Swiss terms only. These excerpts do not "
     "establish an owner's real insurance coverage or constitute insurer approval."
 )
 router = APIRouter(prefix="/api/v1/knowledge", tags=["Knowledge evidence"])
