@@ -57,6 +57,7 @@ fallback, not the goal.
 | `pawse/voice.py` | Gemini transcription/translation, Gradium cloning and German speech |
 | `pawse/knowledge.py` | Cited search over the synthetic policy corpus in `research/` |
 | `pawse/static/` | Frontend (no build step) |
+| `web/` | React/Vite voice-first app (call Pawse → clinics → vet/insurer calls → summary), served at `/app` after `npm run build`; slots in `web/src/agents/live*.js` |
 | `tests/` | pytest, providers always mocked |
 | `docs/openapi.json` | Generated API contract: never edit by hand |
 | `backend/` | Imported legacy CatAgent backend: leave alone unless the task needs it |
@@ -72,6 +73,8 @@ uvicorn pawse.app:app --host 127.0.0.1 --port 8765   # app on :8765, API docs on
 bash scripts/check.sh                            # everything CI runs (needs Node for the JS check)
 python -m pytest -q tests/test_voice.py -k clone # one test
 python scripts/export_contract.py                # after changing API models
+cd web && npm install && npm run dev            # React app on :5173/app/ (proxies /api to :8765); ?live=1 uses the backend
+cd web && npm run build                          # then uvicorn serves it at :8765/app/
 ```
 
 CI (`.github/workflows/check.yml`) runs `bash scripts/check.sh` **on request only**

@@ -1,0 +1,12 @@
+{
+  "name": "Pawse",
+  "short_name": "Pawse",
+  "description": "Pawse: talk to an AI when your pet is unwell. Triage, then Pawse finds a clinic and calls the vet and the insurer.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff6f8",
+  "theme_color": "#fff6f8",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -153,3 +153,8 @@ app.include_router(knowledge_router)
 app.include_router(orchestration_router)
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+
+# The React app in web/ (npm run build), served at /app when built. Dev uses Vite on :5173.
+WEB_DIST = Path(__file__).resolve().parent.parent / "web/dist"
+if WEB_DIST.is_dir():
+    app.mount("/app", StaticFiles(directory=WEB_DIST, html=True), name="web")
