@@ -142,6 +142,7 @@ export default function App() {
           summary: buildSummary({ lang, triage, vet, insurance }),
           clinic: target === 'vet' ? clinic : undefined,
           estimate: vet ? vet.estimate : undefined,
+          homeVisitFee: vet ? vet.homeVisitFee : undefined,
         }}
         onDone={callDone}
         onRehearse={() => { setGradiumOn(false); setRehearsal(true); }}

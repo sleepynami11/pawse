@@ -46,7 +46,9 @@
  *   start()
  *   hangup()
  *   setGradiumConsent?(on:boolean)   optional: change Gradium consent for the remaining lines
- *   context = { summary: string, clinic?: Clinic, estimate?: number,
+ *   answer?(questionId, optionId)    optional: the owner's answer to a {type:'question'} event
+ *   setListening?(on:boolean)        optional: play the German call audio (default: background, silent)
+ *   context = { summary: string, clinic?: Clinic, estimate?: number, homeVisitFee?: number,
  *               gradiumConsent?: boolean, voice?: 'standard'|'my_voice' }
  *   gradiumConsent === true lets the live agent speak every AI line with Gradium (one voice per call).
  *
@@ -54,10 +56,17 @@
  *   {type:'status', state:'dialing'|'connected'|'ended'}
  *   {type:'speaking', who:'ai'|'callee'|'none'}
  *   {type:'line', who:'ai'|'callee', original:string, text:string}   original language + translation
+ *   {type:'progress', text}                         plain-language step in the owner's language
+ *   {type:'question', id, text, options:[{id, label}]}   the call waits until answer() is called
+ *   {type:'answered', id, optionId}
  *   {type:'result', ...}
  *   {type:'error', message}
  *
- * result for 'vet':       {kind:'appointment', time, place, estimate:number, currency, note?}
+ * The owner never has to read German: the page shows progress, questions and the result in their
+ * language; the German lines are only an optional transcript.
+ *
+ * result for 'vet':       {kind:'appointment', time, place, estimate:number, currency, note?,
+ *                          homeVisitFee?:number (part of estimate, not reimbursed)}
  * result for 'insurance': {kind:'coverage', covered, currency, deductible, rate, estimate,
  *                          reimbursed, outOfPocket, points:[{ok, text, ref?}]}
  */

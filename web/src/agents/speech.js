@@ -52,10 +52,13 @@ export function stopSpeech() {
   if (hasTTS()) window.speechSynthesis.cancel();
 }
 
-/** Speak `text`; resolves when finished. speed > 1 (tests / rehearsal) skips the voice. */
-export function speak(text, lang, { speed = 1, pitch = 1, rate = 1 } = {}) {
+/**
+ * Speak `text`; resolves when finished. speed > 1 (tests / rehearsal) skips the voice.
+ * silent: don't play it, just wait as long as it would take (a call running in the background).
+ */
+export function speak(text, lang, { speed = 1, pitch = 1, rate = 1, silent = false } = {}) {
   const est = estimateMs(text, lang);
-  if (speed > 1 || muted || !hasTTS()) return new Promise((r) => setTimeout(r, est / speed));
+  if (speed > 1 || silent || muted || !hasTTS()) return new Promise((r) => setTimeout(r, est / speed));
 
   return new Promise((resolve) => {
     let done = false;

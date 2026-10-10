@@ -142,6 +142,38 @@ for (const lang of ['zh', 'en']) {
   assert.ok(ir.points.some((p) => p.ref === 'AVB 1.2.5') && ir.points.some((p) => p.ref === 'AVB 1.2.6'));
   ok('insurance result: 600 → 240 back, 360 out of pocket, AVB clauses listed');
 
+  const vq = vet.events.find((e) => e.type === 'question');
+  assert.ok(vq && vq.options.map((o) => o.id).join() === 'practice,home', 'vet call asks the owner: practice or home visit');
+  assert.ok(vet.events.some((e) => e.type === 'answered' && e.optionId === 'practice'), 'rehearsal auto-picks the practice');
+  const prog = vet.events.filter((e) => e.type === 'progress');
+  assert.ok(prog.length >= 3 && prog.every((e) => typeof e.text === 'string' && !/[äöüß]|Uhr|Termin/.test(e.text)));
+  ok('vet call: progress steps in the owner language, a question for the owner, rehearsal auto-answer');
+
+  const home = await new Promise((resolve, reject) => {
+    const events = [];
+    const c = createMockPhoneCall({ target: 'vet', lang, context: { clinic: chosen }, speed: SPEED });
+    const to = setTimeout(() => reject(new Error('home branch timeout')), 5000);
+    c.on((e) => {
+      events.push(e);
+      if (e.type === 'question') setTimeout(() => c.answer(e.id, 'home'), 0);
+      if (e.type === 'result') {
+        clearTimeout(to);
+        c.hangup();
+        resolve({ events, r: e });
+      }
+    });
+    c.start();
+  });
+  assert.deepEqual(validateResult('vet', home.r), []);
+  assert.equal(home.r.estimate, 750);
+  assert.equal(home.r.homeVisitFee, 150);
+  assert.ok(home.events.some((e) => e.type === 'line' && /Hausbesuch heute Abend/.test(e.original)));
+  const insHome = await runPhone('insurance', lang, { estimate: home.r.estimate, homeVisitFee: home.r.homeVisitFee });
+  const ihr = insHome.events.find((e) => e.type === 'result');
+  assert.equal(ihr.reimbursed, 240);
+  assert.equal(ihr.outOfPocket, 510);
+  ok('owner picks the home visit: CHF 750, fee not reimbursed, 510 out of pocket');
+
   // hang up while dialing
   const c = createMockPhoneCall({ target: 'vet', lang, speed: SPEED, context: {} });
   const evs = [];

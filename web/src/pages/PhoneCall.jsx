@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
 import { createPhoneCall } from '../agents/index.js';
-import { isSpeechMuted, setSpeechMuted } from '../agents/speech.js';
 import { validateResult } from '../contracts.js';
 
 function fmt(sec) {
@@ -54,6 +53,9 @@ function ResultCard({ t, target, result }) {
   );
 }
 
+// The owner only ever deals in English (their language): Pawse talks German with the clinic or
+// insurer in the background. The screen shows progress steps, questions that need the owner's
+// decision, and the result. The German transcript and audio are there on request, never in the way.
 export default function PhoneCall({ t, lang, target, clinic, context, gradium, onDone }) {
   const base = t.callees[target];
   const callee = clinic
@@ -61,15 +63,19 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
     : base;
   const [status, setStatus] = useState('dialing');
   const [lines, setLines] = useState([]);
+  const [steps, setSteps] = useState([]); // [{ text } | { chose: label }], in call order
+  const [question, setQuestion] = useState(null);
   const [speaking, setSpeaking] = useState('none');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [secs, setSecs] = useState(0);
-  const [soundOn, setSoundOn] = useState(!isSpeechMuted());
+  const [listening, setListening] = useState(false);
   const callRef = useRef(null);
   const listRef = useRef(null);
   const resultRef = useRef(null);
+  const questionRef = useRef(null);
   resultRef.current = result;
+  questionRef.current = question;
 
   useEffect(() => {
     const call = createPhoneCall({ target, lang, context });
@@ -85,6 +91,21 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
         case 'line':
           setLines((p) => [...p, e]);
           break;
+        case 'progress':
+          setSteps((p) => [...p, { text: e.text }]);
+          break;
+        case 'question':
+          setQuestion(e);
+          break;
+        case 'answered': {
+          const q = questionRef.current;
+          if (q && q.id === e.id) {
+            const opt = q.options.find((o) => o.id === e.optionId);
+            setSteps((p) => [...p, { chose: opt ? opt.label : e.optionId }]);
+            setQuestion(null);
+          }
+          break;
+        }
         case 'result': {
           const { type, ...r } = e;
           const problems = validateResult(target, r);
@@ -117,17 +138,21 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [lines, result]);
+  }, [steps, question, result]);
 
   const hangup = () => {
     callRef.current && callRef.current.hangup();
     onDone(resultRef.current);
   };
 
-  const toggleSound = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    setSpeechMuted(!next);
+  const choose = (optionId) => {
+    if (question && callRef.current && callRef.current.answer) callRef.current.answer(question.id, optionId);
+  };
+
+  const toggleListen = () => {
+    const next = !listening;
+    setListening(next);
+    callRef.current && callRef.current.setListening && callRef.current.setListening(next);
   };
 
   const toggleGradium = () => {
@@ -136,6 +161,7 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
     callRef.current && callRef.current.setGradiumConsent && callRef.current.setGradiumConsent(next);
   };
 
+  const live = status !== 'ended' && !result;
   const statusText = status === 'dialing' ? t.dialing : status === 'connected' ? `${t.inCall} · ${fmt(secs)}` : t.callEnded;
 
   return (
@@ -148,15 +174,77 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
         <p className="muted">
           {callee.role} · {statusText}
         </p>
-        <span className="pill">{t.liveTranslate}</span>
+        <span className="sim-badge">{t.simulatedCall}</span>
       </header>
 
-      <div className="pc-pawse">
-        <Avatar size={44} speaking={speaking === 'ai'} />
-        <span>{t.aiNote}</span>
-      </div>
+      <section className="bridge" aria-label={t.bridgeNote}>
+        <div className="bridge-side you">
+          <span className="bridge-who">{t.you}</span>
+          <strong>{t.ownerLang}</strong>
+        </div>
+        <div className="bridge-mid" aria-hidden="true">
+          <span className={`bridge-wire ${status === 'connected' ? 'on' : ''}`} />
+          <Avatar size={40} speaking={speaking === 'ai'} />
+          <span className={`bridge-wire ${status === 'connected' ? 'on' : ''}`} />
+        </div>
+        <div className="bridge-side call">
+          <span className="bridge-who">{t.onTheCall}</span>
+          <strong lang="de">Deutsch</strong>
+        </div>
+        <p className="bridge-note">{t.bridgeNote}</p>
+      </section>
 
-      {gradium && (
+      <section className="pc-lines" ref={listRef} aria-live="polite">
+        <h2 className="pc-sub">{t.progressTitle}</h2>
+        <ol className="steps">
+          {status === 'dialing' && <li className="step now">{t.dialing}</li>}
+          {steps.map((s, i) =>
+            s.chose ? (
+              <li key={i} className="step done you">
+                {t.youChose}: <strong>{s.chose}</strong>
+              </li>
+            ) : (
+              <li key={i} className={`step ${live && i === steps.length - 1 && !question ? 'now' : 'done'}`}>
+                {s.text}
+              </li>
+            )
+          )}
+        </ol>
+
+        {question && (
+          <div className="ask-card" role="group" aria-label={t.questionTitle}>
+            <h3>{t.questionTitle}</h3>
+            <p>{question.text}</p>
+            <div className="ask-options">
+              {question.options.map((o) => (
+                <button key={o.id} type="button" className="btn primary" onClick={() => choose(o.id)}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <p className="muted small">{t.holdNote}</p>
+          </div>
+        )}
+
+        {result && <ResultCard t={t} target={target} result={result} />}
+        {error && <p className="pc-error">{error}</p>}
+
+        {lines.length > 0 && (
+          <details className="transcript">
+            <summary>{t.transcript}</summary>
+            {lines.map((l, i) => (
+              <div key={i} className={`line line-${l.who}`}>
+                <span className="line-who">{l.who === 'ai' ? t.pawse : callee.name}</span>
+                {l.simulated && <span className="sim-badge">{t.simulated}</span>}
+                <p className="line-text">{l.text}</p>
+                <p className="line-original" lang="de">{l.original}</p>
+              </div>
+            ))}
+          </details>
+        )}
+      </section>
+
+      {gradium && listening && (
         <label className="pc-gradium">
           <input type="checkbox" checked={gradium.on} onChange={toggleGradium} />
           <span>
@@ -166,28 +254,23 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
         </label>
       )}
 
-      <section className="pc-lines" ref={listRef} aria-live="polite">
-        {lines.map((l, i) => (
-          <div key={i} className={`line line-${l.who}`}>
-            <span className="line-who">{l.who === 'ai' ? t.pawse : callee.name}</span>
-            {l.simulated && <span className="sim-badge">{t.simulated}</span>}
-            <p className="line-original" lang="de">{l.original}</p>
-            <p className="line-text">{l.text}</p>
-          </div>
-        ))}
-        {result && <ResultCard t={t} target={target} result={result} />}
-        {error && <p className="pc-error">{error}</p>}
-      </section>
-
       <footer className="pc-foot">
-        {result || status === 'ended' ? (
+        {!live ? (
           <button type="button" className="btn primary wide" onClick={() => onDone(resultRef.current)}>
             {t.backToPawse}
           </button>
         ) : (
           <div className="pc-controls">
-            <button type="button" className="pc-ctl" onClick={toggleSound} aria-pressed={!soundOn} aria-label={t.sound}>
-              <Icon name={soundOn ? 'volume' : 'volumeOff'} />
+            <button
+              type="button"
+              className={`pc-listen ${listening ? 'on' : ''}`}
+              onClick={toggleListen}
+              aria-pressed={listening}
+            >
+              <span className="pc-ctl">
+                <Icon name={listening ? 'volume' : 'volumeOff'} />
+              </span>
+              <span className="small">{listening ? t.listeningIn : t.listenIn}</span>
             </button>
             <button type="button" className="pc-ctl hang" onClick={hangup} aria-label={t.hangup}>
               <Icon name="phone" size={28} style={{ transform: 'rotate(135deg)' }} />

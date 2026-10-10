@@ -50,12 +50,15 @@ export const voiceScript = {
 };
 
 // ------------------------------------------------------------- phone agent
-// `de` is what is actually said on the call (Zurich); `text` is the live translation.
+// `de` is what is actually said on the call (Zurich); `text` is the translation for the transcript.
+// The owner never has to read German: `step` is the plain-language progress shown while the call
+// runs, and a `question` pauses the call until the owner decides (the answer picks a branch).
 export const phoneScripts = {
   vet: {
     lines: [
       {
         who: 'ai',
+        step: T('Introduced itself as an AI and explained what happened to Mimi', '说明自己是 AI，并讲了 Mimi 的情况'),
         de: 'Guten Tag, hier ist Pawse, ein KI-Assistent. Ich rufe im Auftrag einer Katzenbesitzerin an. Ihre Katze humpelt, seit sie heute vom Schrank gesprungen ist. Haben Sie heute noch einen Termin frei?',
         text: T(
           "Hello, this is Pawse, an AI assistant calling on behalf of a cat owner. Her cat has been limping since jumping off a wardrobe today. Do you have an appointment free today?",
@@ -64,28 +67,73 @@ export const phoneScripts = {
       },
       {
         who: 'callee',
+        step: T('The practice offered 16:30 today, or a home visit this evening', '诊所可以今天 16:30 看，或者今晚上门'),
         de: 'Ja, um 16:30 Uhr hätte ich Platz in der Praxis. Oder ich komme heute Abend für einen Hausbesuch.',
         text: T('Yes, I have a slot at 4:30 pm at the practice. Or I can do a home visit this evening.', '有的，下午 4:30 诊所有空位。或者我今晚可以上门。'),
       },
       {
-        who: 'ai',
-        de: '16:30 Uhr in der Praxis passt. Was kostet die Behandlung ungefähr?',
-        text: T('4:30 pm at the practice works. Roughly what will it cost?', '4:30 去诊所可以。大概要多少钱？'),
-      },
-      {
-        who: 'callee',
-        de: 'Mit Untersuchung und Behandlung rechnen Sie mit etwa 600 Franken. Ein Hausbesuch kostet 150 Franken zusätzlich.',
-        text: T('With the examination and treatment, about 600 francs. A home visit is 150 francs extra.', '检查加治疗大约 600 瑞郎。上门另加 150 瑞郎。'),
-      },
-      {
-        who: 'ai',
-        de: 'Perfekt, dann bis 16:30 Uhr. Bitte stellen Sie eine detaillierte Rechnung aus. Vielen Dank!',
-        text: T('Perfect, see you at 4:30 pm. Please issue an itemised invoice. Thank you!', '好的，那 4:30 见。请开具明细发票，谢谢！'),
-      },
-      {
-        who: 'callee',
-        de: 'Gerne, bis später.',
-        text: T('You are welcome, see you later.', '不客气，待会见。'),
+        question: {
+          id: 'slot',
+          text: T(
+            'The practice can see Mimi at 16:30 today, or the vet can come to your home this evening. Which do you prefer?',
+            '诊所今天 16:30 可以看 Mimi，或者兽医今晚上门。你选哪个？'
+          ),
+          options: [
+            { id: 'practice', label: T('16:30 at the practice', '16:30 去诊所') },
+            { id: 'home', label: T('Home visit this evening', '今晚上门') },
+          ],
+          fallback: 'practice',
+        },
+        branches: {
+          practice: [
+            {
+              who: 'ai',
+              step: T('Took the 16:30 slot and asked about the cost', '定了 16:30，并问了费用'),
+              de: '16:30 Uhr in der Praxis passt. Was kostet die Behandlung ungefähr?',
+              text: T('4:30 pm at the practice works. Roughly what will it cost?', '4:30 去诊所可以。大概要多少钱？'),
+            },
+            {
+              who: 'callee',
+              de: 'Mit Untersuchung und Behandlung rechnen Sie mit etwa 600 Franken. Ein Hausbesuch kostet 150 Franken zusätzlich.',
+              text: T('With the examination and treatment, about 600 francs. A home visit is 150 francs extra.', '检查加治疗大约 600 瑞郎。上门另加 150 瑞郎。'),
+            },
+            {
+              who: 'ai',
+              step: T('Confirmed and asked for an itemised invoice for your claim', '确认预约，并要了理赔用的明细发票'),
+              de: 'Perfekt, dann bis 16:30 Uhr. Bitte stellen Sie eine detaillierte Rechnung aus. Vielen Dank!',
+              text: T('Perfect, see you at 4:30 pm. Please issue an itemised invoice. Thank you!', '好的，那 4:30 见。请开具明细发票，谢谢！'),
+            },
+            {
+              who: 'callee',
+              de: 'Gerne, bis später.',
+              text: T('You are welcome, see you later.', '不客气，待会见。'),
+            },
+          ],
+          home: [
+            {
+              who: 'ai',
+              step: T('Asked for the home visit and the cost', '要了上门看诊，并问了费用'),
+              de: 'Dann bitte den Hausbesuch heute Abend. Was kostet das ungefähr?',
+              text: T('Then the home visit this evening, please. Roughly what will it cost?', '那就今晚上门吧。大概要多少钱？'),
+            },
+            {
+              who: 'callee',
+              de: 'Mit Untersuchung und Behandlung rechnen Sie mit etwa 600 Franken. Der Hausbesuch kostet 150 Franken zusätzlich.',
+              text: T('With the examination and treatment, about 600 francs. The home visit is 150 francs extra.', '检查加治疗大约 600 瑞郎。上门另加 150 瑞郎。'),
+            },
+            {
+              who: 'ai',
+              step: T('Confirmed and asked for an itemised invoice for your claim', '确认预约，并要了理赔用的明细发票'),
+              de: 'Perfekt, dann bis heute Abend. Bitte stellen Sie eine detaillierte Rechnung aus. Vielen Dank!',
+              text: T('Perfect, see you this evening. Please issue an itemised invoice. Thank you!', '好的，那今晚见。请开具明细发票，谢谢！'),
+            },
+            {
+              who: 'callee',
+              de: 'Gerne, bis heute Abend.',
+              text: T('You are welcome, see you this evening.', '不客气，今晚见。'),
+            },
+          ],
+        },
       },
     ],
   },
@@ -93,6 +141,7 @@ export const phoneScripts = {
     lines: [
       {
         who: 'ai',
+        step: T('Introduced itself as an AI and explained the accident and the CHF 600 estimate', '说明自己是 AI，讲了意外和 600 瑞郎的预估'),
         de: 'Guten Tag, hier ist Pawse, ein KI-Assistent im Auftrag einer Versicherten. Ihre Katze hatte heute einen Unfall, der Tierarzt schätzt etwa 600 Franken. Ist das gedeckt?',
         text: T(
           "Hello, this is Pawse, an AI assistant calling on behalf of a policyholder. Her cat had an accident today; the vet estimates about 600 francs. Is that covered?",
@@ -101,16 +150,19 @@ export const phoneScripts = {
       },
       {
         who: 'callee',
+        step: T('Accident covered: CHF 300 excess, then 80% back', '意外能赔：免赔 300 瑞郎，之后报销 80%'),
         de: 'Ja, Unfälle sind ab dem ersten Tag gedeckt. Der Selbstbehalt beträgt 300 Franken, danach erstatten wir 80 Prozent.',
         text: T('Yes, accidents are covered from day one. The excess is 300 francs, after that we reimburse 80 percent.', '能赔。意外从第一天起就保。免赔额 300 瑞郎，超出部分报销 80%。'),
       },
       {
         who: 'ai',
+        step: T('Asked about a home visit and physio', '问了上门和理疗'),
         de: 'Und ein Hausbesuch oder Physiotherapie danach?',
         text: T('And a home visit, or physiotherapy afterwards?', '那上门看诊，或者之后的理疗呢？'),
       },
       {
         who: 'callee',
+        step: T('Home visit and physio are not covered (AVB 1.2.5, 1.2.6)', '上门和理疗都不保（AVB 1.2.5、1.2.6）'),
         de: 'Der Hausbesuch ist in Ihrem Tarif nicht gedeckt, siehe AVB 1.2.5. Physiotherapie ebenfalls nicht, siehe AVB 1.2.6.',
         text: T("The home visit isn't covered on this plan, see AVB 1.2.5. Physiotherapy isn't either, see AVB 1.2.6.", '你的方案不保上门费，见条款 AVB 1.2.5。理疗也不保，见 AVB 1.2.6。'),
       },
@@ -131,21 +183,37 @@ export function reimbursement(total, { deductible, rate } = INSURANCE_RULES) {
   return Math.round(Math.max(0, total - deductible) * rate);
 }
 
-export function buildVetResult(lang, clinic) {
+export const HOME_VISIT_FEE = 150;
+
+/** `choice` is the owner's answer to the slot question: 'practice' (default) or 'home'. */
+export function buildVetResult(lang, clinic, choice = 'practice') {
   const L = (o) => o[lang] ?? o.en;
+  const place = clinic && clinic.name ? clinic.name : L(T('Vet practice (nearest open)', '兽医诊所（最近营业）'));
+  if (choice === 'home') {
+    return {
+      kind: 'appointment',
+      time: L(T('This evening', '今晚')),
+      place: `${L(T('Home visit', '上门'))} · ${place}`,
+      estimate: DEFAULT_ESTIMATE + HOME_VISIT_FEE,
+      homeVisitFee: HOME_VISIT_FEE,
+      currency: 'CHF',
+      note: L(T('Includes CHF 150 for the home visit', '含上门费 CHF 150')),
+    };
+  }
   return {
     kind: 'appointment',
     time: '16:30',
-    place: clinic && clinic.name ? clinic.name : L(T('Vet practice (nearest open)', '兽医诊所（最近营业）')),
+    place,
     estimate: DEFAULT_ESTIMATE,
     currency: 'CHF',
     note: L(T('Home visit would be + CHF 150', '上门另加 CHF 150')),
   };
 }
 
-export function buildInsuranceResult(lang, estimate = DEFAULT_ESTIMATE) {
+/** `homeVisitFee` is part of `estimate` but never reimbursed (AVB 1.2.5). */
+export function buildInsuranceResult(lang, estimate = DEFAULT_ESTIMATE, homeVisitFee = 0) {
   const L = (o) => o[lang] ?? o.en;
-  const reimbursed = reimbursement(estimate);
+  const reimbursed = reimbursement(estimate - homeVisitFee);
   return {
     kind: 'coverage',
     covered: true,
