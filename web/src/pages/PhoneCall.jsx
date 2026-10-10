@@ -179,8 +179,24 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
   const live = status !== 'ended' && !result;
   const statusText = status === 'dialing' ? t.dialing : status === 'connected' ? `${t.inCall} · ${fmt(secs)}` : t.callEnded;
 
+  // Which side of the bridge is active: the owner (English) or the phone call (German).
+  const bridgeMode = question || !live ? 'you' : status === 'connected' ? 'call' : 'idle';
+  const fill = (str) => {
+    const out = str.replace('{name}', callee.short);
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  };
+  const bridgeNow = question
+    ? t.nowAskingYou
+    : !live
+      ? t.nowDone
+      : status === 'dialing'
+        ? fill(t.nowDialing)
+        : speaking === 'callee'
+          ? fill(t.nowCalleeGerman)
+          : fill(t.nowPawseGerman);
+
   return (
-    <main className="pc">
+    <main className="pc" ref={listRef}>
       <header className="pc-head">
         <div className={`pc-callee ${speaking === 'callee' ? 'talking' : ''} ${status === 'dialing' ? 'ringing' : ''}`}>
           <span aria-hidden="true">{callee.icon}</span>
@@ -193,25 +209,29 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
         <ProviderChips t={t} items={phoneProviders({ live: IS_LIVE_PHONE, target, voice, browser })} />
       </header>
 
-      <section className="bridge" aria-label={t.bridgeNote}>
+      <section className={`bridge mode-${bridgeMode}`} aria-live="polite">
         <div className="bridge-side you">
           <span className="bridge-who">{t.you}</span>
+          <span className="lang-tag">EN</span>
           <strong>{t.ownerLang}</strong>
         </div>
         <div className="bridge-mid" aria-hidden="true">
-          <span className={`bridge-wire ${status === 'connected' ? 'on' : ''}`} />
+          <span className="bridge-wire left" />
           <Avatar size={40} speaking={speaking === 'ai'} />
-          <span className={`bridge-wire ${status === 'connected' ? 'on' : ''}`} />
+          <span className="bridge-wire right" />
         </div>
         <div className="bridge-side call">
           <span className="bridge-who">{t.onTheCall}</span>
+          <span className="lang-tag">DE</span>
           <strong lang="de">Deutsch</strong>
         </div>
-        <p className="bridge-note">{t.bridgeNote}</p>
+        <p className="bridge-now">{bridgeNow}</p>
       </section>
 
-      <section className="pc-lines" ref={listRef} aria-live="polite">
-        <h2 className="pc-sub">{t.progressTitle}</h2>
+      <section className="pc-lines" aria-live="polite">
+        <h2 className="pc-sub">
+          {t.progressTitle} <span className="pc-sub-note">{t.progressNote}</span>
+        </h2>
         <ol className="steps">
           {status === 'dialing' && <li className="step now">{t.dialing}</li>}
           {steps.map((s, i) =>
@@ -243,6 +263,7 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
         )}
 
         {result && <ResultCard t={t} target={target} result={result} />}
+        {result && <p className="translated-note">{t.resultNote}</p>}
         {error && <p className="pc-error">{error}</p>}
 
         {lines.length > 0 && (
