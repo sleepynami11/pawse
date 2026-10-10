@@ -117,3 +117,8 @@ should open the file named in the row.
 | [commit-secure](.claude/skills/commit-secure/SKILL.md) | Committing safely (no keys, no junk, good message) |
 | [gp](.claude/skills/gp/SKILL.md) | Pushing: straight to main or PR + CI + squash-merge |
 | [create-skill](.claude/skills/create-skill/SKILL.md) | Adding or changing a skill (then `python scripts/validate_skills.py`) |
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
