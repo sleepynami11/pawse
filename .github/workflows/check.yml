@@ -1,9 +1,7 @@
 name: check
 on:
-  pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch: # run on request: gh workflow run check
+  # On request only (no branch protection): gh workflow run check --ref <branch>
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:

@@ -74,8 +74,10 @@ python -m pytest -q tests/test_voice.py -k clone # one test
 python scripts/export_contract.py                # after changing API models
 ```
 
-CI (`.github/workflows/check.yml`) runs `bash scripts/check.sh` on every push to `main` and every PR:
-secret scan, skill validation, JS syntax, OpenAPI contract in sync, pytest. Keep it green.
+CI (`.github/workflows/check.yml`) runs `bash scripts/check.sh` **on request only**
+(`gh workflow run check --ref <branch>`): secret scan, skill validation, JS syntax, OpenAPI contract in sync,
+pytest. `main` has no branch protection, so run `bash scripts/check.sh` locally before you push or merge;
+agents may merge their own PRs (`gh pr merge <n> --squash`) without waiting for CI.
 
 ## Rules for every change
 
