@@ -1,0 +1,21 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and builds
+node_modules/
+.next/
+dist/
+build/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Local artifacts
+.DS_Store
+*.log
+coverage/
