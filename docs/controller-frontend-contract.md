@@ -13,7 +13,7 @@ The target acceptance journey is [Mimi in Zurich](DEMO_STORY.md). Its complete t
 - **Validation:** unknown request fields are rejected. The mutation body limit is 4,500,000 bytes; decoded photos and WAV inputs are each limited to 3,000,000 bytes.
 - **Persistence:** keep recordings, photos and care data out of browser analytics and persistent browser storage. Responses use `Cache-Control: no-store`.
 
-The implementation is the static app in [pawse/static](../pawse/static/) with controllers in [pawse/app.py](../pawse/app.py), [orchestration.py](../pawse/orchestration.py), [voice.py](../pawse/voice.py) and [knowledge.py](../pawse/knowledge.py).
+The implementation is the static app in [pawse/static](../pawse/static/) with controllers in [pawse/app.py](../pawse/app.py), [orchestration.py](../pawse/orchestration.py), [live.py](../pawse/live.py), [voice.py](../pawse/voice.py) and [knowledge.py](../pawse/knowledge.py).
 
 ## 2. Screen-to-controller map
 
@@ -23,6 +23,7 @@ The implementation is the static app in [pawse/static](../pawse/static/) with co
 | Care form, streamed mode | `POST /care/requests?stream=true` | 200 SSE | Display safety immediately; merge events until the final result |
 | Care form, single response | `POST /care/requests` | 201 `CareResult` | Display useful results even when status is `partial` |
 | Agent mode | `GET /agents/graph`, `POST /agents/runs` | 200 graph; 201 run | Render roles and the final execution trace |
+| Live conversation (browser integration pending) | `POST /live/tokens`, `POST /live/tool-calls` | 201 token; 200 tool envelope | Follow the [Live contract](controller-live-contract.md); send `response` to Gemini and render `ui` separately |
 | Retrieve/delete summary | `GET` / `DELETE /care/requests/{request_id}` | 200 / 204 | Use the same session; remove deleted results from the UI |
 | Dictation and call draft | `POST /voice/transcriptions`, `POST /voice/scripts` | 200 JSON | Let the owner review transcript, facts and subtitles |
 | My voice | Voice clone/localization routes | JSON or WAV | Follow the [voice state sequence](controller-voice-contract.md) |
@@ -118,3 +119,17 @@ Use this screen sequence for the [story](DEMO_STORY.md#the-story-120-s):
 5. **Confirmation and handoff:** review recipient, script, voice and sharing; show appointment/taxi status from its actual source, then the copyable case summary and checklist.
 
 Own-voice enrollment should be accessible before the timed story. The owner can record, listen, consent, localize and preview without starting a case. Missing credentials must leave transcripts and drafts usable. For a future call, include visible stop/take-over controls; editing an approved recipient, script, voice or cost must invalidate that approval. These future controls do not imply new callable endpoints today.
+
+## 9. Proposed multimodal screens and controller handoffs
+
+The [contract map](MULTIMODAL_CONTRACTS.md) is the entry point for these pending integrations. Do not enable calls to proposed paths until their server implementation, OpenAPI and client models land together.
+
+| Proposed screen | Consumes | UI responsibility |
+| --- | --- | --- |
+| Visual observations | [Vision result](controller-vision-contract.md#3-vision-to-care-result) | Separate owner report from visible observation; show source photo/frame and uncertainty |
+| Document upload/review | [Document record](controller-document-contract.md) | Show upload/extract/review states, page citations, unknown fields and explicit accept/reject/correct choices |
+| Unified case | [Case snapshot](controller-case-contract.md) | Track revisions; prompt on stale edits; preserve useful partial results |
+| Private policy explanation | [Private evidence answer](controller-knowledge-contract.md#7-proposed-private-evidence-search) | Show original excerpts and translated explanation separately; never mix demo evidence into a private answer |
+| Action review/status | [Action draft and receipt](controller-action-contract.md) | Bind recipient/script/voice/limits to approval; distinguish generated audio, connected call and confirmed outcome |
+
+Keep the section 8 palette and English product shell. EN/ZH/DE/HI controls apply to conversation and subtitles; local German delivery and voice-sample language stay independent. A provider/model name or target diagram badge is not an execution status.

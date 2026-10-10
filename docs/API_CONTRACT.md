@@ -1,8 +1,8 @@
 # Pawse frontend / backend contract v0.2
 
-Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the running app also serves `/openapi.json` and `/docs`. This contract describes the independent Pawse integration, informed by MapifyAI's request/results and progress-event conventions.
+Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the running app also serves `/openapi.json` and `/docs`. This overview describes the implemented Pawse HTTP API.
 
-This page is the API overview. For integration work, use the [docs index](README.md), [Controller–Frontend](controller-frontend-contract.md) and [Controller–Service](controller-service-contract.md) agreements. Domain contracts cover [Care](controller-care-contract.md), [Agents](controller-agent-contract.md), [Voice](controller-voice-contract.md) and [Knowledge/Data](controller-knowledge-contract.md), with request examples, lifecycle rules and handoff responsibilities.
+For integration work, use the [docs index](README.md), [Controller–Frontend](controller-frontend-contract.md) and [Controller–Service](controller-service-contract.md) agreements. Domain contracts cover [Care](controller-care-contract.md), [Agents](controller-agent-contract.md), [Live](controller-live-contract.md), [Voice](controller-voice-contract.md) and [Knowledge/Data](controller-knowledge-contract.md), with request examples, lifecycle rules and handoff responsibilities. The [Multimodal contract map](MULTIMODAL_CONTRACTS.md) additionally defines proposed Vision, Document, Case and Action interfaces. Proposed routes are not included in this inventory or generated OpenAPI.
 
 ## Runtime and session boundaries
 

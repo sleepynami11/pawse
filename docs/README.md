@@ -20,16 +20,22 @@ Start here to integrate the existing Pawse app. The contracts describe the curre
 
 | Document | Producer → consumer | Read this for |
 | --- | --- | --- |
+| [Multimodal contract map](MULTIMODAL_CONTRACTS.md) | All modules | Diagram-to-controller mapping, current/proposed routes, ownership and integration order |
 | [Controller–Frontend](controller-frontend-contract.md) | HTTP controllers → web app | Screen-to-endpoint mapping, journey layout, pink/gray palette, consent and errors |
 | [Controller–Service](controller-service-contract.md) | Controllers → Python services/adapters | Function boundaries, routing ownership, deadlines and data handoffs |
 | [Care controller](controller-care-contract.md) | Care navigation → frontend/coordinator | Request/result schemas, nearby clinics, SSE and result retention |
 | [Agent controller](controller-agent-contract.md) | Runtime coordinator → frontend | Graph metadata, run requests, traces and action gates |
+| [Live controller](controller-live-contract.md) | Voice session → validated backend tools | Current token, function-call, UI-result and error contracts |
+| [Vision controller](controller-vision-contract.md) | Photo/video intake → care context | Current photo limits; proposed timestamped observations and evidence |
+| [Document controller](controller-document-contract.md) | Private documents → reviewed evidence | Proposed uploads, extraction, page citations, review and deletion |
+| [Case and agent handoffs](controller-case-contract.md) | Modality agents → coordinator | Proposed facts, revisions, conflicts, language context and result merging |
+| [Communication and actions](controller-action-contract.md) | Reviewed draft → future connectors | Current audio/dialer boundary; proposed approvals, execution and provider receipts |
 | [Voice controller](controller-voice-contract.md) | Voice pipeline → frontend/coordinator | Transcription, German scripts, own-voice lifecycle and WAV output |
 | [Knowledge controller](controller-knowledge-contract.md) | Retrieval/data → frontend/coordinator | Evidence search, clinic-data boundary and demo isolation |
 | [API overview](API_CONTRACT.md) | All modules | Complete route inventory and shared conventions |
 | [OpenAPI](openapi.json) | Pydantic/FastAPI → API clients | Generated request/response schemas |
 
-These are documentation boundaries. Care and legacy routes currently live in `pawse/app.py`; agent, voice and knowledge routes already use routers in their corresponding modules. The document names do not imply that new controller classes or services have been implemented.
+These are documentation boundaries. Care and legacy routes currently live in `pawse/app.py`; agent, Live, voice and knowledge routes already use routers in their corresponding modules. The document names do not imply that new controller classes or services have been implemented. Case, document and action routes are proposed, and intentionally absent from generated OpenAPI.
 
 ## Provider and data references
 
@@ -48,4 +54,4 @@ Check implementation and [OpenAPI](openapi.json) together: streaming events, dyn
 
 When changing an interface, update its controller contract and consumers, then run `python scripts/export_contract.py` to regenerate OpenAPI. Keep example payloads synthetic and valid. Coordinate shared schemas and route changes through the integration module described in [Agent development](AGENT_DEVELOPMENT.md).
 
-The documentation layout is inspired by MapifyAI's [frontend contract](https://github.com/qing-dai/MapifyAI/blob/main/doc/controller-frontend-contract.md) and [service contract](https://github.com/qing-dai/MapifyAI/blob/main/doc/controller-service-contract.md). Pawse's paths, schemas and behavior below are derived from Pawse's own code.
+Current paths, schemas and behavior are derived from Pawse's code. Proposed interfaces are implementation agreements to review and test before enabling their UI.

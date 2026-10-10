@@ -97,3 +97,40 @@ These proposals do not add endpoints or approve insurance coverage. A future sch
 ## 6. Handoff acceptance
 
 Use `tests/test_knowledge.py` for clause provenance, JSON values, empty results, scope isolation and safe source failures; use the clinic adapter cases in `tests/test_care.py` for normalization and unknown fields. Include source/version/license notes with any new dataset. Live provider checks and retrieval-quality evaluation are separate from mocked API checks.
+
+## 7. Proposed private evidence search
+
+**Proposed v1 — not implemented.** Preserve `/knowledge/search` exactly as the current demo-only API. Introduce a separate `POST /api/v1/cases/{case_id}/evidence/search` only after the [Case](controller-case-contract.md) and [Document](controller-document-contract.md) controllers enforce ownership, reviewed sources and deletion. Evidence/data owns retrieval; orchestration validates the handoff.
+
+Example proposed request:
+
+```json
+{
+  "query": "Does this policy include the home-visit surcharge?",
+  "top_k": 3,
+  "answer_language": "hi",
+  "share_with_gemini": true
+}
+```
+
+`query` is 1–1,000 characters; `top_k` is 1–5; `answer_language` is `en`, `zh`, `de` or `hi`. `share_with_gemini` is a required boolean: false performs local evidence retrieval only; true permits translated-query preparation and grounded answer generation from the retrieved passages. Never send the whole private corpus when selected excerpts suffice. Scope comes from the case, not from a client-selected collection ID.
+
+Proposed **200** `EvidenceAnswer`:
+
+| Field | Meaning |
+| --- | --- |
+| `case_id`, `case_revision`, `corpus_version` | Snapshot and reviewed source versions used for the answer |
+| `scope` | Case's immutable `owner_private` or `synthetic_demo`; never mixed |
+| `status` | `evidence_found`, `no_evidence` or `partial` |
+| `method` | `lexical` or `lexical_with_gemini_synthesis` |
+| `answer`, `answer_language` | Nullable generated explanation; null without consent or when synthesis fails |
+| `claims` | Each derived claim pairs text with validated `evidence_refs`; no uncited coverage claims |
+| `evidence` | Reviewed document `EvidenceRef` records with original excerpts, page, source version and hash |
+| `unsupported_questions`, `warnings` | Missing schedule/edition/eligibility facts, translation or synthesis failures |
+| `coverage_status` | `unconfirmed`; retrieval itself cannot change it |
+
+Search only the case's reviewed, retained documents. Keep the original question and excerpts; translated query text is derived data. If translation/synthesis is not permitted, English-only local matching cannot be presented as reliable multilingual retrieval. Return an explicit language limitation or no evidence instead of inventing a passage. Embeddings and a vector database remain optional after evaluation.
+
+The server must verify each cited ID/page/version against the selected corpus. Reject unsupported generated claims, mark the answer partial and retain usable excerpts. A matching exclusion clause does not establish the selected plan, paid deductible or an insurer's decision. Display monetary calculations separately with explicit inputs under the Case contract.
+
+Proposed errors: 404 inaccessible case, 409 no reviewed corpus or incompatible scope, 422 invalid query, 429 work limit. If Gemini is unavailable, preserve local excerpts with a partial result and null answer. Deleted/superseded sources cannot support a new answer; a late answer against an edited case is stale and cannot overwrite its current state. Acceptance must include conflicting terms/schedule, multilingual query failures, out-of-range citations, source deletion and no cross-owner/demo fallback.

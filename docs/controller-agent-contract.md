@@ -95,3 +95,9 @@ Care and run controllers share one active-work pool: one per session and five gl
 The orchestration module owns these role IDs and state semantics. Frontend consumes them without fabricating progress. RAG/data supplies normalized clinics and separately scoped evidence. Voice consumes owner-reviewed handoff facts through its own contract. Proposed action execution requires a new contract and evidence of actual provider confirmation.
 
 Use `tests/test_orchestration.py` for deadline, partial-result, consent, trace, action-gate and shared-cache checks. See [Controller–Service](controller-service-contract.md) for function boundaries and [Agent development](AGENT_DEVELOPMENT.md) for branches.
+
+## 7. Multimodal extension boundary
+
+The new [contract map](MULTIMODAL_CONTRACTS.md) maps Voice, Vision, Document, Policy Evidence and Communication responsibilities onto current and proposed controllers. It does not change the seven runtime IDs or automatically execute these roles in `/runs`.
+
+Use the [Live controller](controller-live-contract.md) for today's tool dispatch. Proposed [Case handoffs](controller-case-contract.md) add source-linked facts, revisions and conflict handling; [Action approvals](controller-action-contract.md) add execution and receipt semantics. Keep those proposed records separate from `AgentTrace` and `ActionGate` until a versioned implementation and its consumers land together.

@@ -8,6 +8,7 @@ This is the backend integration agreement: which controller owns each route, whi
 | --- | --- | --- | --- |
 | Care | `pawse/app.py` | `/care/requests`, `/care/requests/{request_id}` | LLM/orchestration: `feat/llm-orchestrator` |
 | Agent workflow | `pawse/orchestration.py` router | `/agents/graph`, `/agents/runs` | LLM/orchestration: `feat/llm-orchestrator` |
+| Live session and tools | `pawse/live.py` router | `/live/tokens`, `/live/tool-calls` | Voice + orchestration: `feat/voice-calling`, `feat/llm-orchestrator` |
 | Voice communication | `pawse/voice.py` router | `/voice/*` | Voice: `feat/voice-calling` |
 | Knowledge evidence | `pawse/knowledge.py` router | `/knowledge/search` | RAG/data: `feat/rag-open-data` |
 | Legacy bridge | `pawse/app.py` | `/agent/requests` | Shared integration, with legacy backend maintained separately |
@@ -94,6 +95,12 @@ Only voice IDs and readiness flags are retained in local voice state. Provider v
 
 Model settings: `GEMINI_CARE_MODEL` and `GEMINI_VOICE_MODEL` override `GEMINI_MODEL`, whose current code default is `gemini-3-flash-preview`. The coordinator and ranking use Python, and knowledge search currently uses no embedding model. Access observations are recorded in [Model allocation](MODEL_ALLOCATION.md); no credentials belong in a contract.
 
+### Live session and tool dispatch
+
+`live.create_token(TokenRequest, request)` mints a model/prompt/tool-constrained token. `live.run_tool(ToolCall, request)` validates per-tool arguments, derives the owner from the session and returns `{id, name, response, ui}`. It calls `run_workflow`, `search_knowledge` and `draft_script` directly; the clinic dialer tool only reads the session's last Live clinic search. It does not proxy the public HTTP routes or place a telephone call.
+
+The Live wrapper limits active tools to three per session and fifteen globally. Its token and error semantics, reduced model-facing results and full frontend payloads are defined in the [Live controller contract](controller-live-contract.md). This dispatch has no persistent case revision, duplicate suppression or tool-cancellation endpoint today.
+
 ## 6. Legacy and demo controllers
 
 `app.agent_request` validates `LegacyRequest`, requires a configured legacy backend/user/cat allowlist, then consumes `legacy_events(req)` under a 45-second deadline. The server supplies `LEGACY_AGENT_USER_ID`; clients cannot select another user. Old named SSE events become `{type: "legacy", event: originalName, data: originalPayload}`. A failure after opening the stream becomes a safe `legacy_agent_unavailable` event.
@@ -106,7 +113,19 @@ The existing bridge covers chat and supported analysis requests. Device ingestio
 
 If routing is split later, suggested files are `pawse/controllers/care.py`, `agents.py`, `voice.py`, `knowledge.py` and `legacy.py`, with business functions retained behind those routers. **These files do not exist today.** Keep public paths and schemas unchanged during extraction; migrate one domain at a time and regenerate OpenAPI after any schema change.
 
-Phone transport is a separate future service. Before adding callable routes, agree on recipient/purpose approval, verified destination number, provider call ID, event IDs for deduplication, transcript language, AI disclosure and explicit completed/failed/cancelled outcomes. A call ending is not sufficient evidence that a slot, coverage or taxi was confirmed. No phone endpoint or event schema is promised by the current API.
+Phone transport is a separate future service. The proposed [Action contract](controller-action-contract.md) defines recipient/purpose approval, verified destination, idempotency, provider receipts, subtitles and cancellation. A call ending is not sufficient evidence that a slot, coverage or taxi was confirmed. Those proposed routes remain absent from the current API.
+
+### Proposed multimodal service boundaries
+
+| Logical service | Proposed input → output | Contract |
+| --- | --- | --- |
+| Case coordination | Versioned owner input + validated agent result → revised snapshot or stale-result rejection | [Case and handoffs](controller-case-contract.md) |
+| Vision observation | Consented case media → visible observations and source locators | [Vision](controller-vision-contract.md) |
+| Document extraction/review | Validated upload → provisional facts → reviewed page evidence | [Document](controller-document-contract.md) |
+| Private evidence search | Same-case reviewed corpus + question → cited answer and unresolved fields | [Knowledge](controller-knowledge-contract.md#7-proposed-private-evidence-search) |
+| Action execution | Exact approved draft + idempotency key → execution state and verified receipts | [Actions](controller-action-contract.md) |
+
+These are responsibilities to implement, not existing functions or Python controller files. The [contract map](MULTIMODAL_CONTRACTS.md) assigns ownership and integration order without changing the current runtime graph.
 
 ## 8. Handoff validation
 

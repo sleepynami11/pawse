@@ -6,6 +6,8 @@ The end-to-end acceptance scenario is [Mimi in Zurich: the 120-second journey](D
 
 ![Pawse multimodal agent design with selected models and integration status](images/pawse-multi-agent-architecture.png)
 
+Implementation agreements: [Multimodal contract map](MULTIMODAL_CONTRACTS.md) · [Live](controller-live-contract.md) · [Vision](controller-vision-contract.md) · [Document](controller-document-contract.md) · [Case handoffs](controller-case-contract.md) · [Actions](controller-action-contract.md). These specify payloads, boundaries and acceptance criteria for each role below.
+
 ## Agent responsibilities
 
 | Agent / component | Selected model or tool | Input → output | Current integration |
@@ -38,7 +40,7 @@ Documents and provider results are untrusted data. Instructions embedded in a PD
 
 ### Proposed handoff contract
 
-This is a **design contract**, not a callable HTTP schema. Agree route names and limits before implementation, then export OpenAPI and update frontend consumers.
+This is a **design contract**, not a callable HTTP schema. Proposed v1 route names and application limits are now specified in the [Document](controller-document-contract.md), [Case](controller-case-contract.md) and [Action](controller-action-contract.md) contracts. Implement and validate them before exporting OpenAPI and enabling frontend consumers.
 
 | Object | Required information | Consumer |
 | --- | --- | --- |

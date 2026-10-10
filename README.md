@@ -83,7 +83,7 @@ The diagram shows the **target multimodal architecture**. Each card labels its c
 
 See [Multimodal Design](docs/MULTIMODAL_ARCHITECTURE.md) for the new agent handoffs, [Architecture](docs/ARCHITECTURE.md) for current execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
 
-Integration agreements are split into [Controller–Frontend](docs/controller-frontend-contract.md), [Controller–Service](docs/controller-service-contract.md), [Care](docs/controller-care-contract.md), [Agents](docs/controller-agent-contract.md), [Voice](docs/controller-voice-contract.md) and [Knowledge/Data](docs/controller-knowledge-contract.md) contracts. The [docs index](docs/README.md) explains where to start.
+Start with the [Multimodal Controller & Contract Map](docs/MULTIMODAL_CONTRACTS.md) to connect each diagram role to its interface and module. Contracts cover [Live](docs/controller-live-contract.md), [Vision](docs/controller-vision-contract.md), [Documents](docs/controller-document-contract.md), [Case Handoffs](docs/controller-case-contract.md) and [Communication & Actions](docs/controller-action-contract.md), alongside the existing care, voice and evidence APIs. Each document labels current behavior and proposed work; the [docs index](docs/README.md) lists all frontend and backend agreements.
 
 ---
 

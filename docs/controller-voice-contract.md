@@ -1,5 +1,7 @@
 # Pawse Voice Controller Contract
 
+For the diagram's full handoff, see the [multimodal contract map](MULTIMODAL_CONTRACTS.md). [Live](controller-live-contract.md) defines the separate Gemini conversation controller; [Actions](controller-action-contract.md) proposes case-bound approval and future telephone execution. The current voice endpoints below do not implement that action lifecycle.
+
 Implementation: [pawse/voice.py](../pawse/voice.py). Prefix: `/api/v1/voice`. Gemini handles transcription and German scripts; Gradium handles own-voice cloning, localization and audio. The current output is playable WAV, with `telephony: not_connected`.
 
 Product acceptance: [four-language delivery requirements](VOICE_CONCIERGE.md#language-and-delivery-requirements) and [Mimi's 120-second story](DEMO_STORY.md). Real-time session/token/tool contracts live separately in [Gemini Live](GEMINI_LIVE.md); they do not turn this speech endpoint into a telephone connection.
