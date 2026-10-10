@@ -220,3 +220,17 @@ async def test_legacy_bridge_preserves_named_sse_and_server_user(monkeypatch):
     monkeypatch.setattr(legacy.httpx,'AsyncClient',lambda **kw:original(transport=httpx.MockTransport(handler),**kw))
     events=[e async for e in legacy.legacy_events(LegacyRequest(cat_id=2,message='activity'))]
     assert events==[{'type':'legacy','event':'result','data':{'response':'synthetic cat result'}}]
+
+
+def test_capabilities_expose_model_ids_and_clinic_providers_without_keys(monkeypatch):
+    for k in ('GEMINI_MODEL','GEMINI_CARE_MODEL','GEMINI_VOICE_MODEL','GEMINI_LIVE_MODEL','GOOGLE_PLACES_API_KEY','MAPIFY_BASE_URL'):
+        monkeypatch.delenv(k,raising=False)
+    monkeypatch.setenv('GEMINI_API_KEY','secret-key-value')
+    monkeypatch.setenv('GEMINI_CARE_MODEL','care-x')
+    monkeypatch.setenv('GOOGLE_PLACES_API_KEY','places-secret')
+    with TestClient(app) as c:
+        r=c.get('/api/v1/capabilities')
+        d=r.json()
+    assert d['models']=={'care':'care-x','voice':'gemini-3-flash-preview','live':'gemini-3.8-live'}
+    assert d['clinic_providers']==['google_places']
+    assert 'secret-key-value' not in r.text and 'places-secret' not in r.text

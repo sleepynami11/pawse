@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { draftHandoff, searchDemoPolicy, generateSpeech } from '../agents/handoff.js';
+import ProviderChips from '../components/ProviderChips.jsx';
+import { loadCapabilities, handoffProviders } from '../agents/providers.js';
+import { PHONE_AGENT_URL } from '../config.js';
 
-export default function LiveHandoff({ lang, target, clinic, context, onDone, onRehearse }) {
+export default function LiveHandoff({ t, lang, target, clinic, context, onDone, onRehearse }) {
   const [message, setMessage] = useState(context.summary || '');
   const [consent, setConsent] = useState(false);
   const [gradiumConsent, setGradiumConsent] = useState(false);
@@ -12,7 +15,9 @@ export default function LiveHandoff({ lang, target, clinic, context, onDone, onR
   const [audio, setAudio] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [caps, setCaps] = useState(null);
   const pending = useRef(null);
+  useEffect(() => { let alive = true; loadCapabilities(PHONE_AGENT_URL || '').then(c => alive && setCaps(c)); return () => { alive = false; }; }, []);
   const audioRef = useRef('');
   useEffect(() => () => { pending.current?.abort(); if (audioRef.current) URL.revokeObjectURL(audioRef.current); }, []);
   async function run(task) {
@@ -31,6 +36,7 @@ export default function LiveHandoff({ lang, target, clinic, context, onDone, onR
   const callUrl = /^tel:\+[1-9]\d{6,14}$/.test(clinic?.callUrl || '') ? clinic.callUrl : null;
   return <main className="plan handoff">
     <h1>Prepare {target === 'insurance' ? 'insurer' : 'vet'} conversation</h1>
+    <ProviderChips t={t} items={handoffProviders({ caps, voice, audioReady: !!audio, target })} />
     <p className="note">No call has been placed. No appointment or insurance coverage has been confirmed.</p>
     {clinic && <p>{clinic.name} · {clinic.phone || 'No published phone available'}</p>}
     <section className="card">

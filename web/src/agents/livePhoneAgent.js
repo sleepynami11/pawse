@@ -9,7 +9,8 @@
 // so the voice never flips back and forth.
 
 import { PHONE_AGENT_URL } from '../config.js';
-import { speak, stopSpeech, isSpeechMuted } from './speech.js';
+import { speak, stopSpeech, isSpeechMuted, resolveVoiceName } from './speech.js';
+import { phoneVoiceEvent } from './providers.js';
 
 // Must equal DISCLOSURE in pawse/voice.py so the server does not prepend a second greeting.
 const DISCLOSURE = 'Guten Tag, hier ist Pawse, die KI-Assistenz im Auftrag der Katzenhalterin oder des Katzenhalters.';
@@ -189,15 +190,29 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
   const gradium = createGradiumLines(base, voice, state);
   const useGradium = () => gradiumConsent && !gradium.failed && !isSpeechMuted() && typeof fetch === 'function';
 
+  // Tell the page which voice Pawse really uses; only emits when it changes (e.g. Gradium fails -> browser).
+  let lastVoice = '';
+  const announceVoice = (gradiumOk) => {
+    const ev = phoneVoiceEvent({ gradiumOk, muted: isSpeechMuted(), variant: voice, browser: resolveVoiceName('de') });
+    const sig = JSON.stringify(ev);
+    if (sig !== lastVoice) {
+      lastVoice = sig;
+      emit(ev);
+    }
+  };
+
   async function say(lines, i) {
     const line = lines[i];
+    if (line.who === 'ai' && !useGradium()) announceVoice(false);
     if (line.who === 'ai' && useGradium()) {
       const blob = await gradium.fetch(i, line.original);
       // Preload the next AI line while this one plays.
       const next = lines.findIndex((l, j) => j > i && l.who === 'ai');
       if (next >= 0 && useGradium()) gradium.fetch(next, lines[next].original);
       if (state.ended) return;
+      announceVoice(!!blob);
       if (await playBlob(blob, state)) return;
+      announceVoice(false); // Gradium failed or was not playable: the browser voice speaks this line
     }
     if (state.ended) return;
     await speak(line.original, 'de', { speed, pitch: line.who === 'callee' ? 0.8 : 1.15 });
@@ -216,6 +231,7 @@ export function createLivePhoneCall({ target = 'vet', lang = 'zh', context = {},
     await wait(1500);
     if (state.ended) return;
     emit({ type: 'status', state: 'connected' });
+    announceVoice(useGradium());
 
     const step = (story.steps || [])[STEP_INDEX[target] ?? 2] || { lines: [] };
     const lines = [

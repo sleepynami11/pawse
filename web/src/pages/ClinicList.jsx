@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { searchClinics, IS_LIVE_CLINICS } from '../agents/index.js';
+import ProviderChips from '../components/ProviderChips.jsx';
+import { clinicProviders } from '../agents/providers.js';
 import { validateClinics } from '../contracts.js';
 
 /** Best-effort location; resolves null if refused, unavailable or slow. */
@@ -49,6 +51,9 @@ export default function ClinicList({ t, lang, triage, onPick, onBack }) {
           <p className="muted small">{t.clinicsSub}</p>
         </div>
       </header>
+      {state.status !== 'loading' && (
+        <ProviderChips t={t} items={clinicProviders({ live: IS_LIVE_CLINICS, clinics: state.clinics, failed: state.status === 'error' })} />
+      )}
 
       {state.status === 'loading' && (
         <div className="clinic-list" aria-busy="true">

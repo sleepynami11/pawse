@@ -3,8 +3,11 @@ import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
 import PlanPanel from '../components/PlanPanel.jsx';
 import useUserMedia from '../hooks/useUserMedia.js';
-import { createVoiceAgent, VOICE_WANTS_AUDIO, IS_LIVE_VOICE } from '../agents/index.js';
-import { isSpeechMuted, setSpeechMuted } from '../agents/speech.js';
+import ProviderChips from '../components/ProviderChips.jsx';
+import { createVoiceAgent, VOICE_WANTS_AUDIO, IS_LIVE_VOICE, VOICE_PATH } from '../agents/index.js';
+import { isSpeechMuted, setSpeechMuted, resolveVoiceName, onVoicesChanged } from '../agents/speech.js';
+import { loadCapabilities, voiceCallProviders } from '../agents/providers.js';
+import { VOICE_AGENT_URL } from '../config.js';
 import { validateTriage } from '../contracts.js';
 
 function fmt(sec) {
@@ -30,6 +33,8 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
   const [error, setError] = useState('');
   const [sheetOpen, setSheetOpen] = useState(true);
   const [secs, setSecs] = useState(0);
+  const [caps, setCaps] = useState(null);
+  const [browser, setBrowser] = useState(() => resolveVoiceName(lang));
 
   const videoRef = useRef(null);
   const fileRef = useRef(null);
@@ -88,6 +93,19 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
       agent.end();
     };
   }, [lang, consent]);
+
+  // ---- which AI runs this call (model ids come from the backend, never hardcoded)
+  useEffect(() => {
+    let alive = true;
+    if (IS_LIVE_VOICE) loadCapabilities(VOICE_AGENT_URL || '').then((c) => alive && setCaps(c));
+    const refresh = () => setBrowser(resolveVoiceName(lang));
+    refresh();
+    const off = onVoicesChanged(refresh);
+    return () => {
+      alive = false;
+      off();
+    };
+  }, [lang]);
 
   // ---- media → <video> and → agent
   useEffect(() => {
@@ -217,6 +235,7 @@ export default function VoiceCall({ t, lang, triage, vet, insurance, onTriage, o
           </div>
         )}
         <p className="stage-name">Pawse</p>
+        <ProviderChips t={t} items={voiceCallProviders({ path: VOICE_PATH, caps, browser, muted: !soundOn })} />
         <p className="stage-status" aria-live="polite">
           {listening ? (
             <span className="listening-label">

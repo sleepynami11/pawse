@@ -36,6 +36,21 @@ function pickVoice(tag) {
   return voices.find((v) => v.lang === tag) || voices.find((v) => v.lang.toLowerCase().startsWith(tag.slice(0, 2)));
 }
 
+/** Which browser voice would speak `lang` (null name = the browser default). Used for the "powered by" badge. */
+export function resolveVoiceName(lang) {
+  if (!hasTTS()) return { available: false, name: null };
+  const v = pickVoice(TAGS[lang] || lang);
+  return { available: true, name: v ? v.name : null };
+}
+
+const voiceListeners = new Set();
+/** Subscribe to the voice list becoming available (Chrome loads it late). Returns an unsubscribe. */
+export function onVoicesChanged(cb) {
+  voiceListeners.add(cb);
+  if (hasTTS() && voiceListeners.size === 1) window.speechSynthesis.onvoiceschanged = () => voiceListeners.forEach((l) => l());
+  return () => voiceListeners.delete(cb);
+}
+
 /** Call inside a tap so iOS Safari allows speech later on. */
 export function primeSpeech() {
   if (!hasTTS()) return;

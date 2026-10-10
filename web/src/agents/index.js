@@ -12,6 +12,9 @@ export const IS_LIVE_CLINICS = CLINIC_SEARCH === 'live';
 export const IS_LIVE_PHONE = PHONE_AGENT === 'live';
 export const IS_MOCK = !IS_LIVE_VOICE || !IS_LIVE_CLINICS || !IS_LIVE_PHONE;
 
+/** Which voice path runs: 'mock' (scripted), 'rest' (transcribe + care over REST) or 'native' (Gemini Live audio). */
+export const VOICE_PATH = !IS_LIVE_VOICE ? 'mock' : new URLSearchParams(globalThis.location?.search || '').get('voice') === 'rest' ? 'rest' : 'native';
+
 /** The page opens the microphone only if the active voice agent wants audio. */
 export const VOICE_WANTS_AUDIO = IS_LIVE_VOICE;
 

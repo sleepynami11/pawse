@@ -521,3 +521,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 .handoff textarea { min-height: 130px; resize: vertical; }
 .handoff article { margin-top: 18px; overflow-wrap: anywhere; }
 .handoff audio { width: 100%; margin-top: 12px; }
+
+/* "Powered by" chips: small, quiet, one row that wraps */
+.prov { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; justify-content: center; }
+.prov-chip { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px; padding: 2px 9px; border-radius: 999px; font-size: 11px; line-height: 1.5; color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
+.prov-chip strong { font-weight: 700; color: var(--ink); }
+.prov-step::after { content: ':'; }
+.prov-detail { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; }
+.prov-simulated, .prov-scripted, .prov-demo { background: #fff3cd; border-color: #e6cf80; }
+.prov-simulated strong, .prov-scripted strong, .prov-demo strong { color: #7a5b00; }

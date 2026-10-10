@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import Avatar from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
-import { createPhoneCall } from '../agents/index.js';
+import ProviderChips from '../components/ProviderChips.jsx';
+import { createPhoneCall, IS_LIVE_PHONE } from '../agents/index.js';
+import { resolveVoiceName, onVoicesChanged } from '../agents/speech.js';
+import { phoneProviders } from '../agents/providers.js';
 import { validateResult } from '../contracts.js';
 
 function fmt(sec) {
@@ -70,6 +73,15 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
   const [error, setError] = useState('');
   const [secs, setSecs] = useState(0);
   const [listening, setListening] = useState(false);
+  // Pawse's real voice, updated by the agent's 'provider' events (e.g. Gradium -> browser fallback).
+  const [voice, setVoice] = useState(() =>
+    IS_LIVE_PHONE && gradium && gradium.on ? { voice: 'gradium', variant: context && context.voice } : null
+  );
+  const [browser, setBrowser] = useState(() => resolveVoiceName('de'));
+  useEffect(() => {
+    const refresh = () => setBrowser(resolveVoiceName('de'));
+    return onVoicesChanged(refresh);
+  }, []);
   const callRef = useRef(null);
   const listRef = useRef(null);
   const resultRef = useRef(null);
@@ -87,6 +99,9 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
           break;
         case 'speaking':
           setSpeaking(e.who);
+          break;
+        case 'provider':
+          if (e.step === 'voice') setVoice(e);
           break;
         case 'line':
           setLines((p) => [...p, e]);
@@ -175,6 +190,7 @@ export default function PhoneCall({ t, lang, target, clinic, context, gradium, o
           {callee.role} · {statusText}
         </p>
         <span className="sim-badge">{t.simulatedCall}</span>
+        <ProviderChips t={t} items={phoneProviders({ live: IS_LIVE_PHONE, target, voice, browser })} />
       </header>
 
       <section className="bridge" aria-label={t.bridgeNote}>
