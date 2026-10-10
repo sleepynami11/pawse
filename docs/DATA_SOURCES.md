@@ -6,8 +6,8 @@ Reviewed on 2026-10-10. The implemented knowledge endpoint indexes only the loca
 
 | Source | Current status | Owner and use |
 | --- | --- | --- |
-| `research/pet-insurance/policy/policy.json` | Fictional demo schedule; selected sections indexed | RAG/data teammate: deductible, selected coverages, claims requirements |
-| `research/pet-insurance/avb/avb-en.md` | Shortened English adaptation; indexed by heading | RAG/data teammate: cite the demo clause and retain the synthetic label |
+| `research/pet-insurance/policy/policy.json` | Fictional demo schedule; selected sections indexed | Retrieval module: deductible, selected coverages, claims requirements |
+| `research/pet-insurance/avb/avb-en.md` | Shortened English adaptation; indexed by heading | Retrieval module: cite the demo clause and retain the synthetic label |
 | `research/pet-insurance/scenarios/scenarios.yaml` | Synthetic expected answers and payouts | Use as evaluation material, not independent evidence or real medical validation |
 | `backend/utils/embedding.py` | Imported OpenAI embedding/translation implementation | Reference only; depends on separate credentials |
 | `backend/utils/chromadb_client.py` and `backend/nodes.py` | Imported Chroma client and four-layer retrieval node | Collections and source books were not imported; the legacy RAG path is incomplete |
@@ -37,7 +37,7 @@ out center tags;
 
 This query is documented but not executed by the app yet. Map a returned node/way/relation ID to a stable source ID. Do not infer phone numbers, round-the-clock service, cat-specific expertise, appointments, road ETA, or current opening from a name alone. Straight-line distance is not travel time.
 
-## Data teammate deliverables
+## Data Module Deliverables
 
 1. Maintain a source manifest with publisher, source URL, applicable terms, edition, retrieval time, checksum, refresh policy, and demo/real classification.
 2. Return each clinic fact with provenance and its observation time. Keep optional values null when missing, and confirm appointment availability through the clinic.

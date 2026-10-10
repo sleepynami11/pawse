@@ -8,7 +8,7 @@ The team's project key was tested on 10 October 2026 with small synthetic inputs
 | `gemini-3.1-pro-preview` | Text returned HTTP 200 with text | Optional deeper reasoning experiments on difficult, cited evidence; not required for the default flow |
 | `gemini-embedding-001` | `embedContent` returned HTTP 200 with a vector | Next retrieval iteration: embed the reviewed corpus and index with matching query vectors |
 | `gemini-2.5-flash` | Text returned HTTP 404 despite appearing in a listing | Do not use as this project's default |
-| Gradium clone, localization and TTS | Contract integrated and mocked; key absent | Voice teammate; own voice sample → German candidate → human preview → speech |
+| Gradium clone, localization and TTS | Contract integrated and mocked; key absent | Voice pipeline; own voice sample → German candidate → human preview → speech |
 | Gemini Live / phone carrier | No live end-to-end verification | Future streaming/telephony integration; not a completed capability |
 
 The tests establish access only. They do not establish clinical reliability, translation accuracy, voice identity similarity, latency under load or availability in another project. The WAV contained silence, and the PNG was synthetic. Real multilingual recordings, cat photos and consenting speaker samples still require evaluation.

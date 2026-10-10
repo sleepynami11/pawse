@@ -26,7 +26,7 @@ Solid arrows show implemented flow or a separate implemented API step. Dashed ar
 
 ## Current roles
 
-| Runtime role | Implementation | Human owner | Current behavior |
+| Runtime role | Implementation | Module | Current behavior |
 | --- | --- | --- | --- |
 | Intake and safety | Validated models and rules | LLM backend | Text/photo input, explicit data-sharing flags and immediate reported-warning-sign guidance; recorded speech has a separate transcription endpoint. |
 | Care guidance | Gemini model | LLM backend | Structured care-navigation summary, questions and services to ask about; no diagnosis or treatment guarantee. |
@@ -36,11 +36,11 @@ Solid arrows show implemented flow or a separate implemented API step. Dashed ar
 | Case coordinator | Bounded asynchronous Python workflow | LLM backend | Runs independent providers concurrently, retains partial results, exposes trace and action gates. |
 | Multilingual communication | Gemini plus Gradium tools | Voice backend | Multilingual transcription, reviewed German scripts/subtitles, own-voice cloning and German audio adapters. Telephone transport is still unconnected. |
 
-Frontend is the owner-facing surface across these seven roles. Four people do not imply four runtime agents.
+The frontend presents these agent outputs through a unified care interface.
 
 ## Executable contract
 
-`GET /api/v1/agents/graph` reports each role's implementation, owner, configured model, dependencies and availability. A `configured_not_verified` value means an environment variable exists; it is not a live availability test. The project-specific model probes are in [model-access-check.json](model-access-check.json).
+`GET /api/v1/agents/graph` reports each role's implementation, module ownership, configured model, dependencies and availability. A `configured_not_verified` value means an environment variable exists; it is not a live availability test. The project-specific model probes are in [model-access-check.json](model-access-check.json).
 
 `POST /api/v1/agents/runs` accepts a nested existing `CareRequest`:
 
@@ -80,4 +80,4 @@ For speech input, Gemini handles the app's English, Mandarin Chinese, German and
 
 The orchestration tests verify that care guidance and clinic discovery start concurrently, unknown hours remain unknown, partial guidance survives a deadline, provider exceptions are sanitized, consent prevents external processing, action gates remain unexecuted and the route enforces per-session concurrency. These tests use controlled provider responses. They do not verify real clinic opening hours, insurance coverage, call transport, multilingual accuracy or voice similarity.
 
-See [TEAM_PLAN.md](TEAM_PLAN.md) for branch ownership, the tested model matrix and the merge sequence.
+See [Agent Development](AGENT_DEVELOPMENT.md) for module branches, the tested model matrix and the integration workflow.

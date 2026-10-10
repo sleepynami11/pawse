@@ -105,7 +105,7 @@ Ranking is deterministic: provider-reported open clinics, then unknown, then rep
 
 `trace.state` is `pending`, `running`, `complete`, `unavailable`, `timeout`, `skipped`, `review_required` or `evidence_required`. The finished response contains terminal states. A complete care run does not mean every future action is available: live policy evidence remains required, communication requires owner review, and calls/calendar/bookings are unconnected.
 
-The nested care result is stored in the same session cache as `/care/requests`, under its `request_id`; use the existing GET/DELETE routes for it. The trace itself has no history endpoint. Care and agent-run requests share the concurrency limit. See [architecture](ARCHITECTURE.md) and [team ownership](TEAM_PLAN.md).
+The nested care result is stored in the same session cache as `/care/requests`, under its `request_id`; use the existing GET/DELETE routes for it. The trace itself has no history endpoint. Care and agent-run requests share the concurrency limit. See [architecture](ARCHITECTURE.md) and [module development](AGENT_DEVELOPMENT.md).
 
 ## Voice and multilingual contracts
 

@@ -41,7 +41,7 @@ Each generated audio file begins with an AI-assistant disclosure. The app does n
 
 This implementation generates audio and scripts. It does not dial via a telephone network, listen to a remote recipient, inject audio into a mobile phone call, check a real calendar, book appointments, or submit claims. Device `tel:` links open a dialer only. Browser audio playback cannot be assumed to enter an OS-managed phone call; a second device or a supported telephony connection would be needed.
 
-The voice/calling teammate should add a Twilio/SIP or comparable telephony gateway behind a separate adapter. A real conversation needs bidirectional streaming, interruption handling, recipient transcript events and owner approval before booking or agreeing to costs. Gradium's supported telephony audio formats can supply that adapter, but Gradium TTS is not itself the telephone carrier. No active telephone provider or number has been configured or verified.
+The voice/calling module can integrate a Twilio/SIP or comparable telephony gateway behind a separate adapter. A real conversation needs bidirectional streaming, interruption handling, recipient transcript events and owner approval before booking or agreeing to costs. Gradium's supported telephony audio formats can supply that adapter, but Gradium TTS is not itself the telephone carrier. No active telephone provider or number has been configured or verified.
 
 Suggested future boundary (not implemented): `POST /calls/proposals` creates a recipient, purpose, script and spending limit; `POST /calls/{id}/confirm` records explicit owner approval; the carrier adapter emits connected/transcript/offer/completed events. Keep these separate from `/voice/speech` so playing a preview never places a call.
 
