@@ -20,11 +20,12 @@ from .demo import router as demo_router
 from .knowledge import router as knowledge_router
 from .orchestration import router as orchestration_router
 from .state import records, active, TTL, MAX_RECORDS, prune, remember
+from . import public
 
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 app = FastAPI(title="Pawse Care API", version="0.2.0", description="Cat care navigation, nearby veterinary clinics, insurance contacts, and a bridge to the existing CatAgent.")
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=public.allowed_hosts())
 
 
 @app.exception_handler(RequestValidationError)
@@ -50,6 +51,8 @@ async def local_session(request: Request, call_next):
         request._body = bytes(body)
     owner = request.cookies.get("pawse_session") or secrets.token_urlsafe(32)
     request.state.owner = owner
+    if public.over_quota(owner, request.method, request.url.path):
+        return JSONResponse(status_code=429, content={"error": "demo_quota_reached", "message": "This public demo has reached its hourly limit. The Mimi rehearsal still works; try live features again later."})
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -64,7 +67,7 @@ def event_line(event):
 
 @app.get("/api/v1/health")
 async def health():
-    return {"status": "ok", "mode": "local_single_user", "version": "0.2.0"}
+    return {"status": "ok", "mode": "public_demo" if public.enabled() else "local_single_user", "version": "0.2.0"}
 
 
 @app.get("/api/v1/capabilities")

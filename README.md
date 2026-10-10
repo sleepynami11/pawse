@@ -117,6 +117,16 @@ The story rehearsal and local demo-policy search work without provider keys. See
 
 Run the automated checks with `pip install -r requirements-dev.txt` followed by `pytest -q tests`. Tests use mocked providers; live model access checks are a separate opt-in script. See the [validation record](docs/VALIDATION.md).
 
+### Public demo (Cloud Run)
+
+The `Dockerfile` runs the same app as a container. `scripts/deploy_cloudrun.sh <gcp-project>` deploys it to Cloud Run with one instance (the case cache is in memory), keys from Secret Manager (`pawse-gemini-key`, optional `pawse-gradium-key`) and these public-demo settings:
+
+| Setting | Purpose |
+| --- | --- |
+| `PAWSE_PUBLIC_DEMO=1` | Hourly quota on endpoints that spend Gemini, Gradium or Places credit; the Mimi rehearsal stays unlimited |
+| `PAWSE_SESSION_CALLS_PER_HOUR`, `PAWSE_TOTAL_CALLS_PER_HOUR` | Quota per browser session (default 60) and per instance (default 600) |
+| `PAWSE_ALLOWED_HOSTS` | Public hostnames added to the local host allowlist; the deploy script sets it |
+
 ---
 
 ## Limitations
