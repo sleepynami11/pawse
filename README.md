@@ -36,7 +36,7 @@ Model-based understanding is separated from deterministic ranking, cost calculat
 
 - Text, photo and recorded-audio intake, with English, Mandarin Chinese, German and Hindi input options.
 - Structured care guidance, warning-sign handling and questions to prepare for the vet.
-- Nearby veterinary search through independent MapifyAI or Google Places adapters.
+- Nearby veterinary search through configurable clinic-data providers.
 - Explainable clinic ranking using reported opening status, distance and rating.
 - Policy-clause retrieval with source references and document hashes, using synthetic demo evidence.
 - German scripts with paired subtitles, own-voice recording, and Gradium cloning/localization adapters.
@@ -63,7 +63,7 @@ Calls, replies, calendar slots, coverage and prices in this story are simulated.
 
 The system consists of:
 
-- A responsive web interface with Mapify-inspired pink and gray styling.
+- A responsive web interface with Pawse's pink and gray styling.
 - A FastAPI backend with bounded asynchronous agent coordination.
 - Gemini adapters for care guidance, audio understanding and translation.
 - Gradium adapters for voice cloning, German localization and speech generation.
@@ -71,7 +71,7 @@ The system consists of:
 
 ![Pawse multi-agent architecture: parallel care guidance and clinic retrieval, deterministic coordination, separate policy evidence and reviewed voice APIs.](docs/images/pawse-multi-agent-architecture.png)
 
-[Editable SVG](docs/images/pawse-multi-agent-architecture.svg) · [Diagram legend and source notes](docs/images/README.md)
+[View full-size diagram](docs/images/pawse-multi-agent-architecture.png) · [Editable SVG](docs/images/pawse-multi-agent-architecture.svg) · [Diagram legend](docs/images/README.md)
 
 See [Architecture](docs/ARCHITECTURE.md) for execution boundaries, [Agent Development](docs/AGENT_DEVELOPMENT.md) for module contracts and feature branches, and [Model Allocation](docs/MODEL_ALLOCATION.md) for project-specific access checks.
 
@@ -101,10 +101,10 @@ App: [localhost:8765](http://127.0.0.1:8765) · Swagger UI: [localhost:8765/docs
 | `GEMINI_MODEL` | Default model: `gemini-3-flash-preview`; optional care/voice overrides are documented in `.env.example` |
 | `GRADIUM_API_KEY` | Voice cloning, localization and German audio |
 | `GRADIUM_VOICE_ID_DE` | Optional approved German voice to reuse across restarts |
-| `MAPIFY_BASE_URL` or `GOOGLE_PLACES_API_KEY` | Live clinic search; Places requires separate API access |
+| `GOOGLE_PLACES_API_KEY` | Live clinic search with Places; additional provider settings are documented in `.env.example` |
 | `LEGACY_AGENT_BASE_URL`, `LEGACY_AGENT_USER_ID`, `LEGACY_AGENT_CAT_IDS` | Optional connection to the existing CatAgent backend |
 
-The story rehearsal and local demo-policy search work without provider keys. See the [voice guide](docs/VOICE_CONCIERGE.md), [Mapify adapter](docs/MAPIFY_ADAPTER.md) and [API contract](docs/API_CONTRACT.md) for integration details.
+The story rehearsal and local demo-policy search work without provider keys. See the [voice guide](docs/VOICE_CONCIERGE.md), [clinic data contract](docs/controller-knowledge-contract.md) and [API contract](docs/API_CONTRACT.md) for integration details.
 
 Run the automated checks with `pip install -r requirements-dev.txt` followed by `pytest -q tests`. Tests use mocked providers; live model access checks are a separate opt-in script. See the [validation record](docs/VALIDATION.md).
 

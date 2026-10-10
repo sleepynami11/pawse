@@ -15,7 +15,7 @@ The existing implementation already supports parallel care guidance and clinic r
 flowchart TD
     User[Owner: text, photo or recorded speech] --> Intake[Intake and safety agent\nValidated facts, language and consent]
     Intake --> Care[Care guidance agent\nGemini: questions and urgency guidance]
-    Intake --> Places[Nearby vets agent\nGoogle Places or Mapify adapter]
+    Intake --> Places[Nearby vets agent\nClinic data adapters]
     Intake -. actual policy required .-> Policy[Policy evidence agent\nCited retrieval; synthetic corpus for rehearsal only]
     Places --> Rank[Ranking and cost rules\nReported hours, distance, evidence-backed arithmetic]
     Care --> Coordinator[Case coordinator\nDeadline, partial results and evidence gaps]
@@ -39,7 +39,7 @@ Solid arrows show implemented flow or a separate implemented API step. Dashed ar
 | --- | --- | --- | --- |
 | Intake and safety | Validated models and rules | LLM backend | Text/photo input, explicit data-sharing flags and immediate reported-warning-sign guidance; recorded speech has a separate transcription endpoint. |
 | Care guidance | Gemini model | LLM backend | Structured care-navigation summary, questions and services to ask about; no diagnosis or treatment guarantee. |
-| Nearby veterinary practices | External data adapters | RAG/data backend | Provider-backed clinic names and contacts; opening hours and services remain unknown unless supported. |
+| Nearby veterinary practices | Clinic data adapters | RAG/data backend | Provider-backed clinic names and contacts; opening hours and services remain unknown unless supported. |
 | Policy evidence | Local retrieval tool | RAG/data backend | Cited synthetic insurance clauses for rehearsal; no live customer coverage decision. |
 | Ranking and cost rules | Deterministic functions | LLM backend | Clinic ranking; separate demo arithmetic for the fictional policy. Straight-line distance is not journey time. |
 | Case coordinator | Bounded asynchronous Python workflow | LLM backend | Runs independent providers concurrently, retains partial results, exposes trace and action gates. |
