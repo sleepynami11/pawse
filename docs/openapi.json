@@ -663,6 +663,27 @@
         }
       }
     },
+    "/api/v1/knowledge/policy": {
+      "get": {
+        "tags": [
+          "Knowledge evidence"
+        ],
+        "summary": "Policy",
+        "operationId": "policy_api_v1_knowledge_policy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/knowledge/search": {
       "post": {
         "tags": [
@@ -1376,6 +1397,30 @@
         ],
         "title": "CareResult"
       },
+      "Clause": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "section",
+          "title",
+          "text"
+        ],
+        "title": "Clause"
+      },
       "Clinic": {
         "properties": {
           "id": {
@@ -1566,6 +1611,57 @@
         ],
         "title": "CloneRequest"
       },
+      "Coverage": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected"
+          },
+          "details": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "selected",
+          "details"
+        ],
+        "title": "Coverage"
+      },
       "Evidence": {
         "properties": {
           "evidence_id": {
@@ -1710,6 +1806,43 @@
           "note"
         ],
         "title": "InsuranceResult"
+      },
+      "InsuredCat": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "breed": {
+            "type": "string",
+            "title": "Breed"
+          },
+          "age_years_at_start": {
+            "type": "integer",
+            "title": "Age Years At Start"
+          },
+          "declared_lifestyle": {
+            "type": "string",
+            "title": "Declared Lifestyle"
+          },
+          "known_conditions_at_start": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Conditions At Start"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "breed",
+          "age_years_at_start",
+          "declared_lifestyle",
+          "known_conditions_at_start"
+        ],
+        "title": "InsuredCat"
       },
       "KnowledgeQuery": {
         "properties": {
@@ -1899,6 +2032,153 @@
           "data"
         ],
         "title": "Photo"
+      },
+      "PolicyView": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "const": "synthetic_demo",
+            "title": "Scope",
+            "default": "synthetic_demo"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Synthetic",
+            "default": true
+          },
+          "policy_number": {
+            "type": "string",
+            "title": "Policy Number"
+          },
+          "insurer": {
+            "type": "string",
+            "title": "Insurer"
+          },
+          "avb_edition": {
+            "type": "string",
+            "title": "Avb Edition"
+          },
+          "avb_modeled_on": {
+            "type": "string",
+            "title": "Avb Modeled On"
+          },
+          "term": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Term"
+          },
+          "cost_sharing": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Cost Sharing"
+          },
+          "coverages": {
+            "items": {
+              "$ref": "#/components/schemas/Coverage"
+            },
+            "type": "array",
+            "title": "Coverages"
+          },
+          "insured_animals": {
+            "items": {
+              "$ref": "#/components/schemas/InsuredCat"
+            },
+            "type": "array",
+            "title": "Insured Animals"
+          },
+          "claims_process": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Claims Process"
+          },
+          "clauses": {
+            "items": {
+              "$ref": "#/components/schemas/Clause"
+            },
+            "type": "array",
+            "title": "Clauses"
+          },
+          "source_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Paths",
+            "default": [
+              "research/pet-insurance/policy/policy.json",
+              "research/pet-insurance/avb/avb-en.md"
+            ]
+          },
+          "corpus_version": {
+            "type": "string",
+            "title": "Corpus Version"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "Demo policy schedule and an English adaptation of real Swiss terms only. These excerpts do not establish an owner's real insurance coverage or constitute insurer approval."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "policy_number",
+          "insurer",
+          "avb_edition",
+          "avb_modeled_on",
+          "term",
+          "cost_sharing",
+          "coverages",
+          "insured_animals",
+          "claims_process",
+          "clauses",
+          "corpus_version"
+        ],
+        "title": "PolicyView",
+        "description": "The demo policy schedule and its terms, without policyholder contact details."
       },
       "SaveVoice": {
         "properties": {

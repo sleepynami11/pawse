@@ -171,6 +171,75 @@ def search_knowledge(payload: KnowledgeQuery) -> KnowledgeResult:
     )
 
 
+class Coverage(Model):
+    key: str
+    label: str
+    selected: bool
+    details: dict[str, str | int | float | bool | list[str]]
+
+
+class InsuredCat(Model):
+    name: str
+    breed: str
+    age_years_at_start: int
+    declared_lifestyle: str
+    known_conditions_at_start: list[str]
+
+
+class Clause(Model):
+    section: str
+    title: str
+    text: str
+
+
+class PolicyView(Model):
+    """The demo policy schedule and its terms, without policyholder contact details."""
+    scope: Literal["synthetic_demo"] = "synthetic_demo"
+    synthetic: Literal[True] = True
+    policy_number: str
+    insurer: str
+    avb_edition: str
+    avb_modeled_on: str
+    term: dict[str, str | int]
+    cost_sharing: dict[str, str | int | float | list[str]]
+    coverages: list[Coverage]
+    insured_animals: list[InsuredCat]
+    claims_process: dict[str, str | int | list[str]]
+    clauses: list[Clause]
+    source_paths: list[str] = [POLICY_PATH, AVB_PATH]
+    corpus_version: str
+    disclaimer: str = DISCLAIMER
+
+
+def policy_view() -> PolicyView:
+    chunks, version = corpus()
+    policy = json.loads((ROOT / POLICY_PATH).read_bytes())
+    return PolicyView(
+        policy_number=policy["policy_number"],
+        insurer=policy["insurer"],
+        avb_edition=policy["avb"]["edition"],
+        avb_modeled_on=policy["avb"]["modeled_on"],
+        term=policy["term"],
+        cost_sharing=policy["cost_sharing"],
+        coverages=[Coverage(
+            key=key, label=key.replace("_", " ").capitalize(), selected=value["selected"],
+            details={k: v for k, v in value.items() if k != "selected"},
+        ) for key, value in policy["coverages"].items()],
+        insured_animals=[InsuredCat(**{k: cat[k] for k in InsuredCat.model_fields}) for cat in policy["insured_animals"]],
+        claims_process=policy["claims_process"],
+        clauses=[Clause(section=c.section, title=c.title, text=c.snippet) for c in chunks if c.source_id == "pawse-demo-avb"],
+        corpus_version=version,
+    )
+
+
+@router.get("/policy", response_model=PolicyView)
+def policy() -> PolicyView:
+    try:
+        return policy_view()
+    except (OSError, ValueError, KeyError) as exc:
+        raise HTTPException(503, "The synthetic demo policy is unavailable") from exc
+
+
 @router.post("/search", response_model=KnowledgeResult)
 def search(payload: KnowledgeQuery) -> KnowledgeResult:
     try:

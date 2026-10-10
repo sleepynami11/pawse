@@ -510,3 +510,98 @@ fetch("/api/v1/agents/graph")
     $("agent-graph-note").textContent =
       "Agent responsibilities are unavailable. Reload after the server is ready.";
   });
+
+const chf = (n) => "CHF " + Number(n).toLocaleString("de-CH");
+const label = (k) => k.replaceAll("_", " ");
+function policyList(entries) {
+  const dl = node("dl", null, "policy-facts");
+  entries.forEach(([k, v]) => dl.append(node("dt", k), node("dd", String(v))));
+  return dl;
+}
+function coverageDetail(details) {
+  const parts = [];
+  if (details.annual_limit_chf) parts.push(chf(details.annual_limit_chf) + " a year");
+  if (details.limit_chf_per_day)
+    parts.push(chf(details.limit_chf_per_day) + " a day, up to " + details.max_days_per_year + " days");
+  if (details.includes) parts.push(details.includes.map(label).join(", "));
+  return parts.join(" · ");
+}
+fetch("/api/v1/knowledge/policy")
+  .then((response) => {
+    if (!response.ok) throw new Error("policy unavailable");
+    return response.json();
+  })
+  .then((p) => {
+    const root = $("policy");
+    const cost = p.cost_sharing;
+    const summary = node("div", null, "policy-grid");
+    const schedule = node("article", null, "policy-card");
+    schedule.append(
+      node("span", "Policy schedule", "badge"),
+      node("h3", p.insurer),
+      policyList([
+        ["Policy number", p.policy_number],
+        ["Term", p.term.start + " to " + p.term.end + " (" + p.term.renewal + ")"],
+        ["Illness covered from", p.term.illness_covered_from + " (" + p.term.illness_waiting_period_days + "-day waiting period)"],
+        ["Annual deductible", chf(cost.annual_deductible_chf) + ", " + cost.deductible_basis],
+        ["Reimbursement", Math.round(cost.reimbursement_rate * 100) + "% after the deductible"],
+        ["Terms (AVB)", "Edition " + p.avb_edition + ", modeled on " + p.avb_modeled_on],
+      ]),
+    );
+    const cats = node("article", null, "policy-card");
+    cats.append(node("span", "Insured cats", "badge"));
+    p.insured_animals.forEach((cat) => {
+      cats.append(
+        node("h3", cat.name),
+        node(
+          "p",
+          [cat.breed, cat.age_years_at_start + " years at start", label(cat.declared_lifestyle)]
+            .concat(cat.known_conditions_at_start.length ? ["known: " + cat.known_conditions_at_start.join(", ")] : [])
+            .join(" · "),
+          "small",
+        ),
+      );
+    });
+    summary.append(schedule, cats);
+
+    const covers = node("div", null, "policy-coverages");
+    p.coverages.forEach((c) => {
+      const row = node("article", null, "policy-coverage " + (c.selected ? "covered" : "not-covered"));
+      row.append(
+        node("span", c.selected ? "✓ Covered" : "✗ Not covered", "badge" + (c.selected ? "" : " emergency")),
+        node("h3", c.label),
+      );
+      const detail = coverageDetail(c.details);
+      if (detail) row.append(node("p", detail, "small"));
+      if (c.details.notes) row.append(node("p", c.details.notes, "small"));
+      covers.append(row);
+    });
+
+    const claims = node("article", null, "policy-card");
+    claims.append(
+      node("span", "Making a claim", "badge"),
+      node("p", "Submit within " + p.claims_process.submit_within_days + " days via " + p.claims_process.channel + "."),
+    );
+    const docs = node("ul", null, "small");
+    p.claims_process.required_documents.forEach((d) => docs.append(node("li", d)));
+    claims.append(docs);
+
+    const terms = node("details", null, "policy-terms");
+    terms.append(node("summary", "Read the full terms (" + p.clauses.length + " clauses)"));
+    p.clauses.forEach((c) => {
+      terms.append(node("h4", c.section + " " + c.title), node("pre", c.text.replaceAll("**", "")));
+    });
+
+    root.replaceChildren(
+      summary,
+      node("h3", "What is covered"),
+      covers,
+      claims,
+      terms,
+    );
+    $("policy-note").textContent = p.disclaimer;
+  })
+  .catch(() => {
+    $("policy-note").textContent =
+      "The demo policy is unavailable. Reload after the server is ready.";
+  });

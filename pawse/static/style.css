@@ -371,8 +371,61 @@ summary {
   color: var(--green);
   margin-bottom: 12px;
 }
-.agent-panel {
+.agent-panel,
+.policy-panel {
   margin-top: 24px;
+}
+.policy-grid,
+.policy-coverages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.policy-card,
+.policy-coverage {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.policy-coverage {
+  margin-bottom: 0;
+}
+.policy-coverage.not-covered {
+  background: #fdf8f5;
+}
+.policy-coverage p,
+.policy-card p {
+  margin: 5px 0;
+}
+.policy-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+.policy-facts dt {
+  color: var(--muted);
+}
+.policy-facts dd {
+  margin: 0;
+}
+.policy-terms summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+.policy-terms h4 {
+  margin: 14px 0 4px;
+  font-size: 13px;
+}
+.policy-terms pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
 }
 .agent-panel p {
   color: var(--muted);

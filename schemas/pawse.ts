@@ -208,3 +208,31 @@ export interface KnowledgeResult {
   }>;
   disclaimer: string;
 }
+export interface PolicyView {
+  scope: "synthetic_demo";
+  synthetic: true;
+  policy_number: string;
+  insurer: string;
+  avb_edition: string;
+  avb_modeled_on: string;
+  term: Record<string, string | number>;
+  cost_sharing: Record<string, string | number | string[]>;
+  coverages: Array<{
+    key: string;
+    label: string;
+    selected: boolean;
+    details: Record<string, string | number | boolean | string[]>;
+  }>;
+  insured_animals: Array<{
+    name: string;
+    breed: string;
+    age_years_at_start: number;
+    declared_lifestyle: string;
+    known_conditions_at_start: string[];
+  }>;
+  claims_process: Record<string, string | number | string[]>;
+  clauses: Array<{ section: string; title: string; text: string }>;
+  source_paths: string[];
+  corpus_version: string;
+  disclaimer: string;
+}

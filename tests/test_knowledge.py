@@ -91,3 +91,18 @@ def test_corpus_failure_is_a_safe_503(client, monkeypatch):
     response = client.post("/api/v1/knowledge/search", json={"query": "house call"})
     assert response.status_code == 503
     assert "PRIVATE_PATH_SHOULD_NOT_LEAK" not in response.text
+
+
+def test_policy_view_shows_the_demo_schedule_without_policyholder_contact(client):
+    response = client.get("/api/v1/knowledge/policy")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["policy_number"] == "PAWSE-DEMO-2026-000001" and body["synthetic"] is True
+    assert body["cost_sharing"]["annual_deductible_chf"] == 300
+    assert body["cost_sharing"]["reimbursement_rate"] == 0.8
+    coverages = {c["key"]: c for c in body["coverages"]}
+    assert coverages["accident_illness_base"]["selected"] is True
+    assert coverages["complementary_medicine"]["selected"] is False
+    assert "Mimi" in body["insured_animals"][0]["name"]
+    assert any(c["section"] == "1.2.5" and "CHF 12'000" in c["text"] for c in body["clauses"])
+    assert "user1@example.com" not in response.text and "Demo user 1" not in response.text
