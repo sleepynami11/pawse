@@ -39,16 +39,9 @@ def phone_uri(value: str | None) -> str | None:
     return "tel:" + cleaned if re.fullmatch(r"\+[1-9]\d{6,14}", cleaned) else None
 
 
-class InsuranceProfile(Model):
-    """What the owner told Pawse about their policy. Never proof of cover."""
-    company: str = Field(min_length=1, max_length=100)
-    plan: str | None = Field(default=None, max_length=120)
-
-
 class Insurance(Model):
     company: str = Field(min_length=1, max_length=100)
     phone: str = Field(max_length=40)
-    plan: str | None = Field(default=None, max_length=120)
 
     @field_validator("phone")
     @classmethod
@@ -104,27 +97,9 @@ class Clinic(Model):
     emergency_service: Literal["unknown", "provider_reported"] = "unknown"
     services: list[str] = Field(default_factory=list)
     reasons: list[str] = Field(default_factory=list)
-    opening_hours: list[str] = Field(default_factory=list, max_length=14)
-    source: Literal["google_places", "gemini_maps", "mapify", "openstreetmap"]
+    source: Literal["google_places", "mapify", "osm"]
     retrieved_at: str
     availability_note: str = "Call to confirm opening hours, services, and whether the clinic can see your cat."
-
-
-class ClinicSearchRequest(Model):
-    """Clinic lookup on its own: only coordinates leave the server, never symptoms."""
-    location: Location
-    radius_km: float = Field(default=10, ge=0.5, le=50)
-    language: str = Field(default="en", pattern=r"^[a-z]{2}(?:-[A-Z]{2})?$")
-    share_location: bool = False
-
-
-class ClinicSearchResult(Model):
-    status: Literal["complete", "unavailable"]
-    clinics: list[Clinic]
-    warnings: list[str] = Field(default_factory=list)
-    elapsed_ms: int
-    search_url: str
-    completeness: str
 
 
 ANALYSIS_TYPES = ("daily_summary", "weekly_report", "monthly_report", "health_prediction", "trend_analysis", "behavior_pattern", "vet_recommendation", "comparison", "multi_cat_comparison", "anomaly_detection")
@@ -149,7 +124,6 @@ class LegacyRequest(Model):
 class InsuranceResult(Model):
     company: str
     phone: str
-    plan: str | None = None
     call_url: str
     source: Literal["user_provided"]
     coverage: Literal["unconfirmed"]

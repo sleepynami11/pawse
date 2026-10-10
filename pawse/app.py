@@ -11,8 +11,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from .models import CareRequest, LegacyRequest, CareResult, ClinicSearchRequest, ClinicSearchResult
-from .service import care_events, find_clinics
+from .models import CareRequest, LegacyRequest, CareResult
+from .service import care_events
 from .legacy import capabilities, legacy_events
 from .voice import router as voice_router
 from .live import router as live_router
@@ -81,13 +81,15 @@ async def get_capabilities():
 async def create_care(payload: CareRequest, request: Request, stream: bool = False):
     prune()
     owner = request.state.owner
-    if owner in active or len(active) >= 5:
+    mine = sum(1 for a in active if a == owner or a.startswith(owner + "#"))
+    if mine >= int(os.getenv("PAWSE_SESSION_CONCURRENCY", "1")) or len(active) >= 5:
         raise HTTPException(429, "A care request is already active; try again shortly")
     if len(records) >= MAX_RECORDS:
         oldest = min(records, key=lambda k: records[k]["created"])
         del records[oldest]
     request_id = secrets.token_urlsafe(24)
-    active.add(owner)
+    slot = f"{owner}#{request_id}"
+    active.add(slot)
     async def events():
         try:
             yield {"type": "created", "request_id": request_id}
@@ -97,7 +99,7 @@ async def create_care(payload: CareRequest, request: Request, stream: bool = Fal
                     remember(owner, event)
                 yield event
         finally:
-            active.discard(owner)
+            active.discard(slot)
     if stream:
         async def body():
             async for event in events():
@@ -108,26 +110,6 @@ async def create_care(payload: CareRequest, request: Request, stream: bool = Fal
         if event["type"] == "result":
             result = event
     return JSONResponse(CareResult.model_validate(result).model_dump(), status_code=201)
-
-
-# Clinic lookups get their own small concurrency budget instead of the one-care-request-per-owner lock.
-clinic_lookups: dict[str, int] = {}
-
-
-@app.post("/api/v1/clinics/search", response_model=ClinicSearchResult)
-async def search_clinics(payload: ClinicSearchRequest, request: Request):
-    if not payload.share_location:
-        raise HTTPException(400, "Location sharing consent is required to find nearby clinics")
-    owner = request.state.owner
-    if clinic_lookups.get(owner, 0) >= 2 or sum(clinic_lookups.values()) >= 10:
-        raise HTTPException(429, "Clinic searches are already running; try again shortly")
-    clinic_lookups[owner] = clinic_lookups.get(owner, 0) + 1
-    try:
-        return await find_clinics(payload)
-    finally:
-        clinic_lookups[owner] -= 1
-        if not clinic_lookups[owner]:
-            del clinic_lookups[owner]
 
 
 @app.get("/api/v1/care/requests/{request_id}", response_model=CareResult)
