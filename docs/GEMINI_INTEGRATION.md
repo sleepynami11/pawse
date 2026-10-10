@@ -1,6 +1,8 @@
 # Gemini integration plan
 
-This is a migration guide for the imported backend, not an implemented integration.
+The unified app in `pawse/providers.py` now calls Gemini directly for structured text and optional image input. A real structured text request succeeded with `gemini-3-flash-preview`; photo requests remain to be validated with a real cat image. The root `.env` is loaded by `pawse/app.py`.
+
+The remainder of this document describes migration work still needed if you want the pre-existing backend itself to use Gemini. That legacy backend continues to use OpenAI/OpenRouter.
 
 ## Get the hackathon key
 

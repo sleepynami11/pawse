@@ -1,0 +1,290 @@
+{
+  "intents": [
+    {
+      "id": "emergency_alert",
+      "description": "Emergency health alert",
+      "category": "emergency",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "device_offline",
+      "description": "Device offline alert",
+      "category": "emergency",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "health_consultation",
+      "description": "Health consultation (comprehensive)",
+      "category": "health",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "medical_query",
+      "description": "Medical health query",
+      "category": "health",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "comprehensive_diagnosis",
+      "description": "Comprehensive diagnosis",
+      "category": "health",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "vet_recommendation",
+      "description": "Veterinary recommendation",
+      "category": "health",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "status_query",
+      "description": "Status query (current or daily)",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "daily_analysis",
+      "description": "Daily analysis report",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "weekly_report",
+      "description": "Weekly report",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "monthly_report",
+      "description": "Monthly report",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "health_prediction",
+      "description": "Health prediction",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "behavior_pattern",
+      "description": "Behavior pattern analysis",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "trend_analysis",
+      "description": "Trend analysis",
+      "category": "analysis",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "daily_care_advice",
+      "description": "Daily care and nutrition advice",
+      "category": "care",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "care_advice",
+      "description": "Daily care advice",
+      "category": "care",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "dietary_consultation",
+      "description": "Dietary consultation",
+      "category": "care",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "behavior_training",
+      "description": "Behavior training",
+      "category": "care",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "prevention_care",
+      "description": "Prevention care",
+      "category": "care",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "status_summary",
+      "description": "Status summary",
+      "category": "iot",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "prey_query",
+      "description": "Prey detection query",
+      "category": "iot",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "location_query",
+      "description": "Location query",
+      "category": "iot",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "collar_ingestion",
+      "description": "Collar data ingestion",
+      "category": "iot",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "cat_door_event",
+      "description": "Cat door event processing",
+      "category": "iot",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "pain_detection",
+      "description": "Pain detection alert",
+      "category": "emergency",
+      "needs_rag": true,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    },
+    {
+      "id": "direct_reply",
+      "description": "Direct reply",
+      "category": "simple",
+      "needs_rag": false,
+      "status": "legacy_dependency_required",
+      "entrypoint": "/api/v1/agent/requests"
+    }
+  ],
+  "tools": [
+    {
+      "id": "get_collar_activity",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_collar_bcg",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_collar_outdoor",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_collar_temperature",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_device_events",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_cat_door_passages",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_cat_expressions",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_health_summary",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_alerts",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_user_cats",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "get_full_context",
+      "category": "device_data_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "analyze_cat_image",
+      "category": "ai_analysis_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "analyze_cat_health",
+      "category": "ai_analysis_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    },
+    {
+      "id": "analyze_bcg_data",
+      "category": "ai_analysis_functions",
+      "status": "legacy_dependency_required",
+      "entrypoint": "legacy chat routing"
+    }
+  ]
+}

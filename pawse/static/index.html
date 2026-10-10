@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pawse — a little help, right when it matters</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/">🐾 <span>pawse</span></a>
+      <p class="small">A little help.<br />Right when it matters.</p>
+      <nav>
+        <a href="#care" class="selected">✦ &nbsp; Care now</a
+        ><a href="#results">⌖ &nbsp; Nearby vets</a
+        ><a href="#insurance">♡ &nbsp; Insurance</a
+        ><a href="#agent">◉ &nbsp; My cat's agent</a>
+      </nav>
+      <div class="sidebar-footer">
+        Built for Tech Europe<br /><span>Hackathon prototype · MIT</span>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <span class="pill">● &nbsp; YOUR CAT'S CARE COMPANION</span
+        ><span class="location-tag"
+          >Zurich, Switzerland · editable location</span
+        >
+      </header>
+      <section id="care" class="intro">
+        <div>
+          <p class="eyebrow">LET'S TAKE THE NEXT STEP, TOGETHER</p>
+          <h1>A worried moment.<br /><em>A clearer next step.</em></h1>
+          <p>
+            Tell Pawse what's happening. Get help preparing for a vet call,
+            finding nearby care, and keeping the important details together.
+          </p>
+        </div>
+        <div class="cat" aria-hidden="true">
+          <div class="ears">▲ &nbsp; ▲</div>
+          <div class="face">• ᴥ •</div>
+          <div class="cat-note">I'm here to help.</div>
+        </div>
+      </section>
+      <div class="notice">
+        <strong>Need urgent help?</strong> If your cat is struggling to breathe,
+        collapses, cannot urinate, or may have been poisoned, contact an
+        emergency vet now. Don't wait for these results.
+      </div>
+      <div class="workspace">
+        <form id="care-form" class="panel">
+          <div class="section-heading">
+            <h2>What’s happening?</h2>
+            <span>01 / Tell us</span>
+          </div>
+          <label
+            >Your cat's name<input
+              id="cat-name"
+              maxlength="80"
+              value="My cat"
+              required
+          /></label>
+          <label
+            >Describe your concern<textarea
+              id="query"
+              maxlength="4000"
+              rows="4"
+              placeholder="What changed? When did it start? Is your cat eating, drinking, and using the litter tray?"
+            ></textarea>
+          </label>
+          <div class="input-actions">
+            <label class="button secondary upload"
+              >＋ Add a photo<input
+                type="file"
+                id="photo"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                hidden /></label
+            ><button type="button" id="dictate" class="secondary">
+              ◉ Dictate
+            </button>
+          </div>
+          <p class="small" id="photo-status">
+            Optional · JPEG, PNG or WebP · up to 3 MB
+          </p>
+          <img id="photo-preview" hidden alt="Selected cat photo" /><button
+            id="remove-photo"
+            type="button"
+            class="text-button"
+            hidden
+          >
+            Remove photo
+          </button>
+          <details>
+            <summary>Any of these warning signs?</summary>
+            <div class="checks" id="red-flags">
+              <label
+                ><input
+                  type="checkbox"
+                  value="breathing_difficulty"
+                />Difficulty breathing</label
+              ><label><input type="checkbox" value="collapse" />Collapse</label
+              ><label><input type="checkbox" value="seizure" />Seizure</label
+              ><label
+                ><input type="checkbox" value="unable_to_urinate" />Unable to
+                urinate</label
+              ><label
+                ><input type="checkbox" value="suspected_poisoning" />Possible
+                poisoning</label
+              ><label
+                ><input type="checkbox" value="major_trauma" />Major
+                injury</label
+              >
+            </div>
+          </details>
+          <div class="section-heading">
+            <h2>Find care nearby</h2>
+            <button id="locate" class="text-button" type="button">
+              Use my location ↗
+            </button>
+          </div>
+          <p id="location-status" class="small">
+            Default: Zurich city centre. Adjust or use your location.
+          </p>
+          <div class="row">
+            <label
+              >Latitude<input
+                id="lat"
+                type="number"
+                min="-90"
+                max="90"
+                step="any"
+                value="47.3769"
+                required /></label
+            ><label
+              >Longitude<input
+                id="lng"
+                type="number"
+                min="-180"
+                max="180"
+                step="any"
+                value="8.5417"
+                required /></label
+            ><label
+              >Radius (km)<input
+                id="radius"
+                type="number"
+                min="0.5"
+                max="50"
+                step="0.5"
+                value="10"
+            /></label>
+          </div>
+          <details id="insurance">
+            <summary>
+              Insurance contact <span class="small">optional</span>
+            </summary>
+            <label
+              >Insurance company<input
+                id="insurer"
+                maxlength="100"
+                placeholder="As shown on your policy" /></label
+            ><label
+              >Policy contact number<input
+                id="insurance-phone"
+                type="tel"
+                maxlength="40"
+                placeholder="+41 …"
+            /></label>
+            <p class="small">
+              Use your policy’s contact number. Coverage must be confirmed with
+              your insurer. No policy number is needed.
+            </p>
+          </details>
+          <div class="consents">
+            <label
+              ><input id="ai-consent" type="checkbox" />Share my concern and
+              optional photo with Google Gemini for AI assistance.</label
+            ><label
+              ><input id="location-consent" type="checkbox" />Share these
+              coordinates with the configured clinic search provider.</label
+            >
+          </div>
+          <button type="submit" id="submit" class="primary">
+            Find my next step <span>↗</span>
+          </button>
+          <p class="small">
+            Target: under a minute. Partial results appear if a service is
+            unavailable. This does not book care or place a call.
+          </p>
+        </form>
+        <section id="results" class="results">
+          <div class="section-heading">
+            <h2>Your care plan</h2>
+            <span>02 / Take action</span>
+          </div>
+          <div id="progress" role="status" aria-live="polite"></div>
+          <div id="assessment" class="panel empty">
+            <span class="large-icon">✦</span>
+            <h3>A little clarity starts here.</h3>
+            <p>
+              Your next steps, nearby clinics, and call notes will appear
+              together.
+            </p>
+          </div>
+          <div id="clinics"></div>
+          <div id="insurance-result"></div>
+          <div id="handoff" hidden class="panel">
+            <h3>Ready for your vet call</h3>
+            <pre id="handoff-text"></pre>
+            <div class="input-actions">
+              <button id="copy" type="button" class="secondary">
+                Copy notes</button
+              ><button id="read-aloud" type="button" class="secondary">
+                Read aloud</button
+              ><button id="delete" type="button" class="text-button">
+                Clear this result
+              </button>
+            </div>
+          </div>
+          <p id="limitations" class="small"></p>
+        </section>
+      </div>
+      <section id="agent" class="panel agent-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">YOUR EXISTING CATAGENT</p>
+            <h2>One home for the rest of their care.</h2>
+          </div>
+          <span class="pill">CONNECTED CAPABILITIES</span>
+        </div>
+        <p>
+          Daily care, device context, reports, and multi-cat insights. Existing
+          features need their backend services; availability is shown below.
+        </p>
+        <div id="capabilities" class="capabilities"></div>
+        <details>
+          <summary>Explore existing agent capabilities</summary>
+          <div id="catalog" class="capabilities"></div>
+        </details>
+        <form id="agent-form">
+          <div class="row">
+            <label
+              >Cat ID<input
+                id="legacy-cat"
+                type="number"
+                min="1"
+                value="1" /></label
+            ><label
+              >Task<select id="legacy-task">
+                <option value="chat">Chat with CatAgent</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Message<textarea
+              id="legacy-message"
+              rows="2"
+              placeholder="Ask about your cat’s care or device data"
+            ></textarea></label
+          ><button class="secondary" id="legacy-submit">
+            Ask existing agent
+          </button>
+          <p id="legacy-status" class="small"></p>
+        </form>
+        <pre id="legacy-result"></pre>
+      </section>
+      <footer>
+        Care navigation, not a diagnosis. Phone numbers and availability come
+        from providers or you; confirm before travelling.<br /><a
+          href="/docs"
+          target="_blank"
+          rel="noopener"
+          >API documentation</a
+        >
+        · <a href="https://github.com/yyyuanfish/pawse">Source code</a> · Photos
+        are processed per request and are not stored by Pawse. Result summaries
+        expire after 15 minutes.
+      </footer>
+    </main>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

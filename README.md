@@ -1,101 +1,100 @@
 # Pawse 🐾
 
-**A little cat. A helping hand.**
+**A little help. Right when it matters.**
 
-A voice-first AI cat companion that aims to help you get things done online. Pawse is the project name; **CatAgent** is the working concept behind its assistant.
+An integrated cat-care app that helps you prepare for a vet call, discover nearby veterinary clinics, organize insurance contacts, and access an existing CatAgent from one place. The initial demo is centred on Zurich, Switzerland; users can change the location.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Stage: Hackathon prototype](https://img.shields.io/badge/Stage-Hackathon_prototype-orange.svg)](docs/SPEC.md)
 [![Built for: Tech Europe](https://img.shields.io/badge/Built_for-Tech_Europe_AI_Hackathon-purple.svg)](docs/HACKATHON.md)
-[![Planned: Gemini Live API](https://img.shields.io/badge/Planned-Gemini_Live_API-4285F4.svg)](https://ai.google.dev/gemini-api/docs/live-api)
 
-[Product spec](docs/SPEC.md) · [Hackathon notes](docs/HACKATHON.md) · [Contributing](CONTRIBUTING.md)
+[API contract](docs/API_CONTRACT.md) · [Mapify integration](docs/MAPIFY_ADAPTER.md) · [Capabilities](docs/CAPABILITIES.md) · [Contributing](CONTRIBUTING.md)
 
 ## Built for the hackathon
 
-**Pawse is being built specifically for the Tech Europe AI Hackathon, sponsored by Google DeepMind.** Our goal is to turn a friendly cat interface into a useful assistant through Gemini-powered conversation, real-time voice, and tool calling.
+Pawse is being built specifically for the **Tech Europe AI Hackathon, sponsored by Google DeepMind**, as described by the team. It is an independent participant project, not an endorsed Google product.
 
-The repository includes a pre-existing CatAgent backend imported as a starting point. The voice interface and Gemini integration are the planned hackathon extension; the full backend was not created during the event.
+The cat-care and IoT backend in `backend/` is pre-existing work. The unified Pawse interface, care-navigation API, Gemini text/photo adapter and Mapify/Places adapters are the hackathon extension. See the [source import review](docs/IMPORT_REVIEW.md).
 
-This is an independent participant project. Event sponsorship does not imply endorsement of Pawse by Google or Google DeepMind.
+## The experience
 
-## The idea
+1. Describe your concern, optionally attach a cat photo, and select any warning signs.
+2. Receive immediate safety guidance while Gemini and clinic search run concurrently.
+3. Review nearby clinics, provider-derived phone numbers, map links and transparent ranking reasons.
+4. Contact the insurer using the phone number you entered from your policy.
+5. Copy a concise summary for the vet, or open the existing CatAgent for other care tasks.
 
-Tell your cat what you need. Let it call an appropriate tool. Hear what happened.
-
-Instead of making users navigate another dashboard for every small task, we want Pawse to offer a conversational entry point to online assistance, with a visible record of its actions.
-
-**Target demo — not implemented yet:**
-
-> “Pawse, summarize this page in three points.”
->
-> Pawse retrieves the page through an application tool, summarizes its contents, and speaks the result while showing the summary on screen.
+The target is useful next steps within one minute. The app does not promise a diagnosis, a complete directory, an appointment, an answered call or an insurance decision. Clicking a call action opens your device's dialer; the app does not place calls itself.
 
 ## Current status
 
-This repository contains project documentation and selected pre-existing Python backend source in [`backend/`](backend/README.md). The backend implements cat-care and IoT workflows using FastAPI and PocketFlow, with OpenAI/OpenRouter calls. It has not been verified end to end in this repository. There is no deployed demo or verified Gemini integration yet. The general online-task and voice experiences below remain planned.
-
 | Capability | Status |
 | --- | --- |
-| Project documentation and MIT license | Available |
-| Existing cat-care / IoT backend source | Imported; runtime not verified |
-| Cat companion interface | Planned |
-| Real-time voice conversation with Gemini Live API | Planned |
-| One useful online task through function calling | Planned |
-| On-screen transcript and task result | Planned |
-| Clear listening, working, and speaking states | Planned |
+| Responsive English web app and unified FastAPI API | Implemented; local workflow checked |
+| Gemini text/photo adapter | Implemented; real structured text request verified |
+| Photo attachment and validation | Implemented; real cat-photo analysis not yet tested |
+| Initial warning-sign guidance and partial results | Implemented; tested |
+| Nearby clinics through MapifyAI or Google Places | Adapters tested with synthetic responses; live provider configuration needed |
+| Insurance contact, dial links, map links, call notes | Implemented; insurance details are user-provided |
+| 25 existing intents, 14 tools and 10 analysis types | Catalogued; chat/report bridge implemented, legacy deployment needed |
+| Browser dictation and read-aloud | Browser-dependent; not Gemini Live |
+| Gemini Live voice, bookings, insurer coverage lookup | Not implemented |
 
-## How we plan to build it
+No MapifyAI source or datasets are bundled. Its API conventions inform our independent adapter. Clinic ranking currently uses reported opening state, proximity and rating; Gemini helps organize the concern and questions, without inventing clinic facts.
 
-```mermaid
-flowchart TD
-    User[User: microphone and chat UI] <--> Live[Gemini Live API]
-    Backend[Application backend] -->|Short-lived session token| User
-    Live -->|Function call received by app| Tools[CatAgent tool dispatcher]
-    Tools -->|Validated task| Backend
-    Backend -->|Tool result through app| Live
-    Live -->|Spoken response| User
+## Run locally
+
+Python **3.11+**:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+# If you do not already have a local .env:
+cp -n .env.example .env
+# Fill in the relevant server-side settings.
+uvicorn pawse.app:app --host 127.0.0.1 --port 8765
 ```
 
-- **Conversation:** Gemini Live API for streaming voice input and output.
-- **Actions:** application-owned tools that execute a task and return a real result.
-- **Authentication:** the backend holds the Gemini API key and issues ephemeral tokens for browser Live sessions.
-- **Interface:** a cat companion with a transcript, task status, and visible results.
+Open [the local app](http://127.0.0.1:8765) or [interactive API docs](http://127.0.0.1:8765/docs).
 
-The imported backend uses Python, FastAPI, and PocketFlow. The frontend framework, Gemini model, and first demo tool are still to be selected. Function calling proposes actions; our application must implement and execute the tools.
+- `GEMINI_API_KEY`: obtained from the assigned hackathon project in [AI Studio](https://aistudio.google.com/api-keys).
+- `GEMINI_MODEL`: default `gemini-3-flash-preview`, verified with the development project's key; availability varies by project.
+- `MAPIFY_BASE_URL` **or** `GOOGLE_PLACES_API_KEY`: required for live clinic results. Gemini access does not automatically enable Google Places.
+- `LEGACY_AGENT_BASE_URL`, `LEGACY_AGENT_USER_ID`, `LEGACY_AGENT_CAT_IDS`: optional bridge settings. Configure and run the [existing backend](backend/README.md) separately.
 
-## Getting started
+The app remains useful without every provider: it returns explicit partial results, policy contact actions and a map-search link. It never fills the gaps with fake clinic listings.
 
-Start with the [backend setup outline](backend/README.md), [source import review](docs/IMPORT_REVIEW.md), and [Gemini migration guide](docs/GEMINI_INTEGRATION.md).
+This version is for local single-user development. It intentionally accepts localhost hosts only. Add real identity, ownership checks and deployment controls before publishing a multi-user service.
 
-The imported backend has a `main.py` entry point, but its dependencies and service integrations have not been tested here. Knowledge collections, credentials, external services, and old deployment files are intentionally excluded. `backend/.env.example` documents the legacy settings; root `.env.example` describes the planned Gemini configuration.
+## Test
 
-Get a Gemini key from [Google AI Studio](https://aistudio.google.com/api-keys). Setting that key alone will not switch the current OpenAI/OpenRouter clients to Gemini; follow the migration guide.
+```sh
+pip install -r requirements-dev.txt
+pytest -q tests
+```
 
-Never put a permanent API key in browser code or commit it to Git. See [Security](SECURITY.md) and the [temporary account notes](docs/HACKATHON.md).
+Tests cover consent boundaries, warning-sign escalation, image validation, provider contracts, partial failures, deadlines, result isolation, phone sanitization and the legacy cat allowlist. Automated tests use synthetic responses and do not consume live API credits.
 
-## MVP roadmap
+## Repository
 
-- [x] Import selected existing backend source and document its provenance.
-- [ ] Validate the backend dependencies and choose one concrete demo task.
-- [ ] Build the cat interface and microphone controls.
-- [ ] Connect a real Gemini Live session.
-- [ ] Implement one tool and send its result back to the model.
-- [ ] Display a transcript and task result.
-- [ ] Handle interruptions, permission errors, and connection failures.
-- [ ] Record a short demo and document reproducible setup steps.
+```text
+pawse/                 New unified app, provider adapters and web UI
+backend/               Selected pre-existing CatAgent backend
+schemas/               Frontend TypeScript contract
+scripts/               Contract generation and verification utilities
+tests/                 Tests for the unified integration
+docs/API_CONTRACT.md   Frontend handoff contract
+docs/openapi.json      Generated OpenAPI schema
+docs/CAPABILITIES.md   Existing feature inventory and dependencies
+```
 
-## Contributing
+## Data handling
 
-Small, focused contributions are welcome. Start with the [contribution guide](CONTRIBUTING.md) or open an issue describing a bug, feature, or hackathon task.
+AI and location sharing are separate opt-ins. Gemini receives the concern and optional photo, not insurance or location. Clinic providers receive location and a generic veterinary search query, not symptoms or images. Photos are not written to disk. Completed summaries are cached in process memory for 15 minutes and can be deleted. Browser dictation may use the browser vendor's service.
 
-## References
-
-- [Gemini Live API](https://ai.google.dev/gemini-api/docs/live-api)
-- [Live API tool calling](https://ai.google.dev/gemini-api/docs/live-api/tools)
-- [Ephemeral tokens](https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens)
-- [Hackathon account instructions](https://goo.gle/hackathon-account)
+Unknown opening hours, clinic services and coverage stay unknown. Third-party provider data must be confirmed directly. The original book corpus, extracted knowledge content, credentials and local backup remain excluded from publication.
 
 ## License
 
-[MIT](LICENSE) — Copyright © 2026 Pawse contributors. Third-party services, models, and assets remain subject to their respective terms and licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
+[MIT](LICENSE) for project contributions. See [third-party notices](THIRD_PARTY_NOTICES.md) for upstream references and exclusions.

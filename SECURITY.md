@@ -13,3 +13,9 @@ Please use this repository's GitHub **Security → Report a vulnerability** opti
 - Avoid logging tokens, private page contents, or raw voice recordings by default.
 - Revoke and replace a leaked key immediately; deleting it from the latest commit does not remove it from history.
 - Replace temporary hackathon credentials before continuing after the event.
+
+## Unified local prototype
+
+The `pawse/` app is bound to localhost and uses session-scoped, short-lived in-memory results. This is not production authentication. Do not remove the host restriction and publish it as a multi-user service without proper identity, cat-ownership checks, request-size enforcement at the proxy, rate limits and a data-retention design.
+
+The imported legacy backend is not automatically exposed by this app. Its user ID and allowed cat IDs are explicitly configured for a single development user. Existing legacy routes still require their own security review before deployment.

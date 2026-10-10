@@ -1,0 +1,133 @@
+# Pawse frontend / backend contract v0.1
+
+Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the running app also serves `/openapi.json` and `/docs`. This contract describes the independent Pawse integration, informed by MapifyAI's request/results and progress-event conventions.
+
+## Runtime and session boundaries
+
+The current app is a **local single-user prototype**. Bind to `127.0.0.1`; host checking accepts only localhost addresses and the test host. This is not a public multi-user deployment. A random HttpOnly, SameSite=Strict browser cookie isolates result retrieval between sessions. It is not a login system. External deployments need real authentication, per-cat ownership authorization, storage and quotas first.
+
+JSON requests are bounded at 4.5 MB by the declared Content-Length; individual photos are validated at 3 MB decoded. Do not expose this prototype directly to untrusted internet traffic. Errors do not echo submitted photo data. No wildcard CORS is enabled.
+
+## Routes
+
+| Method | Path | Behavior |
+| --- | --- | --- |
+| GET | `/health` | Local app health; does not assert upstream readiness |
+| GET | `/capabilities` | New feature configuration plus 25 legacy intents, 14 tools and 10 report types |
+| POST | `/care/requests` | JSON result, HTTP 201; use `?stream=true` for SSE, HTTP 200 |
+| GET | `/care/requests/{id}` | Completed result for the same browser session; HTTP 404 if absent/expired/other session |
+| DELETE | `/care/requests/{id}` | Remove a completed result, HTTP 204 |
+| POST | `/agent/requests` | SSE bridge to configured existing CatAgent |
+
+There is no separate GET search-stream endpoint. Use fetch streaming on the POST response. Polling only works after a result has completed, and a dropped stream is not guaranteed to finish in the background.
+
+## Create a care request
+
+```json
+{
+  "query": "My cat has been eating less since yesterday. What should I tell the vet?",
+  "cat_name": "Mochi",
+  "location": {"lat": 47.3769, "lng": 8.5417},
+  "radius_km": 10,
+  "language": "en",
+  "red_flags": [],
+  "photo": null,
+  "insurance": null,
+  "share_with_ai": true,
+  "share_location": true
+}
+```
+
+- `location` is optional. The interface starts at Zurich city centre and lets the user edit it or request geolocation.
+- `red_flags`: `breathing_difficulty`, `collapse`, `seizure`, `unable_to_urinate`, `suspected_poisoning`, `major_trauma`. A reported flag always makes the final urgency `emergency`; Gemini cannot downgrade it.
+- `photo`: `{ "mime_type": "image/jpeg", "data": "<base64>" }`. JPEG, PNG and WebP only; maximum 3 MB decoded. No arbitrary image URL fetching.
+- `insurance`: `{ "company": "Your insurer", "phone": "+41 ..." }`. Use a real international-format number from the policy; the app validates format, not ownership. No policy number, coverage decision or claim submission is requested.
+- `share_with_ai` permits transmitting the concern, flags and photo to Gemini. Name, location and insurance are omitted from that provider request.
+- `share_location` permits transmitting coordinates and a generic veterinary search query to the configured clinic service. Symptoms, photo and insurance are not sent to MapifyAI or Places.
+- Empty input without a photo or warning sign returns HTTP 422.
+
+## Result semantics
+
+A `CareResult` contains:
+
+| Field | Meaning |
+| --- | --- |
+| `request_id` | Opaque identifier; do not log/share care links publicly |
+| `status` | `complete` when both providers finish; `partial` otherwise. An empty clinic list can still be a completed search. |
+| `assessment` | `urgency`, `summary`, follow-up questions, services to ask about, `source` and disclaimer |
+| `clinics` | Provider-derived clinics; may be empty. Not an exhaustive directory. |
+| `insurance` | User-provided contact with a validated `tel:` URI; coverage always `unconfirmed` |
+| `handoff` | Owner concern and care-navigation summary for the vet call |
+| `providers` | Per-stage `complete`, `unavailable` or `timeout` |
+| `warnings` | Safe codes for missing configuration, consent, provider errors or deadline |
+| `elapsed_ms` | Actual elapsed orchestration time |
+| `target_seconds` | 60-second product target, not a guarantee |
+| `search_url` | Google Maps search link, opened only by user action |
+
+Urgency is `emergency`, `contact_vet` or `unknown`. The app never returns a diagnosis or a claim that a photo rules out illness. The initial safety response is deterministic; provider failure does not suppress it.
+
+Clinic records include `id`, `name`, `address`, `phone`, `call_url`, `maps_url`, `website`, coordinates, straight-line `distance_km`, rating, nullable `open_now`, services, reasons, source and retrieval time. `open_now=null` means unknown. `emergency_service=unknown` is the default: generic veterinary listings do not prove emergency capability. Services suggested by AI are questions for the clinic, not claims about what it offers.
+
+Ranking is deterministic: provider-reported open clinics, then unknown, then reported closed; nearest first within each group, rating as a tie-breaker. AI helps organize concerns and questions; it does not fabricate provider facts or diagnose. Travel times, booking slots and insurer acceptance are not implemented.
+
+## SSE wire format
+
+Each event is `data: <JSON>\n\n`, without an `event:` field:
+
+```text
+data: {"type":"created","request_id":"..."}
+
+data: {"type":"safety","assessment":{"...":"..."}}
+
+data: {"type":"insurance","insurance":null}
+
+data: {"type":"progress","agent":"clinics","status":"starting"}
+
+data: {"type":"clinics","clinics":[]}
+
+data: {"type":"progress","agent":"clinics","status":"complete"}
+
+data: {"type":"result","request_id":"...","status":"partial","...":"..."}
+
+```
+
+`assessment`, `clinics`, `progress`, and `heartbeat` can interleave. Treat the final `result` as authoritative. The application runs assessment and discovery concurrently and cancels remaining work at a 40-second internal deadline, leaving room within the one-minute interaction target. Insurance contact and initial safety guidance are sent before these providers complete.
+
+## Existing Agent bridge
+
+Chat:
+
+```json
+{"mode":"chat","cat_id":1,"message":"Summarize my cat's recent activity","analysis_type":null,"time_range":"24h"}
+```
+
+Analysis:
+
+```json
+{"mode":"analysis","cat_id":1,"message":"","analysis_type":"daily_summary","time_range":"24h"}
+```
+
+`analysis_type` supports all ten existing factory values: `daily_summary`, `weekly_report`, `monthly_report`, `health_prediction`, `trend_analysis`, `behavior_pattern`, `vet_recommendation`, `comparison`, `multi_cat_comparison`, `anomaly_detection`.
+
+The server selects `LEGACY_AGENT_USER_ID`; the client cannot choose another user. `cat_id` must be in the server's `LEGACY_AGENT_CAT_IDS` allowlist. This is a local development boundary, not production identity management.
+
+Chat is translated into legacy `POST /chat`, then `GET /chat/stream/{stream_id}`. Analysis calls legacy `POST /analyze/{user_id}`. Both old named SSE events and data-only events are wrapped as:
+
+```json
+{"type":"legacy","event":"result","data":{"...":"legacy payload"}}
+```
+
+The gateway does not duplicate clinical, device or report logic. Old WebSocket push, device webhooks, video ingestion and direct storage mutation are not exposed by this new UI. They remain in the existing source for later authenticated integration.
+
+## Failure and retention
+
+- 403: cross-origin mutation or disallowed legacy cat.
+- 404: completed care result missing/expired or belongs to another session.
+- 413: declared request body too large.
+- 422: invalid request (sanitized field messages).
+- 429: same session already has active care work, or five global care requests are active.
+- 503: legacy bridge not configured.
+- Care provider failures return useful `partial` results, not fabricated replacements.
+- Legacy SSE failures return `{"type":"error","code":"legacy_agent_unavailable",...}`.
+
+Pawse keeps at most 100 completed summaries in process memory for 15 minutes, pruning expired entries on subsequent requests. No photos are written to disk or stored in these results. Process restart clears the cache. Gemini/provider retention is governed separately by those services; browser dictation may use the browser vendor's speech service and requires a separate confirmation.

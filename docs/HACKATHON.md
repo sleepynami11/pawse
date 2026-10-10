@@ -6,15 +6,13 @@ The exact event edition, location, dates, submission URL, and judging criteria h
 
 ## Working pitch
 
-> Pawse is a voice-first AI cat companion that helps you complete small online tasks. Tell it what you need, watch it use a tool, and hear the result.
+> Pawse helps cat owners turn a worried moment into a clear next step: describe a concern or add a photo, find nearby veterinary care, keep insurance contacts ready, and prepare for a vet call in one app.
 
-## Intended use of Google technology
+## Technology and prior work
 
-- Gemini Live API for real-time voice conversation.
-- Function calling to connect spoken requests to application tools.
-- A hackathon-provided Gemini project for development, if assigned.
+The new unified app uses Gemini for structured text/photo care navigation. It includes independent MapifyAI and Google Places adapters, and a bridge to the team's pre-existing CatAgent. Real Gemini text connectivity has been verified. Live clinic discovery requires provider configuration; continuous Gemini Live voice remains planned.
 
-These integrations are planned; there is no verified working demo yet. The repository includes a pre-existing CatAgent backend. Its source must be disclosed as prior work; new Gemini and voice work should be identified separately in the submission. See [source import review](IMPORT_REVIEW.md).
+The existing backend predates this event and must be disclosed as prior work. Identify the new `pawse/` interface and integration work separately in the submission. See [source import review](IMPORT_REVIEW.md).
 
 ## Temporary account setup
 

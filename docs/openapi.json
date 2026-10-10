@@ -1,0 +1,840 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pawse Care API",
+    "description": "Cat care navigation, nearby veterinary clinics, insurance contacts, and a bridge to the existing CatAgent.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "summary": "Get Capabilities",
+        "operationId": "get_capabilities_api_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/care/requests": {
+      "post": {
+        "summary": "Create Care",
+        "operationId": "create_care_api_v1_care_requests_post",
+        "parameters": [
+          {
+            "name": "stream",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Stream"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "SSE when stream=true",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/care/requests/{request_id}": {
+      "get": {
+        "summary": "Get Care",
+        "operationId": "get_care_api_v1_care_requests__request_id__get",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Care",
+        "operationId": "delete_care_api_v1_care_requests__request_id__delete",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/requests": {
+      "post": {
+        "summary": "Agent Request",
+        "operationId": "agent_request_api_v1_agent_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Index",
+        "operationId": "index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Assessment": {
+        "properties": {
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "emergency",
+              "contact_vet",
+              "unknown"
+            ],
+            "title": "Urgency",
+            "default": "unknown"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1800,
+            "title": "Summary"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Questions"
+          },
+          "services_to_ask_about": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Services To Ask About"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "reported_warning_signs",
+              "gemini",
+              "fallback"
+            ],
+            "title": "Source",
+            "default": "fallback"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "This is care navigation, not a diagnosis. A photo cannot rule out an emergency."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "Assessment"
+      },
+      "CareRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Query",
+            "default": ""
+          },
+          "cat_name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Cat Name",
+            "default": "My cat"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "radius_km": {
+            "type": "number",
+            "maximum": 50.0,
+            "minimum": 0.5,
+            "title": "Radius Km",
+            "default": 10
+          },
+          "language": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(?:-[A-Z]{2})?$",
+            "title": "Language",
+            "default": "en"
+          },
+          "red_flags": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "breathing_difficulty",
+                "collapse",
+                "seizure",
+                "unable_to_urinate",
+                "suspected_poisoning",
+                "major_trauma"
+              ]
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Red Flags"
+          },
+          "photo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Photo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Insurance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "share_with_ai": {
+            "type": "boolean",
+            "title": "Share With Ai",
+            "default": false
+          },
+          "share_location": {
+            "type": "boolean",
+            "title": "Share Location",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CareRequest"
+      },
+      "CareResult": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "result",
+            "title": "Type",
+            "default": "result"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "partial"
+            ],
+            "title": "Status"
+          },
+          "assessment": {
+            "$ref": "#/components/schemas/Assessment"
+          },
+          "clinics": {
+            "items": {
+              "$ref": "#/components/schemas/Clinic"
+            },
+            "type": "array",
+            "title": "Clinics"
+          },
+          "insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InsuranceResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "handoff": {
+            "type": "string",
+            "title": "Handoff"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "providers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Providers"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "title": "Elapsed Ms"
+          },
+          "target_seconds": {
+            "type": "integer",
+            "title": "Target Seconds"
+          },
+          "search_url": {
+            "type": "string",
+            "title": "Search Url"
+          },
+          "completeness": {
+            "type": "string",
+            "title": "Completeness"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "assessment",
+          "clinics",
+          "handoff",
+          "warnings",
+          "providers",
+          "elapsed_ms",
+          "target_seconds",
+          "search_url",
+          "completeness"
+        ],
+        "title": "CareResult"
+      },
+      "Clinic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address",
+            "default": ""
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "call_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Call Url"
+          },
+          "maps_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maps Url"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "open_now": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Now"
+          },
+          "emergency_service": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "provider_reported"
+            ],
+            "title": "Emergency Service",
+            "default": "unknown"
+          },
+          "services": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "google_places",
+              "mapify"
+            ],
+            "title": "Source"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "title": "Retrieved At"
+          },
+          "availability_note": {
+            "type": "string",
+            "title": "Availability Note",
+            "default": "Call to confirm opening hours, services, and whether the clinic can see your cat."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "retrieved_at"
+        ],
+        "title": "Clinic"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Insurance": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Company"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Phone"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company",
+          "phone"
+        ],
+        "title": "Insurance"
+      },
+      "InsuranceResult": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "call_url": {
+            "type": "string",
+            "title": "Call Url"
+          },
+          "source": {
+            "type": "string",
+            "const": "user_provided",
+            "title": "Source"
+          },
+          "coverage": {
+            "type": "string",
+            "const": "unconfirmed",
+            "title": "Coverage"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company",
+          "phone",
+          "call_url",
+          "source",
+          "coverage",
+          "questions",
+          "note"
+        ],
+        "title": "InsuranceResult"
+      },
+      "LegacyRequest": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "chat",
+              "analysis"
+            ],
+            "title": "Mode",
+            "default": "chat"
+          },
+          "cat_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Cat Id"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Message",
+            "default": ""
+          },
+          "analysis_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis Type"
+          },
+          "time_range": {
+            "type": "string",
+            "enum": [
+              "24h",
+              "7d",
+              "30d"
+            ],
+            "title": "Time Range",
+            "default": "24h"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cat_id"
+        ],
+        "title": "LegacyRequest"
+      },
+      "Location": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "Location"
+      },
+      "Photo": {
+        "properties": {
+          "mime_type": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "title": "Mime Type"
+          },
+          "data": {
+            "type": "string",
+            "maxLength": 4200000,
+            "title": "Data"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mime_type",
+          "data"
+        ],
+        "title": "Photo"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

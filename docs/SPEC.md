@@ -1,68 +1,31 @@
-# Pawse — initial product spec
+# Pawse product scope
 
-Status: draft for the Tech Europe AI Hackathon. This is a proposed scope, not an implementation report.
+## Goal
 
-## Product goal
+Give a worried cat owner useful next steps in one app within roughly a minute: prepare a vet call, locate nearby care, find their insurer's contact, and keep relevant context together. Initial demo: Zurich, Switzerland; insurance contact is entered by the owner.
 
-Make a small online task accessible through a friendly, voice-driven cat assistant. The first demo should prove a complete path from a spoken request to a tool result and spoken response.
+## Implemented vertical slice
 
-## Primary user story
+- English responsive web UI with concern input, optional photo, warning signs, location and insurer contact.
+- Gemini text/photo API adapter; real structured text connectivity verified.
+- Immediate warning-sign response followed by concurrent assessment and clinic search.
+- MapifyAI and Google Places adapters, safe phone links, map links and provider-attributed results.
+- Copyable call summary, short-lived session-scoped results and explicit partial failure states.
+- Complete inventory of imported agent intents/tools and a bridge for its chat and report routes.
 
-As a user, I can ask Pawse to perform one supported online task, see whether it is working, and receive an understandable result without navigating a complex interface.
+## Product boundaries
 
-## Proposed demo
+The one-minute target concerns organizing next steps, not completing treatment, reaching a clinic, securing an appointment or approving insurance. Unknown clinic availability is never treated as open. A generic veterinary listing does not establish emergency or specialist capability. Photo analysis cannot establish that a cat is safe.
 
-Read a public web page and summarize it in three points. This is a candidate first task; the team should confirm it before implementation.
+AI organizes information and questions; current clinic ranking is deterministic. No automated calling, insurance eligibility inference, claim filing, booking or medication advice is implemented.
 
-## MVP requirements
+## Remaining integrations
 
-| Area | Requirement | Completion evidence |
-| --- | --- | --- |
-| Voice | Start and stop microphone capture; receive spoken replies | Live interaction with the configured Gemini model |
-| Tool use | Dispatch one supported function and return its result | Visible tool result from a real execution |
-| Interface | Idle, listening, working, speaking, and error states | State transitions during the demo |
-| Transparency | Show transcript and result | User can inspect what was requested and returned |
-| Failure handling | Handle denied microphone permission, dropped sessions, and failed tools | Useful error message and recovery action |
-| Credentials | Keep permanent keys on the backend | Browser receives only a constrained short-lived token |
+1. Configure a real Mapify backend or Google Places project and validate Zurich results and phone data.
+2. Bring up the pre-existing agent with the required storage/device/model services; test each intended demo feature.
+3. Replace excluded knowledge collections with permitted, reviewed sources.
+4. Connect Gemini Live for continuous voice; browser dictation/read-aloud are only optional conveniences.
+5. Add authenticated users, cat ownership and persistent care profiles before public deployment.
+6. Validate clinic/insurer service information with authoritative data partners.
 
-## Proposed integration
-
-1. User starts a voice session.
-2. Backend issues a short-lived Live API token.
-3. Browser establishes a Live connection and streams microphone audio.
-4. A function call is routed through the app to its tool dispatcher.
-5. Backend validates arguments and performs the supported operation.
-6. App returns the actual tool result to Live; Pawse speaks and displays the outcome.
-
-The app must not report success before the tool confirms it. Operations with external side effects should have an explicit user confirmation step. The first MVP can avoid those operations entirely by using a read-only task.
-
-For a public-page retrieval tool, validate URLs and block private/local network destinations, including redirects; bound response size and request time. Treat page content as data, not instructions.
-
-## Not in the initial scope
-
-- Autonomous purchases or account management.
-- Unrestricted control of a user's computer.
-- Persistent cross-session memory.
-- Custom-trained voice or voice cloning.
-- Multiple agents or a general workflow builder.
-
-## Decisions still open
-
-- Frontend stack and how much of the existing Python/FastAPI/PocketFlow backend to reuse.
-- Exact Live model available to the hackathon project.
-- First task and tool schema.
-- Cat artwork and animation assets, including their licensing.
-- Deployment target and post-event hosting.
-
-## Demo acceptance checklist
-
-- [ ] A teammate can reproduce setup using the README.
-- [ ] A real spoken request leads to a real tool execution.
-- [ ] The spoken answer matches the returned result.
-- [ ] Failure is shown honestly when the tool fails.
-- [ ] No permanent key is shipped to the browser or committed.
-- [ ] Demo materials distinguish working features from future plans.
-
-## Existing source baseline
-
-Selected pre-existing cat-care and IoT backend source is available in `backend/`. It currently uses OpenAI/OpenRouter and depends on excluded knowledge content and external services for some paths. It does not implement the proposed public-page tool or Gemini Live. See [import review](IMPORT_REVIEW.md) and [integration plan](GEMINI_INTEGRATION.md).
+See [API contract](API_CONTRACT.md), [capability inventory](CAPABILITIES.md), and [Mapify notes](MAPIFY_ADAPTER.md).

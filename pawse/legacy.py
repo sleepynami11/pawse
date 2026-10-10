@@ -1,0 +1,52 @@
+"""Explicit bridge to the existing agent, bound to a configured development user."""
+import json
+import os
+from pathlib import Path
+import httpx
+from .models import ANALYSIS_TYPES
+from .providers import ProviderError
+
+
+def capabilities():
+    catalog = json.loads((Path(__file__).parent / "legacy_catalog.json").read_text())
+    configured = bool(os.getenv("LEGACY_AGENT_BASE_URL") and os.getenv("LEGACY_AGENT_USER_ID") and os.getenv("LEGACY_AGENT_CAT_IDS"))
+    return {"new_features": [
+        {"id": "care_navigation", "status": "implemented"},
+        {"id": "gemini_text_and_photo", "status": "configured" if os.getenv("GEMINI_API_KEY") else "needs_configuration"},
+        {"id": "nearby_clinics", "status": "configured" if os.getenv("GOOGLE_PLACES_API_KEY") or os.getenv("MAPIFY_BASE_URL") else "needs_configuration"},
+        {"id": "insurance_contact", "status": "user_provided"},
+        {"id": "click_to_call", "status": "implemented"},
+        {"id": "gemini_live_voice", "status": "planned"}],
+        "legacy_bridge": "configured_not_verified" if configured else "needs_configuration",
+        "legacy_intents": catalog["intents"], "legacy_tools": catalog["tools"],
+        "analysis_types": list(ANALYSIS_TYPES),
+        "note": "Catalogued source capabilities are not a runtime guarantee. Knowledge collections, device services, storage and legacy model credentials may still be required."}
+
+
+async def legacy_events(req):
+    base = os.getenv("LEGACY_AGENT_BASE_URL", "").rstrip("/")
+    user = os.getenv("LEGACY_AGENT_USER_ID", "")
+    allowed = {v.strip() for v in os.getenv("LEGACY_AGENT_CAT_IDS", "").split(",")}
+    if not base or not user.isdigit() or str(req.cat_id) not in allowed:
+        raise ProviderError("legacy_not_configured_or_cat_not_allowed")
+    async with httpx.AsyncClient(timeout=40, follow_redirects=False) as client:
+        if req.mode == "chat":
+            r = await client.post(base + "/chat", json={"user_id": int(user), "cat_id": req.cat_id, "user_input": req.message})
+            r.raise_for_status()
+            stream_id = r.json()["stream_id"]
+            from urllib.parse import quote
+            method, url, kwargs = "GET", base + "/chat/stream/" + quote(stream_id, safe=""), {}
+        else:
+            method, url, kwargs = "POST", base + "/analyze/" + user, {"json": {"cat_id": req.cat_id, "analysis_type": req.analysis_type, "time_range": req.time_range}}
+        async with client.stream(method, url, **kwargs) as response:
+            response.raise_for_status()
+            data, event = [], "message"
+            async for line in response.aiter_lines():
+                if line.startswith("event:"):
+                    event = line[6:].strip()
+                elif line.startswith("data:"):
+                    data.append(line[5:].strip())
+                elif not line and data:
+                    payload = json.loads("\n".join(data))
+                    yield {"type": "legacy", "event": event, "data": payload}
+                    data, event = [], "message"

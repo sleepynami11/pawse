@@ -5,3 +5,5 @@ The original CatAgent backup identifies its starting template as [PocketFlow](ht
 Pawse's MIT license applies to project contributions that the contributors have rights to license. It does not relicense third-party dependencies, hosted models, book content, or assets.
 
 The original backup's book PDFs, EPUBs, extracted text, generated knowledge collections, and banner asset are not distributed in this repository. Any future addition requires its own provenance and redistribution review.
+
+The independent MapifyAI adapter follows the public HTTP interface of [qing-dai/MapifyAI](https://github.com/qing-dai/MapifyAI); no upstream code or datasets are bundled. Clinical warning-sign copy is informed by [RVC respiratory distress guidance](https://www.rvc.ac.uk/small-animal-vet/teaching-and-research/fact-files/respiratory-distress-in-cats-and-dogs) and [RVC illness guidance](https://www.rvc.ac.uk/small-animal-vet/general-practice/vet-care/is-your-pet-ill). These sources do not endorse or validate Pawse.
