@@ -1,7 +1,24 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "_comment": "Deny reading real env files. Deny rules are prefix matches, so they are a speed bump, not a sandbox: keys still must never be pasted into chat.",
+  "_comment": "Pre-allow the safe, frequent check commands so agents don't stall on prompts; deny reading real env files. Deny rules are prefix matches, so they are a speed bump, not a sandbox: keys still must never be pasted into chat.",
   "permissions": {
+    "allow": [
+      "Bash(bash scripts/check.sh:*)",
+      "Bash(python3 scripts/check_safety.py:*)",
+      "Bash(python3 scripts/validate_skills.py:*)",
+      "Bash(python3 scripts/export_contract.py:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(pytest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",

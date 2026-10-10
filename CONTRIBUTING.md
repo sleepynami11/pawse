@@ -9,7 +9,7 @@ Pawse is in its initial hackathon stage. Read [the spec](docs/SPEC.md) before st
 3. Update the README when setup or user-facing behavior changes.
 4. Check your changes and describe how you verified them in a pull request.
 
-Run `pip install -r requirements-dev.txt` and `pytest -q tests` for the unified app. Regenerate `docs/openapi.json` with `python scripts/export_contract.py` when API models change. The imported backend remains separate; follow the limitations in `backend/README.md`. For documentation, check links, examples, and whether feature claims match the repository. Once application code exists, add actual setup and validation commands here.
+Run `pip install -r requirements-dev.txt`, then `bash scripts/check.sh` (secret scan, skill validation, JS syntax, OpenAPI sync, pytest; CI runs the same). Coding agents: start with [AGENTS.md](AGENTS.md). Regenerate `docs/openapi.json` with `python scripts/export_contract.py` when API models change. The imported backend remains separate; follow the limitations in `backend/README.md`. For documentation, check links, examples, and whether feature claims match the repository.
 
 Never commit credentials, recordings of others without permission, or assets you do not have permission to distribute. Use placeholders in configuration examples.
 
