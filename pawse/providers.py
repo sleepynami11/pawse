@@ -58,7 +58,7 @@ async def assess(req: CareRequest, client: httpx.AsyncClient):
         "questions (up to 5 short strings), services_to_ask_about (up to 6 short strings). "
         f"Use language {req.language}. Do not return any other fields."
     )
-    model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+    model = os.getenv("GEMINI_CARE_MODEL") or os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
     try:
         r = await client.post(f"https://generativelanguage.googleapis.com/v1beta/models/{quote(model, safe='')}:generateContent",
                               headers={"x-goog-api-key": key}, json={"systemInstruction": {"parts": [{"text": prompt}]},

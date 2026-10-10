@@ -1,0 +1,526 @@
+{
+  "checked_at": "2026-10-10T11:04:16.278684+00:00",
+  "scope": "This development project only; synthetic inputs. Availability can change.",
+  "checks": [
+    {
+      "model": "gemini-3-flash-preview",
+      "modality": "text",
+      "method": "generateContent",
+      "http_status": 200,
+      "usable_response": true
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "modality": "text",
+      "method": "generateContent",
+      "http_status": 404,
+      "usable_response": false
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "modality": "text",
+      "method": "generateContent",
+      "http_status": 200,
+      "usable_response": true
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "modality": "audio_input_silent_wav",
+      "method": "generateContent",
+      "http_status": 200,
+      "usable_response": true
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "modality": "image_input_synthetic_png",
+      "method": "generateContent",
+      "http_status": 200,
+      "usable_response": true
+    },
+    {
+      "model": "gemini-embedding-001",
+      "modality": "embedding",
+      "method": "embedContent",
+      "http_status": 200,
+      "usable_response": true
+    }
+  ],
+  "gradium": "not_configured",
+  "listed_models": [
+    {
+      "name": "gemini-2.5-flash",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-pro",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-preview-tts",
+      "methods": [
+        "countTokens",
+        "generateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-pro-preview-tts",
+      "methods": [
+        "countTokens",
+        "generateContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemma-4-26b-a4b-it",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemma-4-31b-it",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-flash-latest",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-flash-lite-latest",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-pro-latest",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-lite",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-image",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3-flash-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-pro-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-pro-preview-customtools",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-lite-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-lite",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3-pro-image-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3-pro-image",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "nano-banana-pro-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-image-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-image",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-lite-image",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-nano-banana-2.1",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.5-flash",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.5-flash-lite",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-omni-flash-preview",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-omni-1.1-flash",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-3.5-transcribe",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-3.6-flash",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.7-flash",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.8-flash",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "lyria-3-clip-preview",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "lyria-3-pro-preview",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "lyria-3.5",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-tts-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.8-flash-tts",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.8-flash-lite-tts",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-robotics-er-2-preview",
+      "methods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent",
+        "batchGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-computer-use-preview-10-2025",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "antigravity-preview-05-2026",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "antigravity-preview-09-2026",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "antigravity-preview-latest",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "deep-research-max-preview-04-2026",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "deep-research-preview-04-2026",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "deep-research-pro-preview-12-2025",
+      "methods": [
+        "generateContent",
+        "countTokens"
+      ]
+    },
+    {
+      "name": "gemini-embedding-001",
+      "methods": [
+        "embedContent",
+        "countTextTokens",
+        "countTokens",
+        "asyncBatchEmbedContent"
+      ]
+    },
+    {
+      "name": "gemini-embedding-2-preview",
+      "methods": [
+        "embedContent",
+        "countTextTokens",
+        "countTokens",
+        "asyncBatchEmbedContent"
+      ]
+    },
+    {
+      "name": "gemini-embedding-2",
+      "methods": [
+        "embedContent",
+        "countTextTokens",
+        "countTokens",
+        "asyncBatchEmbedContent"
+      ]
+    },
+    {
+      "name": "aqa",
+      "methods": [
+        "generateAnswer"
+      ]
+    },
+    {
+      "name": "veo-3.1-generate-preview",
+      "methods": [
+        "predictLongRunning"
+      ]
+    },
+    {
+      "name": "veo-3.1-fast-generate-preview",
+      "methods": [
+        "predictLongRunning"
+      ]
+    },
+    {
+      "name": "veo-3.1-lite-generate-preview",
+      "methods": [
+        "predictLongRunning"
+      ]
+    },
+    {
+      "name": "gemini-3.5-transcribe-live",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-native-audio-latest",
+      "methods": [
+        "countTokens",
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-native-audio-preview-09-2025",
+      "methods": [
+        "countTokens",
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-2.5-flash-native-audio-preview-12-2025",
+      "methods": [
+        "countTokens",
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.1-flash-live-preview",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.8-live",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.8-live-extended-thinking",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-robotics-er-2-streaming-preview",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "gemini-3.5-live-translate-preview",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "name": "lyria-realtime-exp",
+      "methods": [
+        "bidiGenerateMusic"
+      ]
+    }
+  ]
+}

@@ -11,7 +11,9 @@
       <a class="brand" href="/">🐾 <span>pawse</span></a>
       <p class="small">A little help.<br />Right when it matters.</p>
       <nav>
-        <a href="#care" class="selected">✦ &nbsp; Care now</a
+        <a href="#demo" class="selected">✦ &nbsp; Mimi’s story</a
+        ><a href="#voice">♫ &nbsp; My voice</a
+        ><a href="#care">♡ &nbsp; Care now</a
         ><a href="#results">⌖ &nbsp; Nearby vets</a
         ><a href="#insurance">♡ &nbsp; Insurance</a
         ><a href="#agent">◉ &nbsp; My cat's agent</a>
@@ -27,14 +29,20 @@
           >Zurich, Switzerland · editable location</span
         >
       </header>
-      <section id="care" class="intro">
+      <section class="intro">
         <div>
           <p class="eyebrow">LET'S TAKE THE NEXT STEP, TOGETHER</p>
-          <h1>A worried moment.<br /><em>A clearer next step.</em></h1>
+          <h1>Their care.<br /><em>Your voice. In your language.</em></h1>
           <p>
-            Tell Pawse what's happening. Get help preparing for a vet call,
-            finding nearby care, and keeping the important details together.
+            Tell Pawse what’s happening in your language. Prepare a German vet
+            call in your own voice, find nearby care, and make the next decision
+            together.
           </p>
+          <div class="hero-actions">
+            <a class="button hero-primary" href="#demo"
+              >Meet Mimi’s care team ↗</a
+            ><a class="button secondary" href="#voice">Set up my voice</a>
+          </div>
         </div>
         <div class="cat" aria-hidden="true">
           <div class="ears">▲ &nbsp; ▲</div>
@@ -42,6 +50,313 @@
           <div class="cat-note">I'm here to help.</div>
         </div>
       </section>
+      <section id="demo" class="story-section panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ONE APP. A FEW LESS THINGS TO WORRY ABOUT.</p>
+            <h2>Mimi’s two-minute story</h2>
+          </div>
+          <span class="pill simulation">INTERACTIVE REHEARSAL</span>
+        </div>
+        <p class="story-intro">
+          A limp. A German-speaking vet. One very worried owner. Walk through
+          the decisions with Pawse.
+        </p>
+        <p id="demo-notice" class="small">
+          Loading the fictional Mimi scenario…
+        </p>
+        <div id="demo-steps" class="story-steps" aria-label="Story steps"></div>
+        <div id="demo-scene" aria-live="polite"></div>
+        <div class="story-controls">
+          <button type="button" id="demo-back" class="text-button">
+            ← Previous</button
+          ><span id="demo-position" class="small"></span
+          ><button type="button" id="demo-next" class="secondary">
+            Continue →
+          </button>
+        </div>
+      </section>
+      <section id="voice" class="voice-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SOUND LIKE YOU. GET THE WORDS RIGHT.</p>
+            <h2>Your voice, ready for a German conversation.</h2>
+          </div>
+          <span class="pill">GEMINI + GRADIUM</span>
+        </div>
+        <p class="section-description">
+          Speak Mandarin Chinese, English, German or Hindi. Review a German
+          script with subtitles, then generate audio to play or download. Pawse
+          introduces itself as your AI assistant.
+        </p>
+        <div id="voice-service-status" class="service-status" role="status">
+          Checking voice services…
+        </div>
+        <div class="voice-grid">
+          <section class="panel voice-studio">
+            <div class="section-heading">
+              <h3>01 / Make it your voice</h3>
+              <span class="badge">PRIVATE BY DEFAULT</span>
+            </div>
+            <p class="small">
+              Record 10–30 seconds in a quiet room. The sample stays in this
+              browser until you choose “Clone my voice”.
+            </p>
+            <label
+              >Sample language<select id="sample-language">
+                <option value="en">English</option>
+                <option value="de">German</option>
+              </select></label
+            >
+            <blockquote id="sample-prompt" class="reading-prompt">
+              Hello, I am recording my own voice for Pawse. My cat means a lot
+              to me, and I want to explain what happened clearly. Please help me
+              prepare for a conversation with the vet, and keep me involved in
+              every decision.
+            </blockquote>
+            <div class="input-actions">
+              <button id="sample-record" class="secondary" type="button">
+                ◉ Record my voice</button
+              ><label class="button secondary upload"
+                >Upload audio<input
+                  id="sample-upload"
+                  type="file"
+                  accept="audio/*"
+                  hidden
+              /></label>
+            </div>
+            <p id="sample-status" class="small" role="status">
+              Aim for about 15 seconds. Use only your own voice.
+            </p>
+            <audio
+              id="sample-player"
+              controls
+              hidden
+              aria-label="Your local voice recording"
+            ></audio>
+            <button id="sample-clear" class="text-button" type="button" hidden>
+              Remove local sample
+            </button>
+            <div class="consents">
+              <label
+                ><input type="checkbox" id="own-voice-consent" />This is my own
+                voice and I consent to creating a synthetic version of
+                it.</label
+              ><label
+                ><input type="checkbox" id="gradium-consent" />Share this sample
+                and requested German speech with Gradium. My created voice is
+                stored by Gradium until I delete it.</label
+              >
+            </div>
+            <button id="clone-voice" class="primary" type="button">
+              Clone my voice <span>↗</span>
+            </button>
+            <p
+              id="clone-status"
+              class="small"
+              role="status"
+              aria-live="polite"
+            ></p>
+            <div id="voice-profile" hidden class="voice-profile">
+              <div class="input-actions">
+                <button id="localize-voice" class="secondary" type="button">
+                  Create my German voice</button
+                ><button
+                  id="check-voice"
+                  class="secondary"
+                  type="button"
+                  hidden
+                >
+                  Check readiness</button
+                ><button id="preview-voice" class="secondary" type="button">
+                  Preview in German
+                </button>
+              </div>
+              <audio
+                id="voice-preview"
+                controls
+                hidden
+                aria-label="German voice preview"
+              ></audio>
+              <label id="listened-label" class="check-label" hidden
+                ><input id="preview-listened" type="checkbox" />I listened to
+                the preview and want to use this voice.</label
+              >
+              <button id="save-voice" class="secondary" type="button" hidden>
+                Use my German voice
+              </button>
+              <details id="saved-voice-details" hidden>
+                <summary>Keep this voice after a server restart</summary>
+                <p class="small">
+                  Save this voice ID in the server’s private .env. This is a
+                  voice identifier, not an API key. Deleting the voice from
+                  Gradium also makes this saved ID unusable.
+                </p>
+                <pre id="saved-voice-id"></pre>
+                <button id="copy-voice-id" class="text-button" type="button">
+                  Copy voice configuration
+                </button>
+                <p id="saved-voice-status" class="small" role="status"></p>
+              </details>
+              <button
+                id="delete-voice"
+                class="text-button danger-text"
+                type="button"
+              >
+                Delete my created voices from Gradium
+              </button>
+            </div>
+            <p class="small">
+              Voice setup belongs to this local browser session. Delete created
+              voices here before closing the session. No recording is saved by
+              Pawse.
+            </p>
+          </section>
+          <section class="panel script-studio">
+            <div class="section-heading">
+              <h3>02 / Say it in your language</h3>
+              <span class="badge">GERMAN OUTPUT</span>
+            </div>
+            <form id="voice-script-form">
+              <div class="row">
+                <label
+                  >I speak<select id="voice-language">
+                    <option value="en">English</option>
+                    <option value="zh">中文 · Mandarin</option>
+                    <option value="de">Deutsch · German</option>
+                    <option value="hi">हिन्दी · Hindi</option>
+                  </select></label
+                ><label
+                  >Speaking to<select id="voice-recipient">
+                    <option value="vet">A vet</option>
+                    <option value="insurer">My insurer</option>
+                    <option value="taxi">A taxi company</option>
+                  </select></label
+                >
+              </div>
+              <label
+                >Your message<textarea
+                  id="voice-message"
+                  rows="4"
+                  maxlength="4000"
+                  placeholder="My cat Mimi is limping after jumping off a wardrobe. Can a vet see her today?"
+                ></textarea>
+              </label>
+              <div class="input-actions">
+                <button id="message-record" type="button" class="secondary">
+                  ◉ Record a message</button
+                ><label class="button secondary upload"
+                  >Upload audio<input
+                    id="message-upload"
+                    type="file"
+                    accept="audio/*"
+                    hidden
+                /></label>
+              </div>
+              <p id="message-status" class="small" role="status">
+                Up to 60 seconds. Listen locally before transcribing.
+              </p>
+              <audio
+                id="message-player"
+                controls
+                hidden
+                aria-label="Your recorded message"
+              ></audio>
+              <div class="consents">
+                <label
+                  ><input id="gemini-voice-consent" type="checkbox" />Share my
+                  message or selected recording with Google Gemini for
+                  transcription and translation.</label
+                >
+              </div>
+              <div class="input-actions">
+                <button id="transcribe-message" type="button" class="secondary">
+                  Transcribe recording</button
+                ><button id="copy-to-care" type="button" class="text-button">
+                  Use message for care ↓
+                </button>
+              </div>
+              <label
+                >Subtitle language<select id="subtitle-language">
+                  <option value="en">English</option>
+                  <option value="zh">中文 · Mandarin</option>
+                  <option value="de">Deutsch · German</option>
+                  <option value="hi">हिन्दी · Hindi</option>
+                </select></label
+              >
+              <button id="prepare-script" type="submit" class="primary">
+                Prepare my German script <span>↗</span>
+              </button>
+            </form>
+            <p
+              id="script-status"
+              class="small"
+              role="status"
+              aria-live="polite"
+            ></p>
+            <div id="script-lines" class="script-lines"></div>
+            <div class="speech-output">
+              <label
+                >German speaking voice<select id="speech-voice">
+                  <option value="my_voice">My own voice (set up first)</option>
+                  <option value="standard">Standard German voice</option>
+                </select></label
+              >
+              <label class="check-label"
+                ><input id="speech-consent" type="checkbox" />Send the reviewed
+                German script to Gradium to create audio.</label
+              >
+              <div class="input-actions">
+                <button
+                  id="speak-script"
+                  class="secondary"
+                  type="button"
+                  disabled
+                >
+                  ♫ Generate German audio</button
+                ><button
+                  id="copy-script"
+                  class="text-button"
+                  type="button"
+                  disabled
+                >
+                  Copy script
+                </button>
+              </div>
+              <p
+                id="speech-status"
+                class="small"
+                role="status"
+                aria-live="polite"
+              ></p>
+              <audio
+                id="speech-player"
+                controls
+                hidden
+                aria-label="Generated German script"
+              ></audio>
+              <a
+                id="speech-download"
+                class="text-button"
+                hidden
+                download="pawse-german.wav"
+                >Download audio ↓</a
+              >
+            </div>
+          </section>
+        </div>
+        <p class="small voice-footnote">
+          Gemini handles multilingual input and translation; Gradium creates the
+          German voice. Telephone calling is not connected. Playback does not
+          inject audio into a phone call. Review the words before sharing.
+        </p>
+      </section>
+      <div id="care" class="section-heading care-heading">
+        <div>
+          <p class="eyebrow">LET’S FIND YOUR NEXT STEP</p>
+          <h2>Care starts with what you’ve noticed.</h2>
+        </div>
+      </div>
       <div class="notice">
         <strong>Need urgent help?</strong> If your cat is struggling to breathe,
         collapses, cannot urinate, or may have been poisoned, contact an
@@ -60,6 +375,14 @@
               value="My cat"
               required
           /></label>
+          <label
+            >Care language<select id="care-language">
+              <option value="en">English</option>
+              <option value="zh">中文 · Mandarin</option>
+              <option value="de">Deutsch · German</option>
+              <option value="hi">हिन्दी · Hindi</option>
+            </select></label
+          >
           <label
             >Describe your concern<textarea
               id="query"
@@ -181,6 +504,10 @@
               coordinates with the configured clinic search provider.</label
             >
           </div>
+          <label class="check-label workflow-choice"
+            ><input type="checkbox" id="agent-workflow" checked />Coordinate my
+            care with the agent workflow and show each agent’s result.</label
+          >
           <button type="submit" id="submit" class="primary">
             Find my next step <span>↗</span>
           </button>
@@ -203,6 +530,11 @@
               together.
             </p>
           </div>
+          <div id="agent-run-trace" hidden class="panel">
+            <h3>Your care team’s work</h3>
+            <div id="agent-trace-list" class="trace-list"></div>
+            <p id="agent-run-note" class="small"></p>
+          </div>
           <div id="clinics"></div>
           <div id="insurance-result"></div>
           <div id="handoff" hidden class="panel">
@@ -211,6 +543,8 @@
             <div class="input-actions">
               <button id="copy" type="button" class="secondary">
                 Copy notes</button
+              ><button id="handoff-to-voice" type="button" class="secondary">
+                Prepare German call</button
               ><button id="read-aloud" type="button" class="secondary">
                 Read aloud</button
               ><button id="delete" type="button" class="text-button">
@@ -222,6 +556,27 @@
         </section>
       </div>
       <section id="agent" class="panel agent-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SEVEN RESPONSIBILITIES. ONE CARE PLAN.</p>
+            <h2>Meet the agents behind your next step.</h2>
+          </div>
+          <span class="pill">OBSERVABLE WORKFLOW</span>
+        </div>
+        <p>
+          A coordinator brings together care guidance, clinic information and a
+          clear handoff. Each responsibility has a visible status, and external
+          actions need their own connections and review.
+        </p>
+        <div id="agent-graph" class="agent-graph"></div>
+        <p id="agent-graph-note" class="small" role="status">
+          Loading agent responsibilities…
+        </p>
+        <a href="#care" class="button secondary"
+          >Try the workflow with your care request ↑</a
+        >
+        <hr class="agent-divider" />
+
         <div class="section-heading">
           <div>
             <p class="eyebrow">YOUR EXISTING CATAGENT</p>
@@ -279,5 +634,6 @@
       </footer>
     </main>
     <script src="/static/app.js" defer></script>
+    <script src="/static/voice.js" defer></script>
   </body>
 </html>

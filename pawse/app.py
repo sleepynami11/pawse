@@ -14,15 +14,16 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .models import CareRequest, LegacyRequest, CareResult
 from .service import care_events
 from .legacy import capabilities, legacy_events
+from .voice import router as voice_router
+from .demo import router as demo_router
+from .knowledge import router as knowledge_router
+from .orchestration import router as orchestration_router
+from .state import records, active, TTL, MAX_RECORDS, prune, remember
 
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
-app = FastAPI(title="Pawse Care API", version="0.1.0", description="Cat care navigation, nearby veterinary clinics, insurance contacts, and a bridge to the existing CatAgent.")
+app = FastAPI(title="Pawse Care API", version="0.2.0", description="Cat care navigation, nearby veterinary clinics, insurance contacts, and a bridge to the existing CatAgent.")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
-records = {}
-active = set()
-TTL = 900
-MAX_RECORDS = 100
 
 
 @app.exception_handler(RequestValidationError)
@@ -40,6 +41,12 @@ async def local_session(request: Request, call_next):
         length = request.headers.get("content-length", "0")
         if not length.isdigit() or int(length) > 4_500_000:
             return JSONResponse(status_code=413, content={"error": "request_too_large"})
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > 4_500_000:
+                return JSONResponse(status_code=413, content={"error": "request_too_large"})
+        request._body = bytes(body)
     owner = request.cookies.get("pawse_session") or secrets.token_urlsafe(32)
     request.state.owner = owner
     response = await call_next(request)
@@ -50,19 +57,13 @@ async def local_session(request: Request, call_next):
     return response
 
 
-def prune():
-    for key in list(records):
-        if time.monotonic() - records[key]["created"] > TTL:
-            del records[key]
-
-
 def event_line(event):
     return "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
 
 
 @app.get("/api/v1/health")
 async def health():
-    return {"status": "ok", "mode": "local_single_user", "version": "0.1.0"}
+    return {"status": "ok", "mode": "local_single_user", "version": "0.2.0"}
 
 
 @app.get("/api/v1/capabilities")
@@ -87,7 +88,7 @@ async def create_care(payload: CareRequest, request: Request, stream: bool = Fal
             async for event in care_events(payload):
                 if event["type"] == "result":
                     event["request_id"] = request_id
-                    records[request_id] = {"owner": owner, "created": time.monotonic(), "result": event}
+                    remember(owner, event)
                 yield event
         finally:
             active.discard(owner)
@@ -138,5 +139,10 @@ async def agent_request(payload: LegacyRequest, request: Request):
 @app.get("/")
 async def index():
     return FileResponse(Path(__file__).parent / "static/index.html")
+
+app.include_router(voice_router)
+app.include_router(demo_router)
+app.include_router(knowledge_router)
+app.include_router(orchestration_router)
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")

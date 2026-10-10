@@ -3,7 +3,7 @@
   "info": {
     "title": "Pawse Care API",
     "description": "Cat care navigation, nearby veterinary clinics, insurance contacts, and a bridge to the existing CatAgent.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -218,10 +218,790 @@
           }
         }
       }
+    },
+    "/api/v1/voice/status": {
+      "get": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Voice Status",
+        "operationId": "voice_status_api_v1_voice_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/transcriptions": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Transcribe",
+        "operationId": "transcribe_api_v1_voice_transcriptions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transcript"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/scripts": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Script",
+        "operationId": "script_api_v1_voice_scripts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScriptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallScript"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/clone": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Clone",
+        "operationId": "clone_api_v1_voice_clone_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/localizations": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Localize",
+        "operationId": "localize_api_v1_voice_localizations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceConsent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/localizations/current": {
+      "get": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Localization Status",
+        "operationId": "localization_status_api_v1_voice_localizations_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/preview": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_api_v1_voice_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceConsent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/localizations/current/save": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Save Voice",
+        "operationId": "save_voice_api_v1_voice_localizations_current_save_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveVoice"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/voice/profile": {
+      "delete": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Delete Voice",
+        "operationId": "delete_voice_api_v1_voice_profile_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/v1/voice/speech": {
+      "post": {
+        "tags": [
+          "Voice concierge"
+        ],
+        "summary": "Speak",
+        "operationId": "speak_api_v1_voice_speech_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpeechRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/mimi": {
+      "get": {
+        "tags": [
+          "Synthetic demo"
+        ],
+        "summary": "Mimi",
+        "operationId": "mimi_api_v1_demo_mimi_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/knowledge/search": {
+      "post": {
+        "tags": [
+          "Knowledge evidence"
+        ],
+        "summary": "Search",
+        "operationId": "search_api_v1_knowledge_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/graph": {
+      "get": {
+        "tags": [
+          "Agent orchestration"
+        ],
+        "summary": "Graph",
+        "operationId": "graph_api_v1_agents_graph_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGraph"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/runs": {
+      "post": {
+        "tags": [
+          "Agent orchestration"
+        ],
+        "summary": "Create Run",
+        "operationId": "create_run_api_v1_agents_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActionGate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "german_script",
+              "insurance_coverage",
+              "outbound_call",
+              "appointment",
+              "calendar",
+              "taxi"
+            ],
+            "title": "Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "review_required",
+              "evidence_required",
+              "not_connected"
+            ],
+            "title": "State"
+          },
+          "required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "required"
+        ],
+        "title": "ActionGate"
+      },
+      "AgentGraph": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "bounded_workflow",
+            "title": "Mode",
+            "default": "bounded_workflow"
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentSpec"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "parallel_groups": {
+            "items": {
+              "items": {
+                "type": "string",
+                "enum": [
+                  "intake",
+                  "care_guidance",
+                  "nearby_vets",
+                  "policy_evidence",
+                  "ranking",
+                  "communication",
+                  "orchestrator"
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Parallel Groups"
+          },
+          "deadline_seconds": {
+            "type": "integer",
+            "title": "Deadline Seconds"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agents",
+          "parallel_groups",
+          "deadline_seconds",
+          "note"
+        ],
+        "title": "AgentGraph"
+      },
+      "AgentRunRequest": {
+        "properties": {
+          "care": {
+            "$ref": "#/components/schemas/CareRequest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "care"
+        ],
+        "title": "AgentRunRequest"
+      },
+      "AgentRunResult": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "mode": {
+            "type": "string",
+            "const": "bounded_workflow",
+            "title": "Mode",
+            "default": "bounded_workflow"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "partial"
+            ],
+            "title": "Status"
+          },
+          "care": {
+            "$ref": "#/components/schemas/CareResult"
+          },
+          "trace": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTrace"
+            },
+            "type": "array",
+            "title": "Trace"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionGate"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "external_actions_performed": {
+            "type": "boolean",
+            "const": false,
+            "title": "External Actions Performed",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "Run completion means care navigation finished. Calls, coverage decisions, appointments and calendar changes have not been made."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "care",
+          "trace",
+          "actions"
+        ],
+        "title": "AgentRunResult"
+      },
+      "AgentSpec": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "intake",
+              "care_guidance",
+              "nearby_vets",
+              "policy_evidence",
+              "ranking",
+              "communication",
+              "orchestrator"
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "implementation": {
+            "type": "string",
+            "enum": [
+              "model",
+              "tool",
+              "deterministic",
+              "model_and_voice_tools"
+            ],
+            "title": "Implementation"
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "frontend",
+              "llm",
+              "voice",
+              "rag_data"
+            ],
+            "title": "Owner"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "availability": {
+            "type": "string",
+            "title": "Availability"
+          },
+          "responsibility": {
+            "type": "string",
+            "title": "Responsibility"
+          },
+          "depends_on": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "intake",
+                "care_guidance",
+                "nearby_vets",
+                "policy_evidence",
+                "ranking",
+                "communication",
+                "orchestrator"
+              ]
+            },
+            "type": "array",
+            "title": "Depends On"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "implementation",
+          "owner",
+          "availability",
+          "responsibility"
+        ],
+        "title": "AgentSpec"
+      },
+      "AgentTrace": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "enum": [
+              "intake",
+              "care_guidance",
+              "nearby_vets",
+              "policy_evidence",
+              "ranking",
+              "communication",
+              "orchestrator"
+            ],
+            "title": "Agent Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "complete",
+              "unavailable",
+              "timeout",
+              "skipped",
+              "review_required",
+              "evidence_required"
+            ],
+            "title": "State",
+            "default": "pending"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "title": "Elapsed Ms",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agent_id",
+          "detail"
+        ],
+        "title": "AgentTrace"
+      },
       "Assessment": {
         "properties": {
           "urgency": {
@@ -277,6 +1057,53 @@
           "summary"
         ],
         "title": "Assessment"
+      },
+      "Audio": {
+        "properties": {
+          "data": {
+            "type": "string",
+            "maxLength": 4000000,
+            "minLength": 60,
+            "title": "Data"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Audio"
+      },
+      "CallScript": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ScriptLine"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Lines"
+          },
+          "target_language": {
+            "type": "string",
+            "const": "de",
+            "title": "Target Language",
+            "default": "de"
+          },
+          "status": {
+            "type": "string",
+            "const": "draft_not_sent",
+            "title": "Status",
+            "default": "draft_not_sent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lines"
+        ],
+        "title": "CallScript"
       },
       "CareRequest": {
         "properties": {
@@ -612,6 +1439,104 @@
         ],
         "title": "Clinic"
       },
+      "CloneRequest": {
+        "properties": {
+          "audio": {
+            "$ref": "#/components/schemas/Audio"
+          },
+          "sample_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "de",
+              "fr",
+              "es",
+              "pt"
+            ],
+            "title": "Sample Language",
+            "default": "en"
+          },
+          "own_voice_consent": {
+            "type": "boolean",
+            "const": true,
+            "title": "Own Voice Consent"
+          },
+          "share_with_gradium": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gradium"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "audio",
+          "own_voice_consent",
+          "share_with_gradium"
+        ],
+        "title": "CloneRequest"
+      },
+      "Evidence": {
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "source_id": {
+            "type": "string",
+            "enum": [
+              "pawse-demo-policy",
+              "pawse-demo-avb"
+            ],
+            "title": "Source Id"
+          },
+          "source_path": {
+            "type": "string",
+            "title": "Source Path"
+          },
+          "source_sha256": {
+            "type": "string",
+            "title": "Source Sha256"
+          },
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Snippet"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Synthetic",
+            "default": true
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Score"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "source_id",
+          "source_path",
+          "source_sha256",
+          "section",
+          "title",
+          "snippet",
+          "score"
+        ],
+        "title": "Evidence"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -695,6 +1620,96 @@
           "note"
         ],
         "title": "InsuranceResult"
+      },
+      "KnowledgeQuery": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Query"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "default": 3
+          },
+          "scope": {
+            "type": "string",
+            "const": "synthetic_demo",
+            "title": "Scope",
+            "default": "synthetic_demo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "KnowledgeQuery"
+      },
+      "KnowledgeResult": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "const": "synthetic_demo",
+            "title": "Scope",
+            "default": "synthetic_demo"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Synthetic",
+            "default": true
+          },
+          "method": {
+            "type": "string",
+            "const": "lexical",
+            "title": "Method",
+            "default": "lexical"
+          },
+          "insurance_approval": {
+            "type": "string",
+            "const": "not_obtained",
+            "title": "Insurance Approval",
+            "default": "not_obtained"
+          },
+          "corpus_version": {
+            "type": "string",
+            "title": "Corpus Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "evidence_found",
+              "no_evidence"
+            ],
+            "title": "Status"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Evidence"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "Fictional demo policy and adapted demo terms only. These excerpts do not establish an owner's real insurance coverage or constitute insurer approval."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "corpus_version",
+          "status",
+          "evidence"
+        ],
+        "title": "KnowledgeResult"
       },
       "LegacyRequest": {
         "properties": {
@@ -795,6 +1810,192 @@
         ],
         "title": "Photo"
       },
+      "SaveVoice": {
+        "properties": {
+          "share_with_gradium": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gradium"
+          },
+          "listened_to_preview": {
+            "type": "boolean",
+            "const": true,
+            "title": "Listened To Preview"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "share_with_gradium",
+          "listened_to_preview"
+        ],
+        "title": "SaveVoice"
+      },
+      "ScriptLine": {
+        "properties": {
+          "german": {
+            "type": "string",
+            "maxLength": 900,
+            "minLength": 1,
+            "title": "German"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 1600,
+            "minLength": 1,
+            "title": "Subtitle"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "german",
+          "subtitle"
+        ],
+        "title": "ScriptLine"
+      },
+      "ScriptRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "input_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh",
+              "de",
+              "hi"
+            ],
+            "title": "Input Language",
+            "default": "en"
+          },
+          "subtitle_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh",
+              "de",
+              "hi"
+            ],
+            "title": "Subtitle Language",
+            "default": "en"
+          },
+          "target_language": {
+            "type": "string",
+            "const": "de",
+            "title": "Target Language",
+            "default": "de"
+          },
+          "recipient": {
+            "type": "string",
+            "enum": [
+              "vet",
+              "insurer",
+              "taxi"
+            ],
+            "title": "Recipient",
+            "default": "vet"
+          },
+          "share_with_gemini": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gemini"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message",
+          "share_with_gemini"
+        ],
+        "title": "ScriptRequest"
+      },
+      "SpeechRequest": {
+        "properties": {
+          "share_with_gradium": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gradium"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 3500,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "language": {
+            "type": "string",
+            "const": "de",
+            "title": "Language",
+            "default": "de"
+          },
+          "voice": {
+            "type": "string",
+            "enum": [
+              "my_voice",
+              "standard"
+            ],
+            "title": "Voice",
+            "default": "my_voice"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "share_with_gradium",
+          "text"
+        ],
+        "title": "SpeechRequest"
+      },
+      "Transcript": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "Transcript"
+      },
+      "TranscriptionRequest": {
+        "properties": {
+          "audio": {
+            "$ref": "#/components/schemas/Audio"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh",
+              "de",
+              "hi"
+            ],
+            "title": "Language",
+            "default": "en"
+          },
+          "share_with_gemini": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gemini"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "audio",
+          "share_with_gemini"
+        ],
+        "title": "TranscriptionRequest"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -834,6 +2035,21 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VoiceConsent": {
+        "properties": {
+          "share_with_gradium": {
+            "type": "boolean",
+            "const": true,
+            "title": "Share With Gradium"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "share_with_gradium"
+        ],
+        "title": "VoiceConsent"
       }
     }
   }

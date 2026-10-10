@@ -82,6 +82,13 @@ function clinicCards(clinics) {
         "small",
       ),
     );
+    if (c.source === "google_places") {
+      const attribution = node("p", null, "small maps-attribution");
+      attribution.append(
+        action("Google Maps", c.maps_url || "https://maps.google.com"),
+      );
+      box.append(attribution);
+    }
     root.append(box);
   });
 }
@@ -245,6 +252,8 @@ $("care-form").onsubmit = async (e) => {
   $("handoff").hidden = true;
   $("clinics").replaceChildren();
   $("limitations").replaceChildren();
+  $("agent-run-trace").hidden = true;
+  $("agent-trace-list").replaceChildren();
   $("progress").textContent = "Preparing your next steps…";
   const insurer = $("insurer").value.trim(),
     phone = $("insurance-phone").value.trim();
@@ -253,24 +262,42 @@ $("care-form").onsubmit = async (e) => {
       throw Error(
         "Enter both the insurer and its international phone number, or leave both blank.",
       );
-    await stream(
-      "/api/v1/care/requests?stream=true",
-      {
-        query: $("query").value,
-        cat_name: $("cat-name").value,
-        location: { lat: Number($("lat").value), lng: Number($("lng").value) },
-        radius_km: Number($("radius").value),
-        language: "en",
-        red_flags: [
-          ...document.querySelectorAll("#red-flags input:checked"),
-        ].map((i) => i.value),
-        photo,
-        insurance: insurer ? { company: insurer, phone } : null,
-        share_with_ai: $("ai-consent").checked,
-        share_location: $("location-consent").checked,
-      },
-      handleEvent,
-    );
+    const payload = {
+      query: $("query").value,
+      cat_name: $("cat-name").value,
+      location: { lat: Number($("lat").value), lng: Number($("lng").value) },
+      radius_km: Number($("radius").value),
+      language: $("care-language").value,
+      red_flags: [...document.querySelectorAll("#red-flags input:checked")].map(
+        (i) => i.value,
+      ),
+      photo,
+      insurance: insurer ? { company: insurer, phone } : null,
+      share_with_ai: $("ai-consent").checked,
+      share_location: $("location-consent").checked,
+    };
+    if ($("agent-workflow").checked) {
+      $("progress").textContent =
+        "Coordinating care guidance and clinic retrieval. The agent results will appear when the workflow finishes…";
+      const response = await fetch("/api/v1/agents/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ care: payload }),
+        signal: AbortSignal.timeout(60000),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw Error(
+          typeof result.detail === "string"
+            ? result.detail
+            : result.error?.fields?.map((field) => field.message).join("; ") ||
+                "The agent workflow could not finish. Check your inputs and try again.",
+        );
+      handleEvent({ ...result.care, type: "result" });
+      renderAgentTrace(result);
+    } else {
+      await stream("/api/v1/care/requests?stream=true", payload, handleEvent);
+    }
   } catch (err) {
     $("progress").textContent = err.message;
   } finally {
@@ -289,9 +316,11 @@ $("copy").onclick = async () => {
 $("read-aloud").onclick = () => {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
-  speechSynthesis.speak(
-    new SpeechSynthesisUtterance($("handoff-text").textContent),
-  );
+  const utterance = new SpeechSynthesisUtterance($("handoff-text").textContent);
+  utterance.lang = { en: "en-GB", zh: "zh-CN", de: "de-CH", hi: "hi-IN" }[
+    $("care-language").value
+  ];
+  speechSynthesis.speak(utterance);
 };
 $("delete").onclick = async () => {
   if (requestId) {
@@ -308,6 +337,8 @@ $("delete").onclick = async () => {
   $("handoff").hidden = true;
   $("handoff-text").textContent = "";
   $("assessment").replaceChildren(node("p", "Result cleared."));
+  $("agent-run-trace").hidden = true;
+  $("agent-trace-list").replaceChildren();
   $("clinics").replaceChildren();
   $("insurance-result").replaceChildren();
   $("limitations").replaceChildren();
@@ -324,7 +355,9 @@ if (Recognition) {
     )
       return;
     const r = new Recognition();
-    r.lang = "en-GB";
+    r.lang = { en: "en-GB", zh: "zh-CN", de: "de-CH", hi: "hi-IN" }[
+      $("care-language").value
+    ];
     r.onresult = (e) => {
       $("query").value += " " + e.results[0][0].transcript;
     };
@@ -337,7 +370,7 @@ if (Recognition) {
 } else {
   $("dictate").disabled = true;
   $("dictate").title =
-    "Browser dictation is not available. Gemini Live is not connected yet.";
+    "Browser dictation is unavailable. Use the multilingual recording studio above.";
 }
 $("agent-form").onsubmit = async (e) => {
   e.preventDefault();
@@ -405,4 +438,75 @@ fetch("/api/v1/capabilities")
   })
   .catch(() => {
     $("legacy-status").textContent = "Could not load service availability.";
+  });
+
+const agentNames = {};
+function renderAgentTrace(result) {
+  const list = $("agent-trace-list");
+  list.replaceChildren();
+  result.trace.forEach((entry) => {
+    const row = node("details", null, "trace-item");
+    const title = node("summary");
+    title.append(
+      node(
+        "span",
+        agentNames[entry.agent_id] || entry.agent_id.replaceAll("_", " "),
+      ),
+      node(
+        "span",
+        entry.state.replaceAll("_", " "),
+        "badge trace-state " +
+          (entry.state === "complete" ? "trace-complete" : ""),
+      ),
+    );
+    row.append(title, node("p", entry.detail, "small"));
+    list.append(row);
+  });
+  const gates = node("details", null, "trace-item");
+  gates.append(node("summary", "What still needs review or a connection?"));
+  result.actions.forEach((gate) =>
+    gates.append(
+      node(
+        "p",
+        `${gate.id.replaceAll("_", " ")}: ${gate.state.replaceAll("_", " ")}. ${gate.required.join("; ")}.`,
+        "small",
+      ),
+    ),
+  );
+  list.append(gates);
+  $("agent-run-note").textContent = result.note;
+  $("agent-run-trace").hidden = false;
+}
+fetch("/api/v1/agents/graph")
+  .then((response) => {
+    if (!response.ok) throw Error();
+    return response.json();
+  })
+  .then((graph) => {
+    graph.agents.forEach((agent, index) => {
+      agentNames[agent.id] = agent.name;
+      const card = node("article", null, "agent-role");
+      card.append(
+        node(
+          "span",
+          `${String(index + 1).padStart(2, "0")} / ${agent.implementation.replaceAll("_", " ")}`,
+          "eyebrow",
+        ),
+        node("h3", agent.name),
+        node("p", agent.responsibility),
+      );
+      card.append(
+        node("span", agent.availability.replaceAll("_", " "), "badge"),
+      );
+      if (agent.model) card.append(node("p", agent.model, "small model-name"));
+      card.append(
+        node("p", `Team owner: ${agent.owner.replaceAll("_", " ")}`, "small"),
+      );
+      $("agent-graph").append(card);
+    });
+    $("agent-graph-note").textContent = graph.note;
+  })
+  .catch(() => {
+    $("agent-graph-note").textContent =
+      "Agent responsibilities are unavailable. Reload after the server is ready.";
   });

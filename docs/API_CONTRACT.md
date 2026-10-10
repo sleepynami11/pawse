@@ -1,4 +1,4 @@
-# Pawse frontend / backend contract v0.1
+# Pawse frontend / backend contract v0.2
 
 Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the running app also serves `/openapi.json` and `/docs`. This contract describes the independent Pawse integration, informed by MapifyAI's request/results and progress-event conventions.
 
@@ -6,7 +6,7 @@ Base URL: `/api/v1`. The executable schema is [openapi.json](openapi.json); the 
 
 The current app is a **local single-user prototype**. Bind to `127.0.0.1`; host checking accepts only localhost addresses and the test host. This is not a public multi-user deployment. A random HttpOnly, SameSite=Strict browser cookie isolates result retrieval between sessions. It is not a login system. External deployments need real authentication, per-cat ownership authorization, storage and quotas first.
 
-JSON requests are bounded at 4.5 MB by the declared Content-Length; individual photos are validated at 3 MB decoded. Do not expose this prototype directly to untrusted internet traffic. Errors do not echo submitted photo data. No wildcard CORS is enabled.
+Mutation request bodies are bounded at 4.5 MB by both declared Content-Length and actual streamed bytes. Photos and WAV audio are each limited to 3 MB decoded. Validation errors omit submitted payloads. Responses use `Cache-Control: no-store`; no wildcard CORS is enabled.
 
 ## Routes
 
@@ -18,6 +18,20 @@ JSON requests are bounded at 4.5 MB by the declared Content-Length; individual p
 | GET | `/care/requests/{id}` | Completed result for the same browser session; HTTP 404 if absent/expired/other session |
 | DELETE | `/care/requests/{id}` | Remove a completed result, HTTP 204 |
 | POST | `/agent/requests` | SSE bridge to configured existing CatAgent |
+| GET | `/agents/graph` | Seven runtime roles, model/tool types, owners, dependencies and configuration state |
+| POST | `/agents/runs` | HTTP 201; nested `care` request → care result, agent trace and action gates |
+| POST | `/knowledge/search` | Cited lexical search of the fixed synthetic insurance corpus |
+| GET | `/voice/status` | Current session's voice readiness and configuration booleans |
+| POST | `/voice/transcriptions` | Consented WAV → Gemini transcript |
+| POST | `/voice/scripts` | Consented message → German script and paired subtitles |
+| POST | `/voice/clone` | HTTP 201; consented own-voice sample → Gradium voice ID |
+| POST | `/voice/localizations` | HTTP 202; start German voice candidate generation |
+| GET | `/voice/localizations/current` | Read current candidate readiness |
+| POST | `/voice/preview` | German WAV preview of a ready voice/candidate |
+| POST | `/voice/localizations/current/save` | HTTP 201; save a candidate after preview and owner acknowledgement |
+| POST | `/voice/speech` | Reviewed German text → WAV bytes with AI-assistant disclosure |
+| DELETE | `/voice/profile` | HTTP 204; delete provider voices/candidates created by this session |
+| GET | `/demo/mimi` | Synthetic six-scene story, German/English dialogue, costs and claim checklist |
 
 There is no separate GET search-stream endpoint. Use fetch streaming on the POST response. Polling only works after a result has completed, and a dropped stream is not guaranteed to finish in the background.
 
@@ -69,6 +83,51 @@ Urgency is `emergency`, `contact_vet` or `unknown`. The app never returns a diag
 Clinic records include `id`, `name`, `address`, `phone`, `call_url`, `maps_url`, `website`, coordinates, straight-line `distance_km`, rating, nullable `open_now`, services, reasons, source and retrieval time. `open_now=null` means unknown. `emergency_service=unknown` is the default: generic veterinary listings do not prove emergency capability. Services suggested by AI are questions for the clinic, not claims about what it offers.
 
 Ranking is deterministic: provider-reported open clinics, then unknown, then reported closed; nearest first within each group, rating as a tie-breaker. AI helps organize concerns and questions; it does not fabricate provider facts or diagnose. Travel times, booking slots and insurer acceptance are not implemented.
+
+## Agent graph and runs
+
+`GET /agents/graph` describes seven roles: intake, care guidance, nearby vets, policy evidence, ranking, communication and orchestration. It distinguishes model calls, tools and deterministic code. Configuration flags do not prove a live provider was checked; see [model allocation](MODEL_ALLOCATION.md) and the sanitized access report.
+
+`POST /agents/runs` accepts `{ "care": <CareRequest> }`. It reuses the existing concurrent care providers and adds a 45-second outer deadline. The response is:
+
+```json
+{
+  "run_id": "opaque-id",
+  "mode": "bounded_workflow",
+  "status": "partial",
+  "care": {"request_id": "opaque-id", "...": "CareResult fields"},
+  "trace": [{"agent_id": "care_guidance", "state": "complete", "detail": "...", "elapsed_ms": 1200}],
+  "actions": [{"id": "outbound_call", "state": "not_connected", "required": ["..."]}],
+  "external_actions_performed": false,
+  "note": "..."
+}
+```
+
+`trace.state` is `pending`, `running`, `complete`, `unavailable`, `timeout`, `skipped`, `review_required` or `evidence_required`. The finished response contains terminal states. A complete care run does not mean every future action is available: live policy evidence remains required, communication requires owner review, and calls/calendar/bookings are unconnected.
+
+The nested care result is stored in the same session cache as `/care/requests`, under its `request_id`; use the existing GET/DELETE routes for it. The trace itself has no history endpoint. Care and agent-run requests share the concurrency limit. See [architecture](ARCHITECTURE.md) and [team ownership](TEAM_PLAN.md).
+
+## Voice and multilingual contracts
+
+Text and transcription language codes are `en`, `zh`, `de` and `hi`. Hindi does not imply support for all Indian languages. The current output language is `de`; Gemini produces translations and paired subtitles, while Gradium provides German speech.
+
+- Transcription: `{ "audio": { "data": "<base64 WAV>" }, "language": "zh", "share_with_gemini": true }` → `{ "text": "..." }`.
+- Script: `{ "message": "...", "input_language": "en", "subtitle_language": "en", "target_language": "de", "recipient": "vet", "share_with_gemini": true }` → `lines` with `german`/`subtitle` pairs and `status: "draft_not_sent"`. Recipient is `vet`, `insurer` or `taxi`.
+- Clone: `{ "audio": { "data": "<base64 WAV>" }, "sample_language": "en", "own_voice_consent": true, "share_with_gradium": true }`. The sample language must be one of Gradium's `en`, `de`, `fr`, `es`, `pt` languages; no Chinese/Hindi clone sample is claimed.
+- Localization and preview: `{ "share_with_gradium": true }`. Saving additionally requires `listened_to_preview: true` and a server-observed ready candidate and preview request.
+- Speech: `{ "text": "...", "language": "de", "voice": "my_voice", "share_with_gradium": true }` → `audio/wav`. `standard` is an explicit voice choice; it is never a silent fallback for a missing owner voice.
+
+Audio must be complete mono 16-bit PCM WAV, 8–48 kHz, 0.5–60 seconds, up to 3 MB decoded. Cloning requires 10–30 seconds. Browser recording is converted locally before upload. Gemini operations use a 40-second request timeout; Gradium operations use 45 seconds. Voice work has its own limit of one active operation per session and five globally.
+
+The server adds an AI-assistant disclosure to generated speech. There is no telephone transport, remote-recipient audio stream or OS phone-call audio injection in these routes. The [voice concierge guide](VOICE_CONCIERGE.md) documents the provider lifecycle, full flow and remaining live verification.
+
+## Evidence search and Mimi rehearsal
+
+`POST /knowledge/search` accepts `{ "query": "home visit surcharge 1.2.5", "top_k": 3, "scope": "synthetic_demo" }`. `top_k` is 1–5. It performs local English lexical retrieval over the reviewed demo policy and English AVB, without an embedding call or owner-document upload.
+
+The result carries `synthetic: true`, `method: "lexical"`, `insurance_approval: "not_obtained"`, a corpus version, `evidence_found`/`no_evidence` status and evidence entries with source path/hash, clause or JSON section, exact snippet and relevance score. The score is not coverage confidence. No request may choose an arbitrary file, collection or live-policy scope. See the [RAG contract](RAG_CONTRACT.md).
+
+`GET /demo/mimi` supplies the six-scene rehearsal and explicit synthetic notice. CHF 385 clinic and CHF 510 home-visit costs assume CHF 600 eligible treatment, an unused CHF 300 deductible, 80% reimbursement after that deductible, unused annual limit, CHF 25 owner-paid taxi and an excluded CHF 150 home surcharge. Real policy terms and clinic costs are not inferred from this example. All recipient replies, calendar slots and arrangements in the story remain simulated.
 
 ## SSE wire format
 
@@ -123,11 +182,15 @@ The gateway does not duplicate clinical, device or report logic. Old WebSocket p
 
 - 403: cross-origin mutation or disallowed legacy cat.
 - 404: completed care result missing/expired or belongs to another session.
-- 413: declared request body too large.
+- 409: a voice action is out of sequence, such as saving before preview or requesting an absent own voice.
+- 413: declared or actual request body too large.
 - 422: invalid request (sanitized field messages).
-- 429: same session already has active care work, or five global care requests are active.
-- 503: legacy bridge not configured.
+- 429: same session already has active care/agent work, five global care runs are active, or the separate voice-operation limit is reached.
+- 502: voice provider returned an error or an unusable result; messages omit raw provider responses.
+- 503: required voice/legacy configuration or the synthetic evidence corpus is unavailable.
 - Care provider failures return useful `partial` results, not fabricated replacements.
 - Legacy SSE failures return `{"type":"error","code":"legacy_agent_unavailable",...}`.
 
-Pawse keeps at most 100 completed summaries in process memory for 15 minutes, pruning expired entries on subsequent requests. No photos are written to disk or stored in these results. Process restart clears the cache. Gemini/provider retention is governed separately by those services; browser dictation may use the browser vendor's speech service and requires a separate confirmation.
+Pawse keeps at most 100 completed care summaries from care or agent runs in process memory for 15 minutes, pruning expired entries on subsequent requests. No photos or audio recordings are written to disk or stored in these results. Process restart clears the cache.
+
+Voice IDs are held separately in session memory. Gradium-created voices persist in the provider account; restarting Pawse or losing a session does not delete them. Session deletion removes only voices/candidates created in that session, preserving failed deletions for retry. A voice configured through `GRADIUM_VOICE_ID_DE` is not deleted by that action. Provider retention is governed separately by those services; see [voice lifecycle details](VOICE_CONCIERGE.md).
