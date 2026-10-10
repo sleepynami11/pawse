@@ -217,7 +217,7 @@ def complete_wav(data):
         streamed = declared == 0xFFFFFFFF // frame
         pcm = f.readframes(declared)
     frames = len(pcm) // frame
-    if not frames or (not streamed and len(pcm) != declared * frame):
+    if not frames or len(pcm) % frame or (not streamed and len(pcm) != declared * frame):
         raise ValueError()
     out = io.BytesIO()
     with wave.open(out, "wb") as w:

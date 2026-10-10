@@ -336,3 +336,28 @@ def test_call_ids_expire_and_are_bounded(monkeypatch):
         for _ in range(voice.MAX_CALLS_PER_OWNER + 5):
             c.post('/api/v1/voice/speech', json=line | {'text': 'Hallo'})
         assert all(len(calls) <= voice.MAX_CALLS_PER_OWNER for calls in voice.disclosed_calls.values())
+
+
+def test_gradium_streaming_wav_lengths_are_finalized(monkeypatch):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    raw = bytearray(wav(1, 48000))
+    raw[4:8] = raw[40:44] = b'\xff' * 4
+    upstream(monkeypatch, lambda req: httpx.Response(200, content=bytes(raw)))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
+        assert r.status_code == 200
+        with wave.open(io.BytesIO(r.content)) as f:
+            assert f.getnframes() == 48000
+            assert len(f.readframes(48000)) == 96000
+        assert int.from_bytes(r.content[4:8], 'little') == len(r.content) - 8
+
+
+@pytest.mark.parametrize('payload', [b'', b'\0' * 3])
+def test_streaming_wav_rejects_empty_or_partial_frames(monkeypatch, payload):
+    monkeypatch.setenv('GRADIUM_API_KEY', 'test')
+    raw = bytearray(wav(1, 48000)[:44])
+    raw[4:8] = raw[40:44] = b'\xff' * 4
+    upstream(monkeypatch, lambda req: httpx.Response(200, content=bytes(raw) + payload))
+    with TestClient(app) as c:
+        r = c.post('/api/v1/voice/speech', json={'text': 'Hallo', 'voice': 'standard', 'share_with_gradium': True})
+        assert r.status_code == 502

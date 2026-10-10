@@ -49,3 +49,9 @@ This is not a claim that PR #29's unmerged browser suite passes. No real microph
 The React client now uses Gemini Live native audio by default in live mode. All 86 backend tests and seven frontend checks pass; production compilation passes. New offline tests cover consent, 16 kHz PCM conversion/resampling, all output audio parts, transcription, interruption, tool deduplication/round trip, mute/end cleanup and token errors.
 
 A real browser Live connection produced a greeting transcript. A fictional Mimi text request invoked the care workflow and rendered “Contact a vet today” with backend results; browser console errors were empty. This proves connection and tool integration, not subjective audio quality or human speech recognition. No owner recording was collected. The Gradium key is still missing, so clone/localization/speaker similarity and the final own-voice rehearsal are unverified.
+
+## Gradium credential and live TTS verification
+
+On 10 October 2026, an owner-authorized Studio API key was configured only in the ignored local `.env`. The restarted backend reports Gradium configured. A real standard-German TTS request through `/api/v1/voice/speech` returned HTTP 200 and a 10.96-second, 48 kHz WAV. No telephone call was placed and no owner recording was uploaded.
+
+The initial request exposed Gradium's streaming WAV headers with unknown RIFF/data lengths (`0xffffffff`). The backend now uses the teammate’s merged streaming-WAV normalization after the bounded HTTP response completes, with an additional guard rejecting incomplete PCM frames. Regression tests cover this layout, empty/partial frames, and continued rejection of truncated finite-length audio. Own-voice clone/localization and subjective speaker similarity remain unverified; earlier missing-key notes describe the previous environment.
