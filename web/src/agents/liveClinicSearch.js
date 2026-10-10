@@ -1,14 +1,14 @@
 // SLOT 2: clinic search against the Pawse FastAPI backend.
-// Endpoint: POST /api/v1/care/requests (same origin; Vite proxies /api to :8765).
+// Endpoint: POST /api/v1/clinics/search (same origin; Vite proxies /api to :8765). It is separate from
+// /api/v1/care/requests, so it never waits on the voice agent's advice request still in flight.
 // Base URL defaults to ''; override with VITE_CLINIC_SEARCH_URL (e.g. https://pawse.example.com).
 //
-// Consent: only location sharing is sent (share_location=true, and only when a location exists).
-// share_with_ai stays false and the query is a generic string, so no symptoms leave the device
-// for a clinic lookup. The backend enforces consent server-side as well.
+// Consent: only coordinates and location-sharing consent are sent, never symptoms.
+// The backend enforces the consent server-side as well.
 
 import { CLINIC_SEARCH_URL } from '../config.js';
 
-const ENDPOINT = '/api/v1/care/requests';
+const ENDPOINT = '/api/v1/clinics/search';
 
 export function haversineKm(a, b) {
   const rad = (d) => (d * Math.PI) / 180;
@@ -48,11 +48,9 @@ export function mapClinic(c, location) {
 export async function liveSearchClinics({ lang = 'en', location = null, triage = null } = {}) {
   if (!location) throw new Error('Location is needed to find nearby clinics (permission denied or unavailable).');
   const body = {
-    query: 'Find nearby veterinary clinics for a cat.',
     language: /^[a-z]{2}$/.test(lang) ? lang : 'en',
     location: { lat: location.lat, lng: location.lng },
     share_location: true,
-    share_with_ai: false,
   };
   const res = await fetch((CLINIC_SEARCH_URL || '') + ENDPOINT, {
     method: 'POST',
@@ -66,7 +64,7 @@ export async function liveSearchClinics({ lang = 'en', location = null, triage =
   const data = await res.json();
   const raw = Array.isArray(data && data.clinics) ? data.clinics : [];
   if (!raw.length) {
-    const why = (data && data.warnings && data.warnings.join(', ')) || (data && data.providers && JSON.stringify(data.providers)) || 'no details';
+    const why = (data && data.warnings && data.warnings.join(', ')) || 'no details';
     throw new Error(`No clinics returned by the backend (clinic provider not configured or unavailable: ${why}).`);
   }
   const clinics = raw.map((c) => mapClinic(c, location));

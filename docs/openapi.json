@@ -98,6 +98,44 @@
         }
       }
     },
+    "/api/v1/clinics/search": {
+      "post": {
+        "summary": "Search Clinics",
+        "operationId": "search_clinics_api_v1_clinics_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClinicSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicSearchResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/care/requests/{request_id}": {
       "get": {
         "summary": "Get Care",
@@ -1583,6 +1621,86 @@
           "retrieved_at"
         ],
         "title": "Clinic"
+      },
+      "ClinicSearchRequest": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "radius_km": {
+            "type": "number",
+            "maximum": 50.0,
+            "minimum": 0.5,
+            "title": "Radius Km",
+            "default": 10
+          },
+          "language": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(?:-[A-Z]{2})?$",
+            "title": "Language",
+            "default": "en"
+          },
+          "share_location": {
+            "type": "boolean",
+            "title": "Share Location",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "title": "ClinicSearchRequest",
+        "description": "Clinic lookup on its own: only coordinates leave the server, never symptoms."
+      },
+      "ClinicSearchResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "clinics": {
+            "items": {
+              "$ref": "#/components/schemas/Clinic"
+            },
+            "type": "array",
+            "title": "Clinics"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "title": "Elapsed Ms"
+          },
+          "search_url": {
+            "type": "string",
+            "title": "Search Url"
+          },
+          "completeness": {
+            "type": "string",
+            "title": "Completeness"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "clinics",
+          "elapsed_ms",
+          "search_url",
+          "completeness"
+        ],
+        "title": "ClinicSearchResult"
       },
       "CloneRequest": {
         "properties": {

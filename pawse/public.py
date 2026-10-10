@@ -5,7 +5,7 @@ from collections import deque
 
 LOCAL_HOSTS = ["localhost", "127.0.0.1", "[::1]", "testserver"]
 # POST paths that spend Gemini/Gradium/Places quota. The keyless Mimi rehearsal is not listed.
-PAID_PREFIXES = ("/api/v1/care/requests", "/api/v1/voice/", "/api/v1/agents/runs", "/api/v1/live/", "/api/v1/knowledge/search")
+PAID_PREFIXES = ("/api/v1/care/requests", "/api/v1/clinics/", "/api/v1/voice/", "/api/v1/agents/runs", "/api/v1/live/", "/api/v1/knowledge/search")
 WINDOW = 3600
 calls: dict[str, deque] = {}
 

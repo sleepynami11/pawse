@@ -110,6 +110,23 @@ class Clinic(Model):
     availability_note: str = "Call to confirm opening hours, services, and whether the clinic can see your cat."
 
 
+class ClinicSearchRequest(Model):
+    """Clinic lookup on its own: only coordinates leave the server, never symptoms."""
+    location: Location
+    radius_km: float = Field(default=10, ge=0.5, le=50)
+    language: str = Field(default="en", pattern=r"^[a-z]{2}(?:-[A-Z]{2})?$")
+    share_location: bool = False
+
+
+class ClinicSearchResult(Model):
+    status: Literal["complete", "unavailable"]
+    clinics: list[Clinic]
+    warnings: list[str] = Field(default_factory=list)
+    elapsed_ms: int
+    search_url: str
+    completeness: str
+
+
 ANALYSIS_TYPES = ("daily_summary", "weekly_report", "monthly_report", "health_prediction", "trend_analysis", "behavior_pattern", "vet_recommendation", "comparison", "multi_cat_comparison", "anomaly_detection")
 
 

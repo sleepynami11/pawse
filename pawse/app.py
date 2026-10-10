@@ -11,8 +11,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from .models import CareRequest, LegacyRequest, CareResult
-from .service import care_events
+from .models import CareRequest, LegacyRequest, CareResult, ClinicSearchRequest, ClinicSearchResult
+from .service import care_events, find_clinics
 from .legacy import capabilities, legacy_events
 from .voice import router as voice_router
 from .live import router as live_router
@@ -108,6 +108,26 @@ async def create_care(payload: CareRequest, request: Request, stream: bool = Fal
         if event["type"] == "result":
             result = event
     return JSONResponse(CareResult.model_validate(result).model_dump(), status_code=201)
+
+
+# Clinic lookups get their own small concurrency budget instead of the one-care-request-per-owner lock.
+clinic_lookups: dict[str, int] = {}
+
+
+@app.post("/api/v1/clinics/search", response_model=ClinicSearchResult)
+async def search_clinics(payload: ClinicSearchRequest, request: Request):
+    if not payload.share_location:
+        raise HTTPException(400, "Location sharing consent is required to find nearby clinics")
+    owner = request.state.owner
+    if clinic_lookups.get(owner, 0) >= 2 or sum(clinic_lookups.values()) >= 10:
+        raise HTTPException(429, "Clinic searches are already running; try again shortly")
+    clinic_lookups[owner] = clinic_lookups.get(owner, 0) + 1
+    try:
+        return await find_clinics(payload)
+    finally:
+        clinic_lookups[owner] -= 1
+        if not clinic_lookups[owner]:
+            del clinic_lookups[owner]
 
 
 @app.get("/api/v1/care/requests/{request_id}", response_model=CareResult)

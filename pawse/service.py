@@ -5,6 +5,8 @@ import httpx
 from .models import phone_uri
 from .providers import assess, discover, fallback_assessment, maps_link, ProviderError, rank_clinics
 
+COMPLETENESS = "Provider-limited nearby results; not an exhaustive directory. No appointment, call, or insurance approval has been made."
+
 
 CARE_DEADLINE_SECONDS = 40
 
@@ -69,4 +71,22 @@ async def care_events(req):
            "insurance": insurance, "handoff": handoff, "warnings": warnings, "providers": statuses,
            "elapsed_ms": round((time.monotonic() - started) * 1000), "target_seconds": 60,
            "search_url": maps_link("emergency veterinarian", req.location),
-           "completeness": "Provider-limited nearby results; not an exhaustive directory. No appointment, call, or insurance approval has been made."}
+           "completeness": COMPLETENESS}
+
+
+async def find_clinics(req):
+    """Clinic lookup without the triage run, so it never waits on a care request still in flight."""
+    started = time.monotonic()
+    clinics, warnings = [], []
+    try:
+        async with asyncio.timeout(CARE_DEADLINE_SECONDS), httpx.AsyncClient(follow_redirects=False) as client:
+            clinics = rank_clinics(await discover(req, client))
+    except ProviderError as exc:
+        warnings.append(str(exc))
+    except TimeoutError:
+        warnings.append("deadline_reached")
+    except Exception:
+        warnings.append("provider_unavailable")
+    return {"status": "complete" if clinics else "unavailable", "clinics": [c.model_dump() for c in clinics], "warnings": warnings,
+            "elapsed_ms": round((time.monotonic() - started) * 1000), "search_url": maps_link("emergency veterinarian", req.location),
+            "completeness": COMPLETENESS}

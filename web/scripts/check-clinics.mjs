@@ -5,7 +5,7 @@ import { validateClinics } from '../src/contracts.js';
 
 const loc = { lat: 47.3769, lng: 8.5417 };
 const backend = {
-  type: 'result', status: 'partial', warnings: [], providers: {},
+  status: 'complete', warnings: [], elapsed_ms: 5,
   clinics: [
     { id: 'far', name: 'Far Vet', address: 'B', location: { lat: 47.45, lng: 8.55 }, open_now: true, rating: 4.5,
       maps_url: 'https://maps.example/far', phone: '+41445550000', emergency_service: 'unknown', source: 'google_places' },
@@ -14,13 +14,13 @@ const backend = {
   ],
 };
 let calls = [];
-let reply = { ok: true, status: 201, json: async () => backend };
+let reply = { ok: true, status: 200, json: async () => backend };
 globalThis.fetch = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return reply; };
 
 const res = await liveSearchClinics({ lang: 'en', location: loc, triage: { level: 'yellow' } });
-assert.equal(calls[0].url, '/api/v1/care/requests');
+assert.equal(calls[0].url, '/api/v1/clinics/search');
 assert.equal(calls[0].body.share_location, true);
-assert.equal(calls[0].body.share_with_ai, false);
+assert.equal('share_with_ai' in calls[0].body, false); assert.equal('query' in calls[0].body, false);
 assert.deepEqual(calls[0].body.location, loc);
 assert.deepEqual(validateClinics(res), []);
 assert.deepEqual(res.clinics.map((c) => c.id), ['far', 'near', 'nodist']);
