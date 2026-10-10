@@ -47,4 +47,4 @@ The current clone/localization/preview/save lifecycle remains authoritative in t
 3. Evidence/data implements the Document → reviewed private evidence path using the new contracts; the current demo corpus stays separate.
 4. Connect calendar, booking and taxi only with actual provider outcomes; the story's simulated results remain labeled.
 
-Entire onboarding is tracked separately in [issue #33](https://github.com/yyyuanfish/pawse/issues/33). Do not infer permission to upload private transcripts from shared repository settings. Session capture/import and hosted repository access require their own setup; this integration review did not enable them or upload conversation history.
+Entire onboarding is tracked separately in [issue #33](https://github.com/yyyuanfish/pawse/issues/33). Do not infer permission to upload private transcripts from shared repository settings. Session capture is now enabled on the shared dev VM (Claude Code sessions become checkpoints under `refs/entire/checkpoints/`, see the README); each teammate's machine and hosted repository access still need their own setup.

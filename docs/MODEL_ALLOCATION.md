@@ -58,7 +58,7 @@ Checked on **2026-10-10**. High confidence means a primary source or observed re
 | Gradium supports audio formats for a separate telephone integration | [Telephony audio](https://docs.gradium.ai/guides/recipes/telephony-audio) | High for formats; carrier unconnected |
 | Entire's event page describes Checkpoints, Graph/Brain and development-agent handoffs | [Entire at Agentic AI Hack Zürich](https://hack.entire.io/agentic-ai-hack-zurich-2026/) | High; public page read over HTTP |
 
-Entire belongs to development collaboration and repository memory here. Its event page is not a Gemini inference API or a clinic/insurance data source. No Entire installation, repository import or session upload was performed.
+Entire belongs to development collaboration and repository memory here. Its event page is not a Gemini inference API or a clinic/insurance data source. The Entire CLI is installed and enabled on the shared dev VM for Claude Code: agent sessions are captured as checkpoints linked to commits (`Entire-Checkpoint:` trailer) and pushed under `refs/entire/checkpoints/` on this repository. The running app never calls Entire. Hosted import on entire.io is tracked in [issue #33](https://github.com/yyyuanfish/pawse/issues/33).
 
 ## Gaps and next validation
 
