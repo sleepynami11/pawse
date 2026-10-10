@@ -1,0 +1,37 @@
+# Local development: `bash scripts/dev.sh` (frees the ports, then `docker compose up --build`),
+# then open http://localhost:5173/app/ (live app; scripted rehearsal at /app/?demo=1)
+# Keys are read from .env at runtime and never enter an image. Code changes reload without a rebuild.
+# Ports bind to 127.0.0.1 only; set WEB_PORT or PAWSE_PORT to use others.
+# A fixed name, so every checkout of the repo (worktrees, copies) replaces the same stack.
+name: pawse
+services:
+  backend:
+    build: .
+    command: uvicorn pawse.app:app --host 0.0.0.0 --port 8765 --reload
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "127.0.0.1:${PAWSE_PORT:-8765}:8765"
+    volumes:
+      - ./pawse:/app/pawse:ro
+      - ./research:/app/research:ro
+
+  web:
+    build: ./web
+    environment:
+      PAWSE_API: http://backend:8765
+      # The backend runs alongside, so /app/ opens the live app; the scripted rehearsal stays at /app/?demo=1.
+      VITE_VOICE_AGENT: live
+      VITE_CLINIC_SEARCH: live
+      VITE_PHONE_AGENT: live
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5173}:5173"
+    # Source only: node_modules stays in the image, so a lockfile change needs --build.
+    volumes:
+      - ./web/src:/web/src:ro
+      - ./web/public:/web/public:ro
+      - ./web/index.html:/web/index.html:ro
+      - ./web/vite.config.js:/web/vite.config.js:ro
+    depends_on:
+      - backend

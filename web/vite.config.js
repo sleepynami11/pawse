@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { '/api': process.env.PAWSE_API || 'http://127.0.0.1:8765' },
+    // Keep the browser's Host so it matches Origin; the backend rejects cross-origin POSTs.
+    proxy: { '/api': { target: process.env.PAWSE_API || 'http://127.0.0.1:8765', changeOrigin: false } },
   },
 });

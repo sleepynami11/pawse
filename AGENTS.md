@@ -61,7 +61,7 @@ fallback, not the goal.
 | `tests/` | pytest, providers always mocked |
 | `docs/openapi.json` | Generated API contract: never edit by hand |
 | `backend/` | Imported legacy CatAgent backend: leave alone unless the task needs it |
-| `scripts/` | `check.sh` (all checks), `export_contract.py`, `probe_models.py`, checkers |
+| `scripts/` | `dev.sh` (free ports + `docker compose up --build`), `check.sh` (all checks), `export_contract.py`, `probe_models.py`, checkers |
 
 ## Commands
 
